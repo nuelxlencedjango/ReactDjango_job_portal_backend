@@ -1,2 +1,1 @@
-web: gunicorn Jobportal.wsgi 
-
+web:gunicorn Jobportal.wsgi
