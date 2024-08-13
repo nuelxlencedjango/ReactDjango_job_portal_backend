@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import os
 #3rd party imports
+import dj_database_url
 from datetime import timedelta
 from dotenv import load_dotenv
 
@@ -40,17 +41,26 @@ SECRET_KEY=os.getenv('SECRET_KEY')
 DEBUG=os.getenv('DEBUG') 
 
 
-ALLOWED_HOSTS = []
+
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
 #SECRET_KEY = os.getenv('SECRET_KEY', 'your_default_secret_key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-#DEBUG = os.getenv('DEBUG', 'False') == 'True'
+
 
 #ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
+
+
+# Get ALLOWED_HOSTS from environment variable, default to empty list if not set
+allowed_hosts_env = os.getenv('ALLOWED_HOSTS', '')
+ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',') if host.strip()]
+
+# Ensure that the list is not empty (for production, this should be explicitly set)
+if not ALLOWED_HOSTS:
+    raise ValueError("ALLOWED_HOSTS must be set and contain at least one valid hostname.")
 
 
 #API Configurations
@@ -72,7 +82,8 @@ SIMPLE_JWT ={
 }
 
 
-CORS_ALLOWED_ORIGINS = ['http://localhost:5173']
+
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
 
 # Application definition
 INSTALLED_APPS = [
@@ -216,7 +227,17 @@ AUTH_USER_MODEL ='accounts.User'
 authentication_backend = ['accounts.backends.EmailBackend']
 
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+DEFAULT_FILE_STORAGE=os.getenv('DEFAULT_FILE_STORAGE'),
 
 
-CSRF_TRUSTED_ORIGINS=()
+CSRF_TRUSTED_ORIGINS=os.getenv('CSRF_TRUSTED_ORIGINS','').split(',')
+
+
+
+   #EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER ='icanwork51@gmail.com'
+EMAIL_HOST_PASSWORD  = ''
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_BACKEND ='django.core.mail.backends.smtp.EmailBackend'
