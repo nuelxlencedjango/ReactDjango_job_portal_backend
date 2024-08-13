@@ -55,7 +55,7 @@ DEBUG=os.getenv('DEBUG')
 
 
 # Get ALLOWED_HOSTS from environment variable, default to empty list if not set
-allowed_hosts_env = os.getenv('ALLOWED_HOSTS', '')
+allowed_hosts_env = os.getenv('ALLOWED_HOSTS','http://localhost:8000')
 ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',') if host.strip()]
 
 # Ensure that the list is not empty (for production, this should be explicitly set)
