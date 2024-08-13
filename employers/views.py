@@ -1,0 +1,77 @@
+
+from django.shortcuts import render
+from rest_framework.permissions import AllowAny
+from rest_framework import generics, serializers, status
+from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter
+
+from artisans.models import *
+from accounts.serializers import *
+from employers.models import *
+from employers.serializers import *
+from django.db import transaction
+import json
+
+
+
+
+
+class EmployerCreateView(generics.CreateAPIView):
+    queryset = Employer.objects.all()
+    serializer_class = EmployerSerializer
+    permission_classes = [AllowAny]
+
+    def perform_create(self, serializer):
+        user_data = self.request.data.get('user', {})
+
+        if not isinstance(user_data, dict):
+            raise serializers.ValidationError({'user': 'Invalid user data'})
+
+        user_data['is_employer'] = True
+        user_serializer = UserSerializer(data=user_data)
+
+        if user_serializer.is_valid():
+            try:
+                with transaction.atomic():
+                    user = user_serializer.save()
+                    user.set_password(user_data.get('password', ''))
+                    user.save()
+                    serializer.save(user=user)
+            except Exception as e:
+                raise serializers.ValidationError({'detail': f"An error occurred while saving user data: {str(e)}"})
+        else:
+            raise serializers.ValidationError(user_serializer.errors)
+
+    def create(self, request, *args, **kwargs):
+        try:
+            response = super().create(request, *args, **kwargs)
+            return response
+        except serializers.ValidationError as e:
+            return Response({'errors': e.detail}, status=status.HTTP_400_BAD_REQUEST)
+        except json.JSONDecodeError as e:
+            return Response({'errors': f"Invalid JSON data: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'errors': f"An unknown error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+class EmployerSearchListView(generics.ListAPIView):
+    queryset = Employer.objects.all()
+    serializer_class = EmployerSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['employer_profile__location__location', 'industry__name']
+    search_fields = ['user__first_name', 'user__last_name']
+
+
+
+
+
+#job search list
+class JobSearchListView(generics.ListAPIView):
+    queryset = JobPost.objects.all()
+    serializer_class = JobPostSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['location', 'job_type', 'industry']
+    search_fields = ['title', 'description', 'industry']
+
