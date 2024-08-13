@@ -228,10 +228,13 @@ authentication_backend = ['accounts.backends.EmailBackend']
 
 
 DEFAULT_FILE_STORAGE=os.getenv('DEFAULT_FILE_STORAGE'),
-
-
 CSRF_TRUSTED_ORIGINS=os.getenv('CSRF_TRUSTED_ORIGINS','').split(',')
 
+# Enforce HTTPS
+SECURE_SSL_REDIRECT = True
+
+# If behind a proxy like Vercel or Railway, add this:
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
    #EMAIL_HOST = 'smtp.gmail.com'
