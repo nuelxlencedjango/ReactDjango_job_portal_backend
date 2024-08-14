@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import os
 #3rd party imports
+
 import dj_database_url
 from datetime import timedelta
 from dotenv import load_dotenv
@@ -152,17 +153,17 @@ WSGI_APPLICATION = 'Jobportal.wsgi.application'
 
 
 
-
 DATABASES = {
-      'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DATABASE_NAME'),
-        'HOST' :os.getenv('DATABASE_HOST'),
-        'PORT':os.getenv('DATABASE_PORT'),
-        'USER' :os.getenv('DATABASE_USER'),
-        'PASSWORD' :os.getenv('DATABASE_PASSWORD'),
-
-    }
+    'default': dj_database_url.config(
+        default={
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DATABASE_NAME'),
+            'USER': os.getenv('DATABASE_USER'),
+            'PASSWORD': os.getenv('DATABASE_PASSWORD'),
+            'HOST': os.getenv('DATABASE_HOST'),
+            'PORT': os.getenv('DATABASE_PORT'),
+        }
+    )
 }
 
 
