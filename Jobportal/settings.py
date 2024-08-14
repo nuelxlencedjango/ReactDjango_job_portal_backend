@@ -85,9 +85,12 @@ SIMPLE_JWT ={
 
 
 
-#CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
-CORS_ALLOWED_ORIGINS = ['https://react-django-job-portal-frontend-gj7jkwe9f.vercel.app']
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
+
 # Application definition
+
+
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
