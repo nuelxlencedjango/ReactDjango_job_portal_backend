@@ -157,7 +157,7 @@ DATABASES = {
     'default': dj_database_url.config(
         default=os.getenv(
             'DATABASE_URL',
-            f'postgres://{os.getenv("DATABASE_USER", "")}:{os.getenv("DATABASE_PASSWORD", "")}@{os.getenv("DATABASE_HOST", "")}:{os.getenv("DATABASE_PORT", "5432")}/{os.getenv("DATABASE_NAME", "")}'
+            f'postgres://{os.getenv("DATABASE_USER", "")}:{os.getenv("DATABASE_PASSWORD", "")}@{os.getenv("HOST", "")}:{os.getenv("DATABASE_PORT", "5432")}/{os.getenv("DATABASE_NAME", "")}'
         )
     )
 }
