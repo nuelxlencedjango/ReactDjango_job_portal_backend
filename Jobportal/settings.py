@@ -155,16 +155,13 @@ WSGI_APPLICATION = 'Jobportal.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default={
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DATABASE_NAME', ''),
-            'USER': os.getenv('DATABASE_USER', ''),
-            'PASSWORD': os.getenv('DATABASE_PASSWORD', ''),
-            'HOST': os.getenv('DATABASE_HOST', ''),
-            'PORT': os.getenv('DATABASE_PORT', ''),
-        }
+        default=os.getenv(
+            'DATABASE_URL',
+            f'postgres://{os.getenv("DATABASE_USER", "")}:{os.getenv("DATABASE_PASSWORD", "")}@{os.getenv("DATABASE_HOST", "")}:{os.getenv("DATABASE_PORT", "5432")}/{os.getenv("DATABASE_NAME", "")}'
+        )
     )
 }
+
 
 
 # Password validation
