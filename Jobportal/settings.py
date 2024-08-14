@@ -86,7 +86,7 @@ SIMPLE_JWT ={
 
 
 #CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
-CORS_ALLOWED_ORIGINS=['https://react-django-job-portal-frontend-gj7jkwe9f.vercel.app,http://localhost:5173,http://127.0.0.1:8000']
+CORS_ALLOW_ALL_ORIGINS = False 
 # Application definition
 
 #CORS_ALLOW_ALL_ORIGINS = True
