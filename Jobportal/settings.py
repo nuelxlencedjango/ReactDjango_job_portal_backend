@@ -85,7 +85,7 @@ SIMPLE_JWT ={
 
 
 
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
 
 # Application definition
 INSTALLED_APPS = [
