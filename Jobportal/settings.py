@@ -56,12 +56,13 @@ DEBUG=os.getenv('DEBUG')
 
 
 # Get ALLOWED_HOSTS from environment variable, default to empty list if not set
-allowed_hosts_env = os.getenv('ALLOWED_HOSTS','http://localhost:8000')
+allowed_hosts_env = os.getenv('ALLOWED_HOSTS','')
 ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',') if host.strip()]
 
 # Ensure that the list is not empty (for production, this should be explicitly set)
 if not ALLOWED_HOSTS:
     raise ValueError("ALLOWED_HOSTS must be set and contain at least one valid hostname.")
+
 
 
 #API Configurations
@@ -114,8 +115,10 @@ INSTALLED_APPS = [
    
 ]
 
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     #corsheaders middleware
     'corsheaders.middleware.CorsMiddleware',
@@ -201,7 +204,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
