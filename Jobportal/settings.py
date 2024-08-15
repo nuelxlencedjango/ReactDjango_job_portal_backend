@@ -78,10 +78,6 @@ SIMPLE_JWT ={
 
 
 
-#CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
-
-
-
 # Application definition
 
 #CORS_ALLOW_ALL_ORIGINS = True
