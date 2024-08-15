@@ -34,7 +34,7 @@ class ServiceSerializer(serializers.ModelSerializer):
 
 
 class ArtisanSerializer(serializers.ModelSerializer):
-    user = UserSerializer() 
+   # user = UserSerializer() 
     location = serializers.SerializerMethodField()
     service = serializers.SerializerMethodField()
     profile_img = serializers.SerializerMethodField()
