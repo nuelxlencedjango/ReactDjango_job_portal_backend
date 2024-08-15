@@ -46,13 +46,6 @@ DEBUG=os.getenv('DEBUG')
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-#SECRET_KEY = os.getenv('SECRET_KEY', 'your_default_secret_key')
-
-# SECURITY WARNING: don't run with debug turned on in production!
-
-
-#ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
-
 
 
 # Get ALLOWED_HOSTS from environment variable, default to empty list if not set
@@ -85,7 +78,9 @@ SIMPLE_JWT ={
 
 
 
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
+#CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS').split(',')
+
+
 
 # Application definition
 
@@ -244,7 +239,10 @@ authentication_backend = ['accounts.backends.EmailBackend']
 
 
 DEFAULT_FILE_STORAGE=os.getenv('DEFAULT_FILE_STORAGE'),
-CSRF_TRUSTED_ORIGINS=os.getenv('CSRF_TRUSTED_ORIGINS').split(',')
+#CSRF_TRUSTED_ORIGINS=os.getenv('CSRF_TRUSTED_ORIGINS').split(',')
+
+CORS_ALLOWED_ORIGINS=['https://react-django-job-portal-frontend-gj7jkwe9f.vercel.app,http://localhost:5173,http://127.0.0.1:8000']
+CSRF_TRUSTED_ORIGINS=['https://i-wanwok-backend.up.railway.app,https://react-django-job-portal-frontend-gj7jkwe9f.vercel.app,http://localhost:5173,http://127.0.0.1:8000']
 
 # Enforce HTTPS
 SECURE_SSL_REDIRECT = True
