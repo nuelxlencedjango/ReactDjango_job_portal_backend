@@ -49,10 +49,9 @@ DEBUG=os.getenv('DEBUG')
 
 
 # Get ALLOWED_HOSTS from environment variable, default to empty list if not set
+
 allowed_hosts_env = os.getenv('ALLOWED_HOSTS','')
 ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_env.split(',') if host.strip()]
-
-# Ensure that the list is not empty (for production, this should be explicitly set)
 if not ALLOWED_HOSTS:
     raise ValueError("ALLOWED_HOSTS must be set and contain at least one valid hostname.")
 
@@ -234,9 +233,9 @@ AUTH_USER_MODEL ='accounts.User'
 authentication_backend = ['accounts.backends.EmailBackend']
 
 
-DEFAULT_FILE_STORAGE=os.getenv('DEFAULT_FILE_STORAGE'),
-CSRF_TRUSTED_ORIGINS=os.getenv('CSRF_TRUSTED_ORIGINS').split(',')
-CORS_ALLOWED_ORIGINS=os.getenv('CORS_ALLOWED_ORIGINS').split(',')
+DEFAULT_FILE_STORAGE=os.getenv('DEFAULT_FILE_STORAGE')
+CSRF_TRUSTED_ORIGINS=os.getenv('CSRF_TRUSTED_ORIGINS','').split(',')
+CORS_ALLOWED_ORIGINS=os.getenv('CORS_ALLOWED_ORIGINS','').split(',')
 
 # Enforce HTTPS
 SECURE_SSL_REDIRECT = True
