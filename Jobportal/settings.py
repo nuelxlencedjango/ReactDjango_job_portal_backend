@@ -241,7 +241,7 @@ authentication_backend = ['accounts.backends.EmailBackend']
 DEFAULT_FILE_STORAGE=os.getenv('DEFAULT_FILE_STORAGE'),
 #CSRF_TRUSTED_ORIGINS=os.getenv('CSRF_TRUSTED_ORIGINS').split(',')
 
-CORS_ALLOWED_ORIGINS=['https://react-django-job-portal-frontend-gj7jkwe9f.vercel.app,https://i-wanwok-backend.up.railway.app,http://localhost:5173,http://127.0.0.1:8000']
+CORS_ALLOWED_ORIGINS=['https://i-wanwok-backend.up.railway.app,https://react-django-job-portal-frontend-gj7jkwe9f.vercel.app,http://localhost:5173,http://127.0.0.1:8000']
 CSRF_TRUSTED_ORIGINS=['https://i-wanwok-backend.up.railway.app,https://react-django-job-portal-frontend-gj7jkwe9f.vercel.app,http://localhost:5173,http://127.0.0.1:8000']
 
 # Enforce HTTPS
