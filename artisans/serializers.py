@@ -32,7 +32,7 @@ class ServiceSerializer(serializers.ModelSerializer):
 
 
 
-class ArtisanSerializer(serializers.ModelSerializer):
+class jkArtisanSerializer(serializers.ModelSerializer):
    # user = UserSerializer() 
     location = serializers.SerializerMethodField()
     service = serializers.SerializerMethodField()
@@ -67,7 +67,7 @@ class ArtisanSerializer(serializers.ModelSerializer):
 
 
 
-class kkArtisanSerializer(serializers.ModelSerializer):
+class ArtisanSerializer(serializers.ModelSerializer):
     class Meta:
         model = Artisan
         fields = ['user', 'nin', 'location', 'experience', 'address', 'phone', 'service', 'profile_img', 'date_joined']
