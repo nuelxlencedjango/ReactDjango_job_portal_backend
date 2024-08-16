@@ -25,6 +25,8 @@ from django.conf.urls.static import static
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from  accounts.views import * #RegisterView, LoginView
+from django.views.generic import TemplateView
+from django.urls import path, re_path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -35,6 +37,10 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='refresh'),
     path('api-auth/', include('rest_framework.urls')),  
 
+    # Catch-all route for React
+     re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),
+
+
 
     path('', include('api.urls')),
     path('artisans/', include('artisans.urls')),
@@ -43,7 +49,7 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls')),
     path('services/', include('services.urls')),
     path('transactions/', include('transactions.urls')),
+    
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
 
