@@ -110,6 +110,7 @@ class ArtisanRegistrationView(APIView):
 
 
 
+
 # api/views.py
 class ArtisansByServiceView(APIView):
     permission_classes = [AllowAny]

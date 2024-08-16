@@ -32,7 +32,6 @@ class ServiceSerializer(serializers.ModelSerializer):
 
 
 
-
 class ArtisanSerializer(serializers.ModelSerializer):
    # user = UserSerializer() 
     location = serializers.SerializerMethodField()
@@ -60,3 +59,25 @@ class ArtisanSerializer(serializers.ModelSerializer):
             'id': obj.service.id,
             'title': obj.service.title
         } if obj.service else None
+
+
+
+
+
+
+
+
+class kkArtisanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Artisan
+        fields = ['user', 'nin', 'location', 'experience', 'address', 'phone', 'service', 'profile_img', 'date_joined']
+        read_only_fields = ['date_joined']
+
+    location = serializers.PrimaryKeyRelatedField(queryset=Area.objects.all())
+    service = serializers.PrimaryKeyRelatedField(queryset=Service.objects.all())
+    profile_img = serializers.SerializerMethodField()
+
+    def get_profile_img(self, obj):
+        if obj.profile_img:
+            return obj.profile_img.url
+        return None
