@@ -119,7 +119,7 @@ class ArtisansByServiceView(APIView):
         
         try:
             service = Service.objects.get(title=service_id)
-            artisans = Artisan.objects.filter(service=service_id)
+            artisans = Artisan.objects.filter(service=service)
             serializer = ArtisanSerializer(artisans, many=True)
             #print('product and services we offer',service)
             return Response(serializer.data, status=status.HTTP_200_OK)
