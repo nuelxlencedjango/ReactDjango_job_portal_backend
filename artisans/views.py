@@ -138,7 +138,6 @@ class ArtisansByServiceView(APIView):
 
 
 
-
 #Artisan search/filter view
 class ArtisanSearchListView(generics.ListAPIView):
     serializer_class = ArtisanSerializer
