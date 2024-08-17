@@ -127,7 +127,7 @@ class ArtisansByServiceView(APIView):
 
             #print('product and services we offer',service)
             return Response(serializer.data, status=status.HTTP_200_OK)
-            #return Response(response_data, status=status.HTTP_200_OK)
+            
         
         except Service.DoesNotExist:
             response_data['error'] = 'Service not found'
