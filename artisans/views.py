@@ -114,12 +114,12 @@ class ArtisanRegistrationView(APIView):
 # api/views.py
 class ArtisansByServiceView(APIView):
     permission_classes = [AllowAny]
-    def get(self, request, service_title):
-        print("services title:",service_title)
+    def get(self, request, service_id):
+        print("services title:",service_id)
         
         try:
-            service = Service.objects.get(title=service_title)
-            artisans = Artisan.objects.filter(service=service_title)
+            service = Service.objects.get(title=service_id)
+            artisans = Artisan.objects.filter(service=service)
             serializer = ArtisanSerializer(artisans, many=True)
             #print('product and services we offer',service)
             return Response(serializer.data, status=status.HTTP_200_OK)
