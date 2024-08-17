@@ -67,7 +67,7 @@ class jkArtisanSerializer(serializers.ModelSerializer):
 
 
 
-class ArtisanSerializer(serializers.ModelSerializer):
+class poArtisanSerializer(serializers.ModelSerializer):
     class Meta:
         model = Artisan
         fields = ['user', 'nin', 'location', 'experience', 'address', 'phone', 'service', 'profile_img', 'date_joined']
@@ -81,3 +81,24 @@ class ArtisanSerializer(serializers.ModelSerializer):
         if obj.profile_img:
             return obj.profile_img.url
         return None
+
+
+
+
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import status
+from .models import Service, Artisan
+from .serializers import ArtisanSerializer
+
+class ArtisansByServiceView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, service_title):
+        try:
+            service = Service.objects.get(title=service_title)
+            artisans = Artisan.objects.filter(service=service)
+            serializer = ArtisanSerializer(artisans, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Service.DoesNotExist:
+            return Response({'error': 'Service not found'}, status=status.HTTP_404_NOT_FOUND)
