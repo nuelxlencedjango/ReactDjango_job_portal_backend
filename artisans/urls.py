@@ -23,7 +23,7 @@ urlpatterns = [
 
     path('add_artisan/', ArtisanRegistrationView.as_view(), name='add_artisan'),
     
-    path('artisans-by-service/<int:service_id>/', ArtisansByServiceView.as_view(), name='artisans-by-service'),
+    path('artisans-by-service/<int:service_title>/', ArtisansByServiceView.as_view(), name='artisans-by-service'),
 
     path('artisans-search/', ArtisanSearchListView.as_view(), name='artisans-search'),
 

@@ -234,7 +234,7 @@ authentication_backend = ['accounts.backends.EmailBackend']
 
 
 DEFAULT_FILE_STORAGE=os.getenv('DEFAULT_FILE_STORAGE')
-CSRF_TRUSTED_ORIGINS=os.getenv('CSRF_TRUSTED_ORIGINS','').split(',')
+#CSRF_TRUSTED_ORIGINS=os.getenv('CSRF_TRUSTED_ORIGINS','').split(',')
 CORS_ALLOWED_ORIGINS=os.getenv('CORS_ALLOWED_ORIGINS','').split(',')
 
 # Enforce HTTPS
@@ -251,3 +251,15 @@ EMAIL_HOST_PASSWORD  = ''
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_BACKEND ='django.core.mail.backends.smtp.EmailBackend'
+
+
+
+# Define CSRF trusted origins
+csrf_trusted_origins_env = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_trusted_origins_env.split(',') if origin.strip()]
+
+if not CSRF_TRUSTED_ORIGINS:
+    raise ValueError("CSRF_TRUSTED_ORIGINS must be set and contain at least one valid origin.")
+
+# Example of trusted origins configuration:
+# CSRF_TRUSTED_ORIGINS = ['https://react-django-job-portal-frontend.vercel.app', 'http://localhost:5173']
