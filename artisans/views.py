@@ -115,6 +115,7 @@ class ArtisanRegistrationView(APIView):
 class ArtisansByServiceView(APIView):
     permission_classes = [AllowAny]
     def get(self, request, service_title):
+        print("services title:",service_title)
         
         try:
             service = Service.objects.get(title=service_title)
