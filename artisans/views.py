@@ -123,11 +123,11 @@ class ArtisansByServiceView(APIView):
             artisans = Artisan.objects.filter(service=service)
             serializer = ArtisanSerializer(artisans, many=True)
 
-            response_data['artisans'] = serializer.data
+            
 
             #print('product and services we offer',service)
-            #return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(response_data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            #return Response(response_data, status=status.HTTP_200_OK)
         
         except Service.DoesNotExist:
             response_data['error'] = 'Service not found'
