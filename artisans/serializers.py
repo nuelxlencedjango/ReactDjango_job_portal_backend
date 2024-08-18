@@ -146,7 +146,7 @@ class AlprtisanSerializer(serializers.ModelSerializer):
 
 
 
-class ArtisanSerializer(serializers.ModelSerializer):
+class AwartisanSerializer(serializers.ModelSerializer):
     profile_img = serializers.SerializerMethodField()
     user = UserSerializer()
 
@@ -177,6 +177,38 @@ class ArtisanSerializer(serializers.ModelSerializer):
         # Create the artisan
         artisan = Artisan.objects.create(user=user, **validated_data)
         
+        return artisan
+
+    def get_profile_img(self, obj):
+        return obj.profile_img.url if obj.profile_img else None
+
+
+
+class ArtisanSerializer(serializers.ModelSerializer):
+    profile_img = serializers.SerializerMethodField()
+    user = UserSerializer()
+
+    class Meta:
+        model = Artisan
+        fields = ['user', 'nin', 'location', 'experience', 'address', 'phone', 'service', 'profile_img', 'date_joined']
+        read_only_fields = ['date_joined']
+
+    def __init__(self, *args, **kwargs):
+        super(ArtisanSerializer, self).__init__(*args, **kwargs)
+        request_method = self.context.get('request').method if self.context.get('request') else None
+
+        if request_method == 'GET':
+            self.fields['location'] = AreaSerializer()
+            self.fields['service'] = ServiceSerializer()
+        else:
+            self.fields['location'] = serializers.PrimaryKeyRelatedField(queryset=Area.objects.all())
+            self.fields['service'] = serializers.PrimaryKeyRelatedField(queryset=Service.objects.all())
+
+    def create(self, validated_data):
+        user_data = validated_data.pop('user')
+        user_data['is_artisan'] = True
+        user = UserSerializer().create(user_data)
+        artisan = Artisan.objects.create(user=user, **validated_data)
         return artisan
 
     def get_profile_img(self, obj):
