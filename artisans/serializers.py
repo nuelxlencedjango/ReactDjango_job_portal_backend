@@ -101,7 +101,7 @@ class ArtisanSerializer(serializers.ModelSerializer):
             # Using nested serializers for fetching (GET request)
             self.fields['location'] = AreaSerializer()
             self.fields['service'] = ServiceSerializer()
-            self.fields['user'] = UserSerializer()
+            user = UserSerializer()
         else:
             # Using primary key related fields for creating/updating (POST, PUT, PATCH requests)
             self.fields['location'] = serializers.PrimaryKeyRelatedField(queryset=Area.objects.all())
@@ -112,3 +112,72 @@ class ArtisanSerializer(serializers.ModelSerializer):
         if obj.profile_img:
             return obj.profile_img.url
         return None
+
+
+
+
+
+
+class AlprtisanSerializer(serializers.ModelSerializer):
+    profile_img = serializers.SerializerMethodField()
+    user = UserSerializer()
+
+    class Meta:
+        model = Artisan
+        fields = ['user', 'nin', 'location', 'experience', 'address', 'phone', 'service', 'profile_img', 'date_joined']
+        read_only_fields = ['date_joined', 'user']
+
+    def __init__(self, *args, **kwargs):
+        super(ArtisanSerializer, self).__init__(*args, **kwargs)
+        request_method = self.context.get('request').method if self.context.get('request') else None
+
+        if request_method in ['GET']:
+            # Nested serializers for GET requests
+            self.fields['location'] = AreaSerializer()
+            self.fields['service'] = ServiceSerializer()
+        else:
+            # PrimaryKeyRelatedField for POST/PUT requests
+            self.fields['location'] = serializers.PrimaryKeyRelatedField(queryset=Area.objects.all())
+            self.fields['service'] = serializers.PrimaryKeyRelatedField(queryset=Service.objects.all())
+
+    def get_profile_img(self, obj):
+        return obj.profile_img.url if obj.profile_img else None
+
+
+
+
+class ArtisanSerializer(serializers.ModelSerializer):
+    profile_img = serializers.SerializerMethodField()
+    user = UserSerializer()
+
+    class Meta:
+        model = Artisan
+        fields = ['user', 'nin', 'location', 'experience', 'address', 'phone', 'service', 'profile_img', 'date_joined']
+        read_only_fields = ['date_joined']
+
+    def __init__(self, *args, **kwargs):
+        super(ArtisanSerializer, self).__init__(*args, **kwargs)
+        request_method = self.context.get('request').method if self.context.get('request') else None
+
+        if request_method == 'GET':
+            self.fields['location'] = AreaSerializer()
+            self.fields['service'] = ServiceSerializer()
+        else:
+            self.fields['location'] = serializers.PrimaryKeyRelatedField(queryset=Area.objects.all())
+            self.fields['service'] = serializers.PrimaryKeyRelatedField(queryset=Service.objects.all())
+
+    def create(self, validated_data):
+        # Extract the nested user data
+        user_data = validated_data.pop('user')
+        
+        # Create the user
+        user_data['is_artisan'] = True  # Ensure the is_artisan flag is set
+        user = UserSerializer().create(user_data)
+        
+        # Create the artisan
+        artisan = Artisan.objects.create(user=user, **validated_data)
+        
+        return artisan
+
+    def get_profile_img(self, obj):
+        return obj.profile_img.url if obj.profile_img else None
