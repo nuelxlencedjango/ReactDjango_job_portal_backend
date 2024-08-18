@@ -101,10 +101,12 @@ class ArtisanSerializer(serializers.ModelSerializer):
             # Using nested serializers for fetching (GET request)
             self.fields['location'] = AreaSerializer()
             self.fields['service'] = ServiceSerializer()
+            self.fields['user'] = UserSerializer()
         else:
             # Using primary key related fields for creating/updating (POST, PUT, PATCH requests)
             self.fields['location'] = serializers.PrimaryKeyRelatedField(queryset=Area.objects.all())
             self.fields['service'] = serializers.PrimaryKeyRelatedField(queryset=Service.objects.all())
+            #self.fields['user'] = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
 
     def get_profile_img(self, obj):
         if obj.profile_img:
