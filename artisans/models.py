@@ -11,31 +11,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 
-LAGOS_ZONES =(
-    ('Alimosho' ,'Alimosho'),
-    ('Ajeromi-Ifelodun' ,'Ajeromi-Ifelodun'),
-    ('Kosofe' ,'Kosofe'),
-    ('Mushin' ,'Mushin'),
-    ('Oshodi-Isolo' ,'Oshodi-Isolo'),
-    ('Ojo' ,'Ojo'),
-    ('Ikorodu' ,'Ikorodu'),
-    ('Surulere' ,'Surulere'),
-    ('Agege' ,'Agege'),
-    ('Ifako-Ijaiye' ,'Ifako-Ijaiye'),
-    ('Somolu' ,'Somolu'),
-    ('Amuwo-Odofin' ,'Amuwo-Odofin'),
-
-    ('Lagos Mainland' ,'Lagos Mainland'),
-    ('Ikeja' ,'Ikeja'),
-     ('Eti-Osa' ,'Eti-Osa'),
-    ('Badagry' ,'Badagry'),
-    ('Apapa' ,'Apapa'), 
-    ('Lagos Island' ,'Lagos Island'),
-    ('Epe' ,'Epe'), 
-    ('Ibeju-Lekki' ,'Ibeju-Lekki'), 
-    ('Ikoyi-obalende' ,'Ikoyi-obalende'),
-
-)
 # Create your models here.
 
 class Area(models.Model):
