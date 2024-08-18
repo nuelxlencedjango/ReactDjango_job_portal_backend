@@ -43,3 +43,29 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+from rest_framework import serializers
+from django.contrib.auth.models import User
+
+class hjUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email', 'password', 'is_artisan', 'is_employer')
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        # Extract password and other fields
+        password = validated_data.pop('password')
+        is_artisan = validated_data.pop('is_artisan', False)
+        is_employer = validated_data.pop('is_employer', False)
+        
+        # Create the user
+        user = User.objects.create_user(**validated_data)
+        user.set_password(password)
+        
+        # Set custom flags
+        user.is_artisan = is_artisan
+        user.is_employer = is_employer
+        
+        # Save the user
+        user.save()
+        return user
