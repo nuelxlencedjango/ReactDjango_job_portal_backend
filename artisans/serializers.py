@@ -238,7 +238,7 @@ class djArtisanSerializer(serializers.ModelSerializer):
 
 
 
-class ArtisanSerializer(serializers.ModelSerializer):
+class plArtisanSerializer(serializers.ModelSerializer):
     profile_img = serializers.SerializerMethodField()
     user = UserSerializer()
     location = serializers.SerializerMethodField()
@@ -283,3 +283,47 @@ class ArtisanSerializer(serializers.ModelSerializer):
             'id': obj.service.id,
             'title': obj.service.title
         } if obj.service else None
+
+
+
+
+
+class ArtisanSerializer(serializers.ModelSerializer):
+    profile_img = serializers.SerializerMethodField()
+    user = UserSerializer()
+    location = serializers.SerializerMethodField()
+    service = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Artisan
+        fields = [
+            'user', 'nin', 'location', 'experience', 'address', 
+            'phone', 'service', 'profile_img', 'date_joined'
+        ]
+        read_only_fields = ['date_joined']
+
+    def get_profile_img(self, obj):
+        return obj.profile_img.url if obj.profile_img else None
+
+    def get_location(self, obj):
+        if obj.location:
+            return {
+                'id': obj.location.id,
+                'location': obj.location.location
+            }
+        return None
+
+    def get_service(self, obj):
+        if obj.service:
+            return {
+                'id': obj.service.id,
+                'title': obj.service.title
+            }
+        return None
+
+    def create(self, validated_data):
+        user_data = validated_data.pop('user')
+        user_data['is_artisan'] = True
+        user = UserSerializer().create(user_data)
+        artisan = Artisan.objects.create(user=user, **validated_data)
+        return artisan
