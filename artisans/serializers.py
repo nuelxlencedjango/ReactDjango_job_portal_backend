@@ -181,7 +181,10 @@ class AwartisanSerializer(serializers.ModelSerializer):
 
     def get_profile_img(self, obj):
         return obj.profile_img.url if obj.profile_img else None
+    
 
+
+    
 
 
 class ArtisanSerializer(serializers.ModelSerializer):
@@ -190,7 +193,10 @@ class ArtisanSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Artisan
-        fields = ['user', 'nin', 'location', 'experience', 'address', 'phone', 'service', 'profile_img', 'date_joined']
+        fields = [
+            'user', 'nin', 'location', 'experience', 'address', 
+            'phone', 'service', 'profile_img', 'date_joined'
+        ]
         read_only_fields = ['date_joined']
 
     def __init__(self, *args, **kwargs):
@@ -198,8 +204,9 @@ class ArtisanSerializer(serializers.ModelSerializer):
         request_method = self.context.get('request').method if self.context.get('request') else None
 
         if request_method == 'GET':
-            self.fields['location'] = AreaSerializer()
-            self.fields['service'] = ServiceSerializer()
+            # Use SerializerMethodField for dynamic data representation
+            self.fields['location'] = serializers.SerializerMethodField()
+            self.fields['service'] = serializers.SerializerMethodField()
         else:
             self.fields['location'] = serializers.PrimaryKeyRelatedField(queryset=Area.objects.all())
             self.fields['service'] = serializers.PrimaryKeyRelatedField(queryset=Service.objects.all())
@@ -213,3 +220,15 @@ class ArtisanSerializer(serializers.ModelSerializer):
 
     def get_profile_img(self, obj):
         return obj.profile_img.url if obj.profile_img else None
+
+    def get_location(self, obj):
+        return {
+            'id': obj.location.id,
+            'location': obj.location.location
+        } if obj.location else None
+
+    def get_service(self, obj):
+        return {
+            'id': obj.service.id,
+            'title': obj.service.title
+        } if obj.service else None
