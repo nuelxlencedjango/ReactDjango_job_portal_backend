@@ -288,7 +288,7 @@ class plArtisanSerializer(serializers.ModelSerializer):
 
 
 
-class ArtisanSerializer(serializers.ModelSerializer):
+class poArtisanSerializer(serializers.ModelSerializer):
     profile_img = serializers.SerializerMethodField()
     user = UserSerializer()
     location = serializers.SerializerMethodField()
@@ -329,3 +329,43 @@ class ArtisanSerializer(serializers.ModelSerializer):
         artisan = Artisan.objects.create(user=user, **validated_data)
         return artisan
     '''
+
+class ArtisanSerializer(serializers.ModelSerializer):
+    profile_img = serializers.SerializerMethodField()
+    user = UserSerializer(required=False)  # Make user optional by default
+    location = serializers.SerializerMethodField()
+    service = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Artisan
+        fields = [
+            'user', 'nin', 'location', 'experience', 'address', 
+            'phone', 'service', 'profile_img', 'date_joined'
+        ]
+        read_only_fields = ['date_joined']
+
+    def __init__(self, *args, **kwargs):
+        super(ArtisanSerializer, self).__init__(*args, **kwargs)
+        request_method = self.context.get('request').method if self.context.get('request') else None
+
+        if request_method == 'POST':
+            self.fields['user'].required = False  # Set user to optional for POST requests
+
+    def get_profile_img(self, obj):
+        return obj.profile_img.url if obj.profile_img else None
+
+    def get_location(self, obj):
+        if obj.location:
+            return {
+                'id': obj.location.id,
+                'location': obj.location.location
+            }
+        return None
+
+    def get_service(self, obj):
+        if obj.service:
+            return {
+                'id': obj.service.id,
+                'title': obj.service.title
+            }
+        return None
