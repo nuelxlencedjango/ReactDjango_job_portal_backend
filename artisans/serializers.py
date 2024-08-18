@@ -321,9 +321,11 @@ class ArtisanSerializer(serializers.ModelSerializer):
             }
         return None
 
-    def create(self, validated_data):
+    '''
+      def create(self, validated_data):
         user_data = validated_data.pop('user')
         user_data['is_artisan'] = True
         user = UserSerializer().create(user_data)
         artisan = Artisan.objects.create(user=user, **validated_data)
         return artisan
+    '''
