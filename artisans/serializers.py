@@ -260,6 +260,7 @@ class ArtisanSerializer(serializers.ModelSerializer):
             # For non-GET requests, replace the location and service fields with PrimaryKeyRelatedField
             self.fields['location'] = serializers.PrimaryKeyRelatedField(queryset=Area.objects.all())
             self.fields['service'] = serializers.PrimaryKeyRelatedField(queryset=Service.objects.all())
+            
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
