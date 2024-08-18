@@ -32,7 +32,7 @@ class LoginView(generics.GenericAPIView):
 
 
 #create /add profess
-class ArtisanUserCreateView(generics.CreateAPIView):
+class tyArtisanUserCreateView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
