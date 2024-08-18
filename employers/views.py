@@ -3,6 +3,7 @@ from django.shortcuts import render
 from rest_framework.permissions import AllowAny
 from rest_framework import generics, serializers, status
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 
@@ -75,3 +76,38 @@ class JobSearchListView(generics.ListAPIView):
     filterset_fields = ['location', 'job_type', 'industry']
     search_fields = ['title', 'description', 'industry']
 
+
+
+
+class OrderRequestView(APIView):
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return Response({'detail': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        data = request.data.copy()
+        data['employer'] = request.user.id
+
+        serializer = OrderRequestSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
+class OrderDetailView(APIView):
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return Response({'detail': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        data = request.data.copy()
+        data['employer'] = request.user.id
+
+        serializer = OrderDetailSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

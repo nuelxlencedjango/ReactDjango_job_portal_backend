@@ -68,13 +68,15 @@ class jkArtisanSerializer(serializers.ModelSerializer):
 
 
 class ArtisanSerializer(serializers.ModelSerializer):
+    location = AreaSerializer()  # Use nested serializer
+    service = ServiceSerializer() 
     class Meta:
         model = Artisan
         fields = ['user', 'nin', 'location', 'experience', 'address', 'phone', 'service', 'profile_img', 'date_joined']
         read_only_fields = ['date_joined']
 
-    location = serializers.PrimaryKeyRelatedField(queryset=Area.objects.all())
-    service = serializers.PrimaryKeyRelatedField(queryset=Service.objects.all())
+    #location = serializers.PrimaryKeyRelatedField(queryset=Area.objects.all())
+    #service = serializers.PrimaryKeyRelatedField(queryset=Service.objects.all())
     profile_img = serializers.SerializerMethodField()
 
     def get_profile_img(self, obj):
