@@ -330,7 +330,7 @@ class poArtisanSerializer(serializers.ModelSerializer):
         return artisan
     '''
 
-class ArtisanSerializer(serializers.ModelSerializer):
+class nnArtisanSerializer(serializers.ModelSerializer):
     profile_img = serializers.SerializerMethodField()
     user = UserSerializer(required=False)  # Make user optional by default
     location = serializers.SerializerMethodField()
@@ -353,6 +353,52 @@ class ArtisanSerializer(serializers.ModelSerializer):
              # Using primary key related fields for creating/updating (POST, PUT, PATCH requests)
             self.fields['location'] = serializers.PrimaryKeyRelatedField(queryset=Area.objects.all())
             self.fields['service'] = serializers.PrimaryKeyRelatedField(queryset=Service.objects.all())
+
+    def get_profile_img(self, obj):
+        return obj.profile_img.url if obj.profile_img else None
+
+    def get_location(self, obj):
+        if obj.location:
+            return {
+                'id': obj.location.id,
+                'location': obj.location.location
+            }
+        return None
+
+    def get_service(self, obj):
+        if obj.service:
+            return {
+                'id': obj.service.id,
+                'title': obj.service.title
+            }
+        return None
+
+
+
+class ArtisanSerializer(serializers.ModelSerializer):
+    profile_img = serializers.SerializerMethodField()
+    user = UserSerializer(required=False)  # Make user optional by default
+
+    class Meta:
+        model = Artisan
+        fields = [
+            'user', 'nin', 'location', 'experience', 'address', 
+            'phone', 'service', 'profile_img', 'date_joined'
+        ]
+        read_only_fields = ['date_joined']
+
+    def __init__(self, *args, **kwargs):
+        super(ArtisanSerializer, self).__init__(*args, **kwargs)
+        request_method = self.context.get('request').method if self.context.get('request') else None
+
+        if request_method == 'POST' or request_method == 'PUT' or request_method == 'PATCH':
+            # Use PrimaryKeyRelatedField for writable fields
+            self.fields['location'] = serializers.PrimaryKeyRelatedField(queryset=Area.objects.all())
+            self.fields['service'] = serializers.PrimaryKeyRelatedField(queryset=Service.objects.all())
+        else:
+            # Use SerializerMethodField for read-only fields
+            self.fields['location'] = serializers.SerializerMethodField()
+            self.fields['service'] = serializers.SerializerMethodField()
 
     def get_profile_img(self, obj):
         return obj.profile_img.url if obj.profile_img else None
