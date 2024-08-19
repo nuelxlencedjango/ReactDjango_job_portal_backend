@@ -68,7 +68,7 @@ class hjkArtisanSerializer(serializers.ModelSerializer):
 
 
 
-class ArtisanSerializer(serializers.ModelSerializer):
+class hjkArtisanSerializer(serializers.ModelSerializer):
     profile_img = serializers.SerializerMethodField()
 
     class Meta:
@@ -97,6 +97,33 @@ class ArtisanSerializer(serializers.ModelSerializer):
         return None
 
 
+
+class ArtisanSerializer(serializers.ModelSerializer):
+    profile_img = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Artisan
+        fields = ['user', 'nin', 'location', 'experience', 'address', 'phone', 'service', 'profile_img', 'date_joined']
+        read_only_fields = ['date_joined']
+
+    def __init__(self, *args, **kwargs):
+        super(ArtisanSerializer, self).__init__(*args, **kwargs)
+        request_method = self.context.get('request').method if self.context.get('request') else None
+
+        if request_method == 'GET':
+            # Use nested serializers for fetching (GET request)
+            self.fields['location'] = AreaSerializer()
+            self.fields['service'] = ServiceSerializer()
+            self.fields['user'] = UserSerializer()
+        else:
+            
+            self.fields['location'] = serializers.PrimaryKeyRelatedField(queryset=Area.objects.all())
+            self.fields['service'] = serializers.PrimaryKeyRelatedField(queryset=Service.objects.all())
+           
+    def get_profile_img(self, obj):
+        if obj.profile_img:
+            return obj.profile_img.url
+        return None
 
 
 
