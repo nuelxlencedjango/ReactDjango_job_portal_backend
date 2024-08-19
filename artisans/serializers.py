@@ -32,7 +32,7 @@ class ServiceSerializer(serializers.ModelSerializer):
 
 
 
-class jkArtisanSerializer(serializers.ModelSerializer):
+class ArtisanSerializer(serializers.ModelSerializer):
    # user = UserSerializer() 
     location = serializers.SerializerMethodField()
     service = serializers.SerializerMethodField()
@@ -375,7 +375,7 @@ class nnArtisanSerializer(serializers.ModelSerializer):
 
 
 
-class ArtisanSerializer(serializers.ModelSerializer):
+class ssArtisanSerializer(serializers.ModelSerializer):
     profile_img = serializers.SerializerMethodField()
     user = UserSerializer(required=False)  # Make user optional by default
 
@@ -392,9 +392,9 @@ class ArtisanSerializer(serializers.ModelSerializer):
         request_method = self.context.get('request').method if self.context.get('request') else None
 
         if request_method == 'POST' or request_method == 'PUT' or request_method == 'PATCH':
-            # Use PrimaryKeyRelatedField for writable fields
-            self.fields['location'] = serializers.PrimaryKeyRelatedField(queryset=Area.objects.all())
-            self.fields['service'] = serializers.PrimaryKeyRelatedField(queryset=Service.objects.all())
+            user = UserSerializer() 
+            location = serializers.SerializerMethodField()
+            service = serializers.SerializerMethodField()
         else:
             # Use SerializerMethodField for read-only fields
             self.fields['location'] = serializers.SerializerMethodField()
