@@ -385,7 +385,7 @@ class nnArtisanSerializer(serializers.ModelSerializer):
     
 
 
-class ArtisanSearchListSerializer(serializers.ModelSerializer):
+class kjArtisanSearchListSerializer(serializers.ModelSerializer):
     profile_img = serializers.SerializerMethodField()
     user = UserSerializer()  # Include user details in the response
 
@@ -415,3 +415,25 @@ class ArtisanSearchListSerializer(serializers.ModelSerializer):
                 'title': obj.service.title
             }
         return None
+
+
+
+
+
+
+class ArtisanSearchListSerializer(serializers.ModelSerializer):
+    profile_img = serializers.SerializerMethodField()
+    user = UserSerializer()  # Include user details in the response
+    location = AreaSerializer()  # Nested Location Serializer
+    service = ServiceSerializer()  # Nested Service Serializer
+
+    class Meta:
+        model = Artisan
+        fields = [
+            'user', 'location', 'experience',
+            'service', 'profile_img', 'pay',
+        ]
+        read_only_fields = ['date_joined']
+
+    def get_profile_img(self, obj):
+        return obj.profile_img.url if obj.profile_img else None
