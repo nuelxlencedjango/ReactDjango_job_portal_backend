@@ -116,14 +116,11 @@ class ArtisansByServiceView(APIView):
     permission_classes = [AllowAny]
     def get(self, request, service_title):
         response_data = {'service_title': service_title}
-
         
         try:
             service = Service.objects.get(title=service_title)
             artisans = Artisan.objects.filter(service=service)
-            serializer = ArtisanSerializer(artisans, many=True)
-
-            
+            serializer = ArtisanSearchListSerializer(artisans, many=True)
 
             #print('product and services we offer',service)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -140,7 +137,7 @@ class ArtisansByServiceView(APIView):
 
 #Artisan search/filter view
 class ArtisanSearchListView(generics.ListAPIView):
-    serializer_class = ArtisanSerializer
+    serializer_class = ArtisanSearchListSerializer
     permission_classes = [AllowAny]
 
     def get_queryset(self):
