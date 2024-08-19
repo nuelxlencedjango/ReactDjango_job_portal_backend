@@ -350,8 +350,9 @@ class ArtisanSerializer(serializers.ModelSerializer):
 
         if request_method == 'POST':
             self.fields['user'].required = False  # Set user to optional for POST requests
-            location = serializers.SerializerMethodField()
-            service = serializers.SerializerMethodField()
+             # Using primary key related fields for creating/updating (POST, PUT, PATCH requests)
+            self.fields['location'] = serializers.PrimaryKeyRelatedField(queryset=Area.objects.all())
+            self.fields['service'] = serializers.PrimaryKeyRelatedField(queryset=Service.objects.all())
 
     def get_profile_img(self, obj):
         return obj.profile_img.url if obj.profile_img else None
