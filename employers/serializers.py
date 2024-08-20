@@ -27,15 +27,11 @@ class JobPostSerializer(serializers.ModelSerializer):
 class OrderRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderRequest
-        fields = ['employer', 'artisan', 'request_data', 'location','service','phone','pay']
-        read_only_fields = ['employer', 'request_date']
+        fields = ['id', 'employer', 'artisan', 'service', 'description', 'address', 'area', 'job_date', 'preferred_time', 'contact_person', 'phone_number']
+        read_only_fields = ['date_ordered','paid']
 
-
-
-
-
-class OrderDetailSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OrderRequest
-        fields = ['employer', 'area', 'description','job_date','phone_number','time','contact_person']
-        read_only_fields = ['employer']
+    def create(self, validated_data):
+        request = self.context.get('request')
+        employer = request.user.employer 
+        validated_data['employer'] = employer
+        return super().create(validated_data)
