@@ -1,7 +1,7 @@
 
 from django.shortcuts import render
 from rest_framework.permissions import AllowAny
-from rest_framework import generics, serializers, status
+from rest_framework import generics, serializers, status,permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
@@ -79,7 +79,7 @@ class JobSearchListView(generics.ListAPIView):
 
 
 
-class OrderRequestView(APIView):
+class lpOrderRequestView(APIView):
     def post(self, request):
         if not request.user.is_authenticated:
             return Response({'detail': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -96,18 +96,20 @@ class OrderRequestView(APIView):
 
 
 
+class OrderRequestCreateView(generics.CreateAPIView):
+    queryset = OrderRequest.objects.all()
+    serializer_class = OrderRequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
+    def perform_create(self, serializer):
+        artisan_id = self.request.data.get('artisan_id')
+        service_id = self.request.data.get('service_id')
 
-class OrderDetailView(APIView):
-    def post(self, request):
-        if not request.user.is_authenticated:
-            return Response({'detail': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
-        
-        data = request.data.copy()
-        data['employer'] = request.user.id
+        try:
+            artisan = Artisan.objects.get(pk=artisan_id)
+            service = Service.objects.get(pk=service_id)
+        except (Artisan.DoesNotExist, Service.DoesNotExist):
+            raise serializers.ValidationError("Invalid Artisan or Service")
 
-        serializer = OrderDetailSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save(artisan=artisan, service=service, employer=self.request.user.employer)
+

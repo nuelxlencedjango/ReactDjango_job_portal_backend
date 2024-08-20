@@ -1,6 +1,7 @@
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 from artisans.models import *
 
 
@@ -42,33 +43,18 @@ class JobPost(models.Model):
 
 
 class OrderRequest(models.Model):
-    employer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='order_requests')
-    artisan = models.ForeignKey('artisans.Artisan', on_delete=models.CASCADE, related_name='received_order')
-    request_date = models.DateTimeField(auto_now_add=True)
-    #description = models.TextField()
-    location = models.CharField(max_length=255)
-    service = models.CharField(max_length=255)
-    phone = models.CharField(max_length=15, unique=True, null=True, blank=True)
-    pay = models.DecimalField(max_digits=10, decimal_places=2)
-
-    def __str__(self):
-        return f"Order by {self.employer.username} for {self.artisan.user.username}"
-
-
-
-
-class OrderDetails(models.Model):
-    employer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders_details')
+    employer = models.ForeignKey('Employer', on_delete=models.CASCADE)
+    artisan = models.ForeignKey('artisans.Artisan', on_delete=models.CASCADE)
+    service = models.ForeignKey('api.Service', on_delete=models.CASCADE)
+    description = models.TextField()
     address = models.CharField(max_length=255)
     area = models.CharField(max_length=255)
-    description = models.TextField()
-    job_date =models.DateTimeField(auto_now_add=True)
-    time =models.TimeField(auto_now_add=True)
+    job_date = models.DateField()
+    preferred_time = models.TimeField()
     contact_person = models.CharField(max_length=255)
-    phone_number = models.CharField(max_length=255)
+    phone_number = models.CharField(max_length=15)
+    date_ordered = models.DateTimeField(default=timezone.now, editable=False)
+    paid = models.BooleanField(default=False)
 
     def __str__(self):
-
-        return f"Order Details {self.employer.username} for {self.contact_person}"
-    
-    
+        return f"Order by {self.contact_person} for {self.service.title} (Employer: {self.employer.user.username}, Artisan: {self.artisan.user.username})"
