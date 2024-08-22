@@ -2,11 +2,18 @@ from django.shortcuts import render
 from rest_framework import generics, status,serializers
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny
+
+#from django.contrib.auth.models import User
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.views import APIView
+
+
+
 from accounts.serializers import *
 from artisans.models import *
-from django.contrib.auth.models import User
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from django.conf import settings
 from .models import User
 import json
 
@@ -14,7 +21,7 @@ import json
 
 
 
-class LoginView(generics.GenericAPIView):
+class eeLoginView(generics.GenericAPIView):
     serializer_class = LoginSerializer
     permission_classes = [AllowAny]
 
@@ -29,6 +36,69 @@ class LoginView(generics.GenericAPIView):
         })
 
 
+
+class LogoutView(APIView):
+    def post(self, request, *args, **kwargs):
+        response = Response({"message": "Logout successful"})
+        response.delete_cookie('access_token')
+        response.delete_cookie('refresh_token')
+        return response
+
+
+
+
+class mkLoginView(APIView):
+    def post(self, request, *args, **kwargs):
+        user = authenticate(username=request.data['username'], password=request.data['password'])
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
+            response = Response()
+
+            response.set_cookie(
+                key=settings.SIMPLE_JWT['AUTH_COOKIE'],
+                value=str(refresh.access_token),
+                expires=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'],
+                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
+            )
+            response.set_cookie(
+                key='refresh_token',
+                value=str(refresh),
+                expires=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'],
+                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                httponly=True,
+                samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
+            )
+
+            response.data = {"message": "Login successful"}
+            return response
+        return Response({"error": "Invalid credentials"}, status=400)
+
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        tokens = response.data
+        response.set_cookie(
+            key=settings.SIMPLE_JWT['AUTH_COOKIE'],
+            value=tokens['access'],
+            httponly=True,
+            secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+            samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+            domain=settings.SIMPLE_JWT['AUTH_COOKIE_DOMAIN']
+        )
+        response.set_cookie(
+            key='refresh_token',
+            value=tokens['refresh'],
+            httponly=True,
+            secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+            samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+            domain=settings.SIMPLE_JWT['AUTH_COOKIE_DOMAIN'],
+            path=settings.SIMPLE_JWT['REFRESH_COOKIE_PATH'],
+        )
+        return response
 
 
 #create /add profess
