@@ -77,7 +77,7 @@ class mkLoginView(APIView):
 
 
 
-class CustomTokenObtainPairView(TokenObtainPairView):
+class LoginView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         tokens = response.data
