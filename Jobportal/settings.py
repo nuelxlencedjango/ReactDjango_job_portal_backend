@@ -13,20 +13,16 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import os
 #3rd party imports
-
 import dj_database_url
 from datetime import timedelta
 from dotenv import load_dotenv
-
-
 #cloudnary lib
-
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
-
-
 load_dotenv()
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -96,20 +92,21 @@ SIMPLE_JWT = {
 '''
 
 
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_COOKIE': 'access_token',
-    'AUTH_COOKIE_SECURE': True, 
-    'AUTH_COOKIE_HTTP_ONLY': True,  
-    'AUTH_COOKIE_PATH': '/', 
-    'AUTH_COOKIE_SAMESITE': 'Lax',  
-    'REFRESH_COOKIE_PATH': '/api/token/refresh/', 
-    'AUTH_COOKIE_DOMAIN': 'https://react-django-job-portal-frontend.vercel.app',  
+    'AUTH_COOKIE_SECURE': True,
+    'AUTH_COOKIE_HTTP_ONLY': True,
+    'AUTH_COOKIE_PATH': '/',
+    'AUTH_COOKIE_SAMESITE': 'Lax',
+    'REFRESH_COOKIE_PATH': '/api/token/refresh/',
+    'AUTH_COOKIE_DOMAIN': os.getenv('AUTH_COOKIE_DOMAIN'),  # Ensure this matches your frontend domain
     'ALGORITHM': 'HS256',
-    'SIGNING_KEY': os.getenv('SECRET_KEY'), 
+    'SIGNING_KEY': SECRET_KEY,
 }
 
 # Application definition
@@ -159,6 +156,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -301,3 +299,4 @@ if not CSRF_TRUSTED_ORIGINS:
 
 # Example of trusted origins configuration:
 # CSRF_TRUSTED_ORIGINS = ['https://react-django-job-portal-frontend.vercel.app', 'http://localhost:5173']
+
