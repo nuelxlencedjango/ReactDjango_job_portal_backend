@@ -107,7 +107,7 @@ SIMPLE_JWT = {
     'AUTH_COOKIE_PATH': '/', 
     'AUTH_COOKIE_SAMESITE': 'Lax',  
     'REFRESH_COOKIE_PATH': '/api/token/refresh/', 
-    'AUTH_COOKIE_DOMAIN': None,  
+    'AUTH_COOKIE_DOMAIN': 'https://react-django-job-portal-frontend.vercel.app',  
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': os.getenv('SECRET_KEY'), 
 }
