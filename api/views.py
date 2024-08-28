@@ -29,6 +29,3 @@ class IndustryListView(generics.ListAPIView):
 
 
 
-
-
-
