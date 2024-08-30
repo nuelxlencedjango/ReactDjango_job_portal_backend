@@ -20,15 +20,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-
-#from api.views import CreateUserView
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-
-from  accounts.views import * #RegisterView, LoginView
-from django.views.generic import TemplateView
-from django.urls import path, re_path
-
-
+#from  accounts.views import *
+from accounts.views import LoginView, CustomTokenObtainPairView, CustomTokenRefreshView
 
 
 urlpatterns = [
@@ -36,14 +29,12 @@ urlpatterns = [
      path('accounts/login/', LoginView.as_view(), name='login'),
 
    #tokenobtainedpairview
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api-auth/', include('rest_framework.urls')),  
-
-    # Catch-all route for React
-     #re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),
-
-
+    path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
+   
+   # path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+   # path('api-auth/', include('rest_framework.urls')),  
 
     path('', include('api.urls')),
     path('artisans/', include('artisans.urls')),
