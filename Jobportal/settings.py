@@ -37,10 +37,6 @@ SECRET_KEY=os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG=os.getenv('DEBUG') 
 
-
-
-
-
 # SECURITY WARNING: keep the secret key used in production secret!
 
 
@@ -74,7 +70,7 @@ SIMPLE_JWT ={
 '''
 
 
-
+# Secret key and other settings...
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
@@ -82,17 +78,17 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_COOKIE': 'access_token',
-    'AUTH_COOKIE_SECURE': True,
-    'AUTH_COOKIE_HTTP_ONLY': True,
+    'AUTH_COOKIE_SECURE': True, 
+    'AUTH_COOKIE_HTTP_ONLY': True, 
     'AUTH_COOKIE_PATH': '/',
     'AUTH_COOKIE_SAMESITE': 'Lax',
     'REFRESH_COOKIE_PATH': '/api/token/refresh/',
-    'AUTH_COOKIE_DOMAIN': os.getenv('AUTH_COOKIE_DOMAIN'),  # Ensure this matches your frontend domain
+    'AUTH_COOKIE_DOMAIN': os.getenv('AUTH_COOKIE_DOMAIN'),
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
 }
 
-# Application definition
+
 
 #CORS_ALLOW_ALL_ORIGINS = True
 
