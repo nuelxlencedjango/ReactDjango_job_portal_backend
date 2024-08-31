@@ -115,6 +115,7 @@ class lpOrderRequestCreateView(generics.CreateAPIView):
 
 
 
+
 class OrderRequestCreateView(generics.CreateAPIView):
     queryset = OrderRequest.objects.all()
     serializer_class = OrderRequestSerializer
@@ -130,4 +131,9 @@ class OrderRequestCreateView(generics.CreateAPIView):
         except (Artisan.DoesNotExist, Service.DoesNotExist):
             raise serializers.ValidationError("Invalid Artisan or Service")
 
-        serializer.save(artisan=artisan, service=service, employer=self.request.user.employer)
+        # Retrieve employer profile from the authenticated user
+        serializer.save(
+            artisan=artisan, 
+            service=service, 
+            employer=self.request.user.employer 
+        )
