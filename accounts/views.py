@@ -54,6 +54,7 @@ def set_cookie(response, token, cookie_name):
     )
 
 class LoginView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request, *args, **kwargs):
         username = request.data.get('username')
         password = request.data.get('password')
