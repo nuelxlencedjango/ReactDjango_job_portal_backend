@@ -119,7 +119,7 @@ from rest_framework import generics, permissions, serializers
 from rest_framework.authentication import TokenAuthentication
 
 
-class OrderRequestCreateView(generics.CreateAPIView):
+class kkOrderRequestCreateView(generics.CreateAPIView):
     queryset = OrderRequest.objects.all()
     serializer_class = OrderRequestSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -142,4 +142,34 @@ class OrderRequestCreateView(generics.CreateAPIView):
             artisan=artisan,
             service=service,
             employer=employer
+        )
+
+
+
+from rest_framework import generics, permissions
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from .models import OrderRequest
+from .serializers import OrderRequestSerializer
+
+class OrderRequestCreateView(generics.CreateAPIView):
+    queryset = OrderRequest.objects.all()
+    serializer_class = OrderRequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def perform_create(self, serializer):
+        artisan_id = self.request.data.get('artisan')
+        service_id = self.request.data.get('service')
+
+        try:
+            artisan = Artisan.objects.get(pk=artisan_id)
+            service = Service.objects.get(pk=service_id)
+        except (Artisan.DoesNotExist, Service.DoesNotExist):
+            raise serializers.ValidationError("Invalid Artisan or Service")
+
+        # Use the authenticated user
+        serializer.save(
+            artisan=artisan,
+            service=service,
+            employer=self.request.user.employer
         )
