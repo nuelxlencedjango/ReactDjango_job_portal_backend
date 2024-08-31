@@ -115,11 +115,15 @@ class lpOrderRequestCreateView(generics.CreateAPIView):
 
 
 
+from rest_framework import generics, permissions, serializers
+from rest_framework.authentication import TokenAuthentication
+
 
 class OrderRequestCreateView(generics.CreateAPIView):
     queryset = OrderRequest.objects.all()
     serializer_class = OrderRequestSerializer
     permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
     def perform_create(self, serializer):
         artisan_id = self.request.data.get('artisan')
@@ -131,9 +135,11 @@ class OrderRequestCreateView(generics.CreateAPIView):
         except (Artisan.DoesNotExist, Service.DoesNotExist):
             raise serializers.ValidationError("Invalid Artisan or Service")
 
-        # Retrieve employer profile from the authenticated user
+        # Get the authenticated user
+        employer = self.request.user.employer
+
         serializer.save(
-            artisan=artisan, 
-            service=service, 
-            employer=self.request.user.employer 
+            artisan=artisan,
+            service=service,
+            employer=employer
         )
