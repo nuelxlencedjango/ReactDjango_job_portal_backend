@@ -101,7 +101,7 @@ from rest_framework import generics, permissions, serializers
 from rest_framework.authentication import TokenAuthentication
 
 
-class kkOrderRequestCreateView(generics.CreateAPIView):
+class OrderRequestCreateView(generics.CreateAPIView):
     queryset = OrderRequest.objects.all()
     serializer_class = OrderRequestSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -109,22 +109,24 @@ class kkOrderRequestCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         artisan_id = self.request.data.get('artisan')
-        service_id = self.request.data.get('service')
+        if Artisan.objects.get(id =artisan_id):
+            artisan_id = Artisan.objects.get(id =artisan_id)
+            service_id  = artisan_id.service
 
-        try:
-            artisan = Artisan.objects.get(pk=artisan_id)
-            service = Service.objects.get(pk=service_id)
-        except (Artisan.DoesNotExist, Service.DoesNotExist):
-            raise serializers.ValidationError("Invalid Artisan or Service")
+            try:
+                artisan = Artisan.objects.get(pk=artisan_id)
+                service = Service.objects.get(pk=service_id)
+            except (Artisan.DoesNotExist, Service.DoesNotExist):
+                raise serializers.ValidationError("Invalid Artisan or Service")
 
         # Get the authenticated user
-        employer = self.request.user.employer
+            employer = self.request.user.employer
 
-        serializer.save(
-            artisan=artisan,
-            service=service,
-            employer=employer
-        )
+            serializer.save(
+                artisan=artisan,
+                service=service,
+                employer=employer
+            )
 
 
 
@@ -163,7 +165,7 @@ from .models import OrderRequest, Artisan, Service
 from .serializers import OrderRequestSerializer
 from rest_framework import serializers
 
-class OrderRequestCreateView(generics.CreateAPIView):
+class klOrderRequestCreateView(generics.CreateAPIView):
     queryset = OrderRequest.objects.all()
     serializer_class = OrderRequestSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -205,6 +207,7 @@ class OnnrderRequestCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         artisan_id = self.request.data.get('artisan')
         service_id = self.request.data.get('service')
+        
 
         try:
             artisan = Artisan.objects.get(pk=artisan_id)
