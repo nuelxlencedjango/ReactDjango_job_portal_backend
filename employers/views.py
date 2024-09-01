@@ -190,6 +190,38 @@ class OrderRequestCreateView(generics.CreateAPIView):
         )
 
 
+
+from rest_framework import generics
+from rest_framework.response import Response
+from rest_framework import status
+from .models import OrderRequest
+from .serializers import OrderRequestSerializer
+from rest_framework.permissions import IsAuthenticated
+
+class OnnrderRequestCreateView(generics.CreateAPIView):
+    serializer_class = OrderRequestSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        artisan_id = self.request.data.get('artisan')
+        service_id = self.request.data.get('service')
+
+        try:
+            artisan = Artisan.objects.get(pk=artisan_id)
+            service = Service.objects.get(pk=service_id)
+        except (Artisan.DoesNotExist, Service.DoesNotExist):
+            return Response({"detail": "Invalid Artisan or Service"}, status=status.HTTP_400_BAD_REQUEST)
+
+        employer = self.request.user.employer
+
+        serializer.save(
+            artisan=artisan,
+            service=service,
+            employer=employer
+        )
+
+
+
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
