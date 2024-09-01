@@ -132,13 +132,14 @@ from rest_framework import generics, permissions
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import OrderRequest
 from .serializers import OrderRequestSerializer
-class OrderRequestCreateView(generics.CreateAPIView):
+
+class pkOrderRequestCreateView(generics.CreateAPIView):
     queryset = OrderRequest.objects.all()
     serializer_class = OrderRequestSerializer
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
-    def perform_create(self, serializer):
+    def perform_create(self, serializer): 
         artisan_id = self.request.data.get('artisan')
         service_id = self.request.data.get('service')
 
@@ -156,6 +157,37 @@ class OrderRequestCreateView(generics.CreateAPIView):
         )
 
 
+from rest_framework import generics, permissions
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from .models import OrderRequest, Artisan, Service
+from .serializers import OrderRequestSerializer
+from rest_framework import serializers
+
+class OrderRequestCreateView(generics.CreateAPIView):
+    queryset = OrderRequest.objects.all()
+    serializer_class = OrderRequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def perform_create(self, serializer):
+        artisan_id = self.request.data.get('artisan')
+        service_id = self.request.data.get('service')
+
+        try:
+            artisan = Artisan.objects.get(pk=artisan_id)
+            service = Service.objects.get(pk=service_id)
+        except (Artisan.DoesNotExist, Service.DoesNotExist):
+            raise serializers.ValidationError("Invalid Artisan or Service")
+
+        # Ensure the authenticated user is recognized as the employer
+        employer = self.request.user.employer  # Assuming there is a one-to-one relationship
+
+        # Save the order request with the provided artisan and service, associated with the authenticated employer
+        serializer.save(
+            artisan=artisan,
+            service=service,
+            employer=employer
+        )
 
 
 from rest_framework.decorators import api_view
