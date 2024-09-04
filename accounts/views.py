@@ -76,23 +76,6 @@ class LoginView(APIView):
 
         return response
 
-class CustomTokenObtainPairView(TokenObtainPairView):
-    def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
-        tokens = response.data
-        set_cookie(response, tokens['access'], 'access_token')
-        set_cookie(response, tokens['refresh'], 'refresh_token')
-        return response
-
-
-class CustomTokenRefreshView(TokenRefreshView):
-    def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
-        tokens = response.data
-        set_cookie(response, tokens['access'], 'access_token')
-        return response
-
-
 
 
 
