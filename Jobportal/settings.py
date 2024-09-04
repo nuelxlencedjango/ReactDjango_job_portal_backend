@@ -102,9 +102,10 @@ INSTALLED_APPS = [
 
      #3rd party libraries
     'rest_framework',
-     'rest_framework_simplejwt',
-    'corsheaders',
+    'rest_framework.authtoken',
     
+    
+    'corsheaders',
     'cloudinary_storage',
     'cloudinary',
     'django_filters',
