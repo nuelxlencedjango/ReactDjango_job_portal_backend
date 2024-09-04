@@ -310,30 +310,6 @@ def create_order(request):
 
 
 
-from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from .models import Artisan, Order
-from .serializers import OrderSerializer
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def create_order(request):
-    user = request.user
-    artisan_id = request.data.get('artisan')
-    try:
-        artisan = Artisan.objects.get(id=artisan_id)
-    except Artisan.DoesNotExist:
-        return Response({"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND)
-    
-    serializer = OrderSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save(employer=user, artisan=artisan)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import UntypedToken
