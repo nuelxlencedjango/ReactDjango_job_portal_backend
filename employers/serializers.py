@@ -1,6 +1,30 @@
 from rest_framework import serializers
-from .models import *
+from .models import Cart, CartItem,Employer,JobPost,Order,OrderRequest
 from accounts.serializers import UserSerializer
+
+
+
+#new
+
+
+
+class CartItemSerializer(serializers.ModelSerializer):
+    artisan_name = serializers.CharField(source="artisan.user.first_name", read_only=True)
+    service_title = serializers.CharField(source="service.title", read_only=True)
+
+    class Meta:
+        model = CartItem
+        fields = ['id', 'artisan', 'artisan_name', 'service', 'service_title', 'quantity', 'added_at']
+
+class CartSerializer(serializers.ModelSerializer):
+    items = CartItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Cart
+        fields = ['id', 'user', 'cart_code', 'paid', 'created_at', 'modified_at', 'items']
+
+
+#end new
 
 
 

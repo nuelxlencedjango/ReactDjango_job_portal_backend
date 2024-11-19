@@ -21,6 +21,30 @@ logger = logging.getLogger(__name__)
 
 
 
+
+
+# api/views.py
+class ArtisansByServiceView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request, service_title):
+        response_data = {'service_title': service_title}
+        
+        try:
+            service = Service.objects.get(title=service_title)
+            artisans = Artisan.objects.filter(service=service)
+            serializer = ArtisanSearchListSerializer(artisans, many=True)
+
+            #print('product and services we offer',service)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        
+        except Service.DoesNotExist:
+            response_data['error'] = 'Service not found'
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+
+
+
 #list Area objects
 class AreaListView(generics.ListAPIView):
     queryset = Area.objects.all()
@@ -109,26 +133,6 @@ class ArtisanRegistrationView(APIView):
 
 
 
-
-
-# api/views.py
-class ArtisansByServiceView(APIView):
-    permission_classes = [AllowAny]
-    def get(self, request, service_title):
-        response_data = {'service_title': service_title}
-        
-        try:
-            service = Service.objects.get(title=service_title)
-            artisans = Artisan.objects.filter(service=service)
-            serializer = ArtisanSearchListSerializer(artisans, many=True)
-
-            #print('product and services we offer',service)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-            
-        
-        except Service.DoesNotExist:
-            response_data['error'] = 'Service not found'
-            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
             #return Response({'error': 'Service not found'}, status=status.HTTP_404_NOT_FOUND)
 

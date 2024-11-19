@@ -19,7 +19,7 @@ class ServiceListView(generics.ListAPIView):
     queryset = Service.objects.all()
     serializer_class = ServiceSerializer
     permission_classes = [AllowAny]
-    #permission_classes = [IsAuthenticated]
+   
 
 
 class IndustryListView(generics.ListAPIView):

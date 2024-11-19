@@ -3,6 +3,33 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from artisans.models import *
+from django.conf import settings
+
+
+#new
+
+class Cart(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    #user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
+    cart_code = models.CharField(max_length=11, unique=True)
+    paid = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Cart {self.cart_code} - User: {self.user}"
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
+    artisan = models.ForeignKey('artisans.Artisan', on_delete=models.CASCADE)
+    service = models.ForeignKey('api.Service', on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.quantity} x {self.service.title} (Artisan: {self.artisan.user.username})"
+
+#end new
 
 
 
@@ -58,9 +85,6 @@ class OrderRequest(models.Model):
 
     def __str__(self):
         return f"Order by {self.contact_person} for {self.service.title} (Employer: {self.employer.user.username}, Artisan: {self.artisan.user.username})"
-
-
-
 
 
 class Order(models.Model):
