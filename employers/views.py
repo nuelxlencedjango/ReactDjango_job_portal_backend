@@ -34,7 +34,7 @@ from django.utils.crypto import get_random_string
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def add_to_cart(request):
+def add_to_cartd(request):
     artisan_id = request.data.get('artisan_id')
 
     try:
@@ -98,39 +98,6 @@ class RemoveFromCartView(APIView):
             return Response({"error": "Item not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
-
-
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
-from .models import Cart, CartItem
-from django.utils.crypto import get_random_string
-
-class AddToCartView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        artisan_id = request.data.get('artisan')
-        service_id = request.data.get('service')
-        quantity = request.data.get('quantity', 1)
-
-        if not artisan_id or not service_id:
-            return Response({"error": "Artisan and Service are required."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Get or create the cart
-        cart, _ = Cart.objects.get_or_create(user=request.user, paid=False)
-
-        # Check if the item exists in the cart
-        cart_item, created = CartItem.objects.get_or_create(
-            cart=cart, artisan_id=artisan_id, service_id=service_id
-        )
-        if not created:
-            cart_item.quantity += quantity
-            cart_item.save()
-
-        return Response({"message": "Item added to cart successfully."}, status=status.HTTP_201_CREATED)
 
 # end new
 
