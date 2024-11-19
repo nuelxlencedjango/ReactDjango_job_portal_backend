@@ -77,7 +77,7 @@ class AddToCartView(APIView):
 
         # Retrieve the artisan and its associated service
         try:
-            artisan = Artisan.objects.get(id=artisan_id)
+            artisan = Artisan.objects.get(email=artisan_id)
             service = artisan.service  # Assuming artisan has a ForeignKey to Service
         except Artisan.DoesNotExist:
             return Response({"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND)
