@@ -65,7 +65,38 @@ class CartView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 
+
 class AddToCartView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        artisan_id = request.data.get('artisan')  # Only artisan ID is expected
+
+        if not artisan_id:
+            return Response({"error": "Artisan is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Retrieve the artisan and its associated service
+        try:
+            artisan = Artisan.objects.get(id=artisan_id)
+            service = artisan.service  # Assuming artisan has a ForeignKey to Service
+        except Artisan.DoesNotExist:
+            return Response({"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Get or create the cart
+        cart, _ = Cart.objects.get_or_create(user=request.user, paid=False)
+
+        # Check if the item exists in the cart
+        cart_item, created = CartItem.objects.get_or_create(
+            cart=cart, artisan=artisan, service=service
+        )
+        if not created:
+            cart_item.quantity += 1
+            cart_item.save()
+
+        return Response({"message": "Item added to cart successfully."}, status=status.HTTP_201_CREATED)
+
+
+class AddToCartViewasdd(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
