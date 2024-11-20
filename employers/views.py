@@ -31,6 +31,35 @@ from django.utils.crypto import get_random_string
 
 
 
+class AddToCartView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        artisan_email = request.data.get('artisan_email')  # Accept email
+
+        if not artisan_email:
+            return Response({"error": "Artisan email is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            artisan = Artisan.objects.get(user__email=artisan_email)  # Fetch artisan by email
+            service = artisan.service
+        except Artisan.DoesNotExist:
+            return Response({"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Get or create the cart
+        cart, _ = Cart.objects.get_or_create(user=request.user, paid=False)
+
+        # Check or create the cart item
+        cart_item, created = CartItem.objects.get_or_create(
+            cart=cart, artisan=artisan, service=service
+        )
+        if not created:
+            cart_item.quantity += 1
+            cart_item.save()
+
+        return Response({"message": "Item added to cart successfully."}, status=status.HTTP_201_CREATED)
+
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -66,7 +95,7 @@ class CartView(APIView):
     
 
 
-class AddToCartView(APIView):
+class AddToCartViewmkm(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
