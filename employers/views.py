@@ -74,37 +74,9 @@ class CartItemsView(APIView):
             return Response({"error": "Cart item not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
-
-
-
-
-class CartView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        """Retrieve the cart for the logged-in user."""
-        cart, created = Cart.objects.get_or_create(user=request.user, paid=False)
-        serializer = CartSerializer(cart)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
-
-
-
-class RemoveFromCartView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def delete(self, request, item_id):
-        """Remove an item from the cart."""
-        try:
-            item = CartItem.objects.get(id=item_id, cart__user=request.user, cart__paid=False)
-            item.delete()
-            return Response({"message": "Item removed from cart"}, status=status.HTTP_200_OK)
-        except CartItem.DoesNotExist:
-            return Response({"error": "Item not found"}, status=status.HTTP_404_NOT_FOUND)
-
-
-
 # end new
+
+
 
 
 class EmployerCreateView(generics.CreateAPIView):
