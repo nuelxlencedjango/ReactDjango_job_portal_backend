@@ -38,6 +38,7 @@ class Cart(models.Model):
         return f"Cart {self.cart_code} for {self.user.username}"
 
 class CartItem(models.Model):
+    employer = models.ForeignKey(User, on_delete=models.CASCADE, null=True,blank=True)
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
     artisan = models.ForeignKey('artisans.Artisan', on_delete=models.CASCADE)
     service = models.ForeignKey('api.Service', on_delete=models.CASCADE)
@@ -46,11 +47,10 @@ class CartItem(models.Model):
     added_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.quantity} x {self.service.title} (Artisan: {self.artisan.user.username})"
+        return f"{self.quantity} x {self.service.title} (Artisan: {self.artisan.user.username}, Employer: {self.employer.username})"
+
 
 #end new
-
-
 
 
 class Employer(models.Model):
