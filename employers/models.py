@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from artisans.models import *
 from django.conf import settings
+import uuid
 
 
 #new
@@ -23,6 +24,7 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
     artisan = models.ForeignKey('artisans.Artisan', on_delete=models.CASCADE)
     service = models.ForeignKey('api.Service', on_delete=models.CASCADE)
+    unique_reference = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     quantity = models.PositiveIntegerField(default=1)
     added_at = models.DateTimeField(auto_now_add=True)
 
