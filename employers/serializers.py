@@ -5,9 +5,7 @@ from accounts.serializers import UserSerializer
 
 
 #new
-
-
-
+#cart serializer and cart item
 class CartItemSerializer(serializers.ModelSerializer):
     artisan_name = serializers.CharField(source="artisan.user.first_name", read_only=True)
     service_title = serializers.CharField(source="service.title", read_only=True)
@@ -22,6 +20,27 @@ class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
         fields = ['id', 'user', 'cart_code', 'paid', 'created_at', 'modified_at', 'items']
+
+
+
+#cart item retrival
+class CartItemSerializer(serializers.ModelSerializer):
+    artisan = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CartItem
+        fields = ['id', 'artisan', 'added_at']
+
+    def get_artisan(self, obj):
+        return {
+            "id": obj.artisan.id,
+            "first_name": obj.artisan.user.first_name,
+            "last_name": obj.artisan.user.last_name,
+            "profile_img": obj.artisan.profile_img.url if obj.artisan.profile_img else None,
+            "location": obj.artisan.location.location if obj.artisan.location else None,
+            "service": obj.artisan.service.title if obj.artisan.service else None,
+            "pay": obj.artisan.pay,
+        }
 
 
 #end new
@@ -47,18 +66,6 @@ class JobPostSerializer(serializers.ModelSerializer):
 
 
 
-
-class llOrderRequestSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OrderRequest
-        fields = ['id', 'employer', 'artisan', 'service', 'description', 'address', 'area', 'job_date', 'preferred_time', 'contact_person', 'phone_number']
-        read_only_fields = ['date_ordered','paid']
-
-    def create(self, validated_data):
-        request = self.context.get('request')
-        employer = request.user.employer 
-        validated_data['employer'] = employer
-        return super().create(validated_data)
 
 
 
