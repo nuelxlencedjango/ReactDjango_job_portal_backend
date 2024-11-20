@@ -4,21 +4,57 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from artisans.models import *
 from django.conf import settings
+import random
+import string
 import uuid
 
 
 #new
 
+
 class Cart(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    #user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
-    cart_code = models.CharField(max_length=11, unique=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cart')
+    cart_code = models.CharField(max_length=11, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.cart_code:
+            self.cart_code = self.generate_cart_code()
+        super().save(*args, **kwargs)
+
+    def generate_cart_code(self):
+        """Generates a unique 11-character alphanumeric cart code."""
+        while True:
+            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=11))
+            if not Cart.objects.filter(cart_code=code).exists():
+                return code
+
+    def __str__(self):
+        return f"Cart {self.cart_code} for {self.user.username}"
+
+
+class Cart(models.Model):
+    #user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cart')
+    cart_code = models.CharField(max_length=11, unique=True, editable=False)
     paid = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
+    def save(self, *args, **kwargs):
+        if not self.cart_code:
+            self.cart_code = self.generate_cart_code()
+        super().save(*args, **kwargs)
+
+    def generate_cart_code(self):
+        """Generates a unique 11-character alphanumeric cart code."""
+        while True:
+            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=11))
+            if not Cart.objects.filter(cart_code=code).exists():
+                return code
+
     def __str__(self):
-        return f"Cart {self.cart_code} - User: {self.user}"
+        return f"Cart {self.cart_code} for {self.user.username}"
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
