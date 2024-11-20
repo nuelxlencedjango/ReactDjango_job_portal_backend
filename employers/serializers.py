@@ -43,6 +43,15 @@ class CartItemSerializer(serializers.ModelSerializer):
         }
 
 
+
+#class CartItemSerializer(serializers.ModelSerializer):
+ #   artisan = serializers.StringRelatedField()
+  #  service = serializers.StringRelatedField()
+
+   # class Meta:
+    #    model = CartItem
+     #   fields = ['id', 'cart', 'artisan', 'service', 'quantity', 'added_at']
+
 #end new
 
 
