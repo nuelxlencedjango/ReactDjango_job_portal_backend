@@ -51,30 +51,45 @@ class AddToCartView(APIView):
 
 
 
+
 class CartItemsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         """
-        Get all cart items for the logged-in user.
+        Get all cart items for the logged-in user (Employer).
         """
-        cart_items = CartItem.objects.filter(user=request.user)
-        serializer = CartItemSerializer(cart_items, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        try:
+            cart = Cart.objects.get(user=request.user, paid =False)  
+            cart_items = CartItem.objects.filter(cart=cart) 
+            serializer = CartItemSerializer(cart_items, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Cart.DoesNotExist:
+            return Response({"error": "Cart not found for this user."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def delete(self, request, pk):
         """
         Remove a specific item from the cart.
         """
         try:
-            cart_item = CartItem.objects.get(pk=pk, user=request.user)
+            cart = Cart.objects.get(user=request.user)
+            cart_item = CartItem.objects.get(pk=pk, cart=cart)  # Ensure item belongs to this cart
             cart_item.delete()
             return Response({"detail": "Cart item removed successfully."}, status=status.HTTP_204_NO_CONTENT)
+        except Cart.DoesNotExist:
+            return Response({"error": "Cart not found."}, status=status.HTTP_404_NOT_FOUND)
         except CartItem.DoesNotExist:
             return Response({"error": "Cart item not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # end new
+
+
+
 
 
 
