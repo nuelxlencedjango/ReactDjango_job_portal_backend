@@ -1,12 +1,16 @@
 
 from django.shortcuts import render
-from rest_framework.permissions import AllowAny
 from rest_framework import generics, serializers, status,permissions
-
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import *
 from rest_framework.views import APIView
+from .serializers import CartSerializer, CartItemSerializer
+from django.utils.crypto import get_random_string
+from rest_framework.permissions import AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
-
 from artisans.models import *
 from accounts.serializers import *
 from employers.models import *
@@ -15,27 +19,13 @@ from django.db import transaction
 import json
 
 
-#new logic
-
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from .models import Cart, Artisan
-
-from rest_framework.views import APIView
-
-from rest_framework import status
-from .models import Cart, CartItem
-from .serializers import CartSerializer, CartItemSerializer
-from django.utils.crypto import get_random_string
 
 
 
 class AddToCartView(APIView):
     permission_classes = [IsAuthenticated]
-
     def post(self, request):
-        artisan_email = request.data.get('artisan_email')  # Accept email
+        artisan_email = request.data.get('artisan_email')  
 
         if not artisan_email:
             return Response({"error": "Artisan email is required."}, status=status.HTTP_400_BAD_REQUEST)
@@ -51,8 +41,8 @@ class AddToCartView(APIView):
 
         # Check or create the cart item
         cart_item, created = CartItem.objects.get_or_create(
-            cart=cart, artisan=artisan, service=service
-        )
+            cart=cart, artisan=artisan, service=service)
+        
         if not created:
             cart_item.quantity += 1
             cart_item.save()
@@ -61,24 +51,28 @@ class AddToCartView(APIView):
 
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def add_to_cartd(request):
-    artisan_id = request.data.get('artisan_id')
+class CartItemsView(APIView):
+    permission_classes = [IsAuthenticated]
 
-    try:
-        artisan = Artisan.objects.get(id=artisan_id)
-        cart_item, created = Cart.objects.get_or_create(
-            user=request.user,
-            artisan=artisan
-        )
+    def get(self, request):
+        """
+        Get all cart items for the logged-in user.
+        """
+        cart_items = CartItem.objects.filter(user=request.user)
+        serializer = CartItemSerializer(cart_items, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-        if created:
-            return Response({"message": "Service added to cart successfully"}, status=200)
-        else:
-            return Response({"message": "Service already in cart"}, status=200)
-    except Artisan.DoesNotExist:
-        return Response({"error": "Artisan not found"}, status=404)
+    def delete(self, request, pk):
+        """
+        Remove a specific item from the cart.
+        """
+        try:
+            cart_item = CartItem.objects.get(pk=pk, user=request.user)
+            cart_item.delete()
+            return Response({"detail": "Cart item removed successfully."}, status=status.HTTP_204_NO_CONTENT)
+        except CartItem.DoesNotExist:
+            return Response({"error": "Cart item not found."}, status=status.HTTP_404_NOT_FOUND)
+
 
 
 
@@ -95,55 +89,6 @@ class CartView(APIView):
     
 
 
-class AddToCartViewmkm(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        artisan_id = request.data.get('artisan')  # Only artisan ID is expected
-
-        if not artisan_id:
-            return Response({"error": "Artisan is required."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Retrieve the artisan and its associated service
-        try:
-            artisan = Artisan.objects.get(email=artisan_id)
-            service = artisan.service  # Assuming artisan has a ForeignKey to Service
-        except Artisan.DoesNotExist:
-            return Response({"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        # Get or create the cart
-        cart, _ = Cart.objects.get_or_create(user=request.user, paid=False)
-
-        # Check if the item exists in the cart
-        cart_item, created = CartItem.objects.get_or_create(
-            cart=cart, artisan=artisan, service=service
-        )
-        if not created:
-            cart_item.quantity += 1
-            cart_item.save()
-
-        return Response({"message": "Item added to cart successfully."}, status=status.HTTP_201_CREATED)
-
-
-class AddToCartViewasdd(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        """Add an item to the user's cart."""
-        artisan_id = request.data.get('artisan')
-        service_id = request.data.get('service')
-        quantity = request.data.get('quantity', 1)
-
-        if not artisan_id or not service_id:
-            return Response({"error": "Artisan and Service are required"}, status=status.HTTP_400_BAD_REQUEST)
-
-        cart, created = Cart.objects.get_or_create(user=request.user, paid=False, defaults={"cart_code": get_random_string(11)})
-        item, created = CartItem.objects.get_or_create(cart=cart, artisan_id=artisan_id, service_id=service_id)
-        if not created:
-            item.quantity += quantity
-        item.save()
-
-        return Response({"message": "Item added to cart"}, status=status.HTTP_201_CREATED)
 
 class RemoveFromCartView(APIView):
     permission_classes = [IsAuthenticated]
