@@ -46,8 +46,13 @@ class CartItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
     added_at = models.DateTimeField(auto_now_add=True)
 
+    #price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) 
+
     def __str__(self):
         return f"{self.quantity} x {self.service.title} (Artisan: {self.artisan.user.username}, Employer: {self.employer.last_name})"
+
+
+
 
 
 #end new
