@@ -31,7 +31,7 @@ class AddToCartView(APIView):
             return Response({"error": "Artisan email is required."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            artisan = Artisan.objects.get(user__email=artisan_email)  # Fetch artisan by email
+            artisan = Artisan.objects.get(user__email=artisan_email) 
             service = artisan.service
         except Artisan.DoesNotExist:
             return Response({"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND)
@@ -78,7 +78,7 @@ class CartItemsViewkp(APIView):
         """
         try:
             cart = Cart.objects.get(user=request.user)
-            cart_item = CartItem.objects.get(pk=pk, cart=cart)  # Ensure item belongs to this cart
+            cart_item = CartItem.objects.get(pk=pk, cart=cart)  
             cart_item.delete()
             
             return Response({"detail": "Cart item removed successfully."}, status=status.HTTP_204_NO_CONTENT)
@@ -112,7 +112,7 @@ class CartItemsView(APIView):
             }
 
             # Try to retrieve the user's cart
-            cart = Cart.objects.filter(user=request.user, paid=False).first()  # `.first()` avoids exceptions if no cart exists
+            cart = Cart.objects.filter(user=request.user, paid=False).first() 
             if cart:
                 # Fetch cart items if the cart exists
                 cart_items = CartItem.objects.filter(cart=cart)
@@ -120,7 +120,7 @@ class CartItemsView(APIView):
             else:
                 cart_items_data = []  # Empty list if no cart exists
 
-            # Combine user details and cart items in the response
+            #
             response_data = {
                 "user_data": user_data,
                 "cart_items": cart_items_data,
@@ -137,7 +137,7 @@ class CartItemsView(APIView):
         """
         try:
             cart = Cart.objects.get(user=request.user, paid=False)
-            cart_item = CartItem.objects.get(pk=pk, cart=cart)  # Ensure item belongs to this cart
+            cart_item = CartItem.objects.get(pk=pk, cart=cart)  
             cart_item.delete()
             
             return Response({"detail": "Cart item removed successfully."}, status=status.HTTP_204_NO_CONTENT)
@@ -218,233 +218,9 @@ class JobSearchListView(generics.ListAPIView):
 
 
 
-class lpOrderRequestView(APIView):
-    def post(self, request):
-        if not request.user.is_authenticated:
-            return Response({'detail': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
-        
-        data = request.data.copy()
-        data['employer'] = request.user.id
-
-        serializer = OrderRequestSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
-
-
-from rest_framework import generics, permissions, serializers
-from rest_framework.authentication import TokenAuthentication
-
-
-class OrderRequestCreateView(generics.CreateAPIView):
-    queryset = OrderRequest.objects.all()
-    serializer_class = OrderRequestSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
-
-    def perform_create(self, serializer):
-        artisan_id = self.request.data.get('artisan')
-        if Artisan.objects.get(id =artisan_id):
-            artisan_id = Artisan.objects.get(id =artisan_id)
-            service_id  = artisan_id.service
-
-            try:
-                artisan = Artisan.objects.get(pk=artisan_id)
-                service = Service.objects.get(pk=service_id)
-            except (Artisan.DoesNotExist, Service.DoesNotExist):
-                raise serializers.ValidationError("Invalid Artisan or Service")
-
-        # Get the authenticated user
-            employer = self.request.user.employer
-
-            serializer.save(
-                artisan=artisan,
-                service=service,
-                employer=employer
-            )
-
-
-
-from rest_framework import generics, permissions
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from .models import OrderRequest
-from .serializers import OrderRequestSerializer
-
-class pkOrderRequestCreateView(generics.CreateAPIView):
-    queryset = OrderRequest.objects.all()
-    serializer_class = OrderRequestSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
-
-    def perform_create(self, serializer): 
-        artisan_id = self.request.data.get('artisan')
-        service_id = self.request.data.get('service')
-
-        try:
-            artisan = Artisan.objects.get(pk=artisan_id)
-            service = Service.objects.get(pk=service_id)
-        except (Artisan.DoesNotExist, Service.DoesNotExist):
-            raise serializers.ValidationError("Invalid Artisan or Service")
-
-        # Use the authenticated user
-        serializer.save(
-            artisan=artisan,
-            service=service,
-            employer=self.request.user.employer
-        )
-
-
-from rest_framework import generics, permissions
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from .models import OrderRequest, Artisan, Service
-from .serializers import OrderRequestSerializer
-from rest_framework import serializers
-
-class klOrderRequestCreateView(generics.CreateAPIView):
-    queryset = OrderRequest.objects.all()
-    serializer_class = OrderRequestSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
-
-    def perform_create(self, serializer):
-        artisan_id = self.request.data.get('artisan')
-        service_id = self.request.data.get('service')
-
-        try:
-            artisan = Artisan.objects.get(pk=artisan_id)
-            service = Service.objects.get(pk=service_id)
-        except (Artisan.DoesNotExist, Service.DoesNotExist):
-            raise serializers.ValidationError("Invalid Artisan or Service")
-
-        # Ensure the authenticated user is recognized as the employer
-        employer = self.request.user.employer  # Assuming there is a one-to-one relationship
-
-        # Save the order request with the provided artisan and service, associated with the authenticated employer
-        serializer.save(
-            artisan=artisan,
-            service=service,
-            employer=employer
-        )
-
-
-
-from rest_framework import generics
-from rest_framework.response import Response
-from rest_framework import status
-from .models import OrderRequest
-from .serializers import OrderRequestSerializer
-from rest_framework.permissions import IsAuthenticated
-
-class OnnrderRequestCreateView(generics.CreateAPIView):
-    serializer_class = OrderRequestSerializer
-    permission_classes = [IsAuthenticated]
-
-    def perform_create(self, serializer):
-        artisan_id = self.request.data.get('artisan')
-        service_id = self.request.data.get('service')
-        
-
-        try:
-            artisan = Artisan.objects.get(pk=artisan_id)
-            service = Service.objects.get(pk=service_id)
-        except (Artisan.DoesNotExist, Service.DoesNotExist):
-            return Response({"detail": "Invalid Artisan or Service"}, status=status.HTTP_400_BAD_REQUEST)
-
-        employer = self.request.user.employer
-
-        serializer.save(
-            artisan=artisan,
-            service=service,
-            employer=employer
-        )
-
-
-
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.permissions import IsAuthenticated
-from .models import OrderRequest
-from .serializers import OrderRequestSerializer
-from django.contrib.auth import get_user_model
-
-@api_view(['POST'])
-def order_request(request):
-    # Ensure the user is authenticated
-    if not request.user.is_authenticated:
-        return Response({'detail': 'Authentication credentials were not provided.'}, status=status.HTTP_401_UNAUTHORIZED)
-
-    serializer = OrderRequestSerializer(data=request.data)
-    if serializer.is_valid():
-        # Add the employer and artisan from the request or from the token
-        user = request.user
-        employer = user.employer  # Assuming User model has a one-to-one relation with Employer
-        artisan_id = request.data.get('artisan_id')
-        service_id = request.data.get('service_id')
-
-        # Set the employer and artisan in the validated data
-        serializer.validated_data['employer'] = employer
-        serializer.validated_data['artisan_id'] = artisan_id
-        serializer.validated_data['service_id'] = service_id
-        serializer.validated_data['date_ordered'] = timezone.now()
-
-        # Save the order request
-        serializer.save()
-        return Response({'message': 'Order placed successfully'}, status=status.HTTP_201_CREATED)
-    
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework import status
-from .models import OrderRequest
-from .serializers import OrderRequestSerializer
-
-class OrderRequestViewPage(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        serializer = OrderRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-
-
-from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from .models import Artisan, Order
-from .serializers import OrderRequestSerializer
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def create_order(request):
-    user = request.user
-    artisan_id = request.data.get('artisan')
-    try:
-        artisan = Artisan.objects.get(id=artisan_id)
-    except Artisan.DoesNotExist:
-        return Response({"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND)
-    
-    serializer = OrderRequestSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save(employer=user, artisan=artisan)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -463,26 +239,3 @@ class VerifyTokenView(APIView):
             return Response({"valid": True})
         except (InvalidToken, TokenError):
             return Response({"valid": False}, status=400)
-
-
-
-from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.authentication import JWTAuthentication
-
-class OrderRequestCreateView(generics.CreateAPIView):
-    queryset = OrderRequest.objects.all()
-    serializer_class = OrderRequestSerializer
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
-
-    def perform_create(self, serializer):
-        artisan_id = self.request.data.get('artisan')
-        artisan = Artisan.objects.get(id=artisan_id)
-        service_id = artisan.service
-        employer = self.request.user.employer
-
-        serializer.save(
-            artisan=artisan,
-            service=service_id,
-            employer=employer
-        )
