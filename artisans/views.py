@@ -24,10 +24,11 @@ logger = logging.getLogger(__name__)
 
 
 # api/views.py
-class ArtisansByServiceView(APIView):
+class ArtisansByServiceViewnv(APIView):
     permission_classes = [AllowAny]
     def get(self, request, service_title):
         response_data = {'service_title': service_title}
+       
         
         try:
             service = Service.objects.get(title=service_title)
@@ -41,6 +42,37 @@ class ArtisansByServiceView(APIView):
         except Service.DoesNotExist:
             response_data['error'] = 'Service not found'
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+
+# api/views.py
+from rest_framework.permissions import IsAuthenticated
+
+class ArtisansByServiceView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, service_title):
+        try:
+            service = Service.objects.get(title=service_title)
+            artisans = Artisan.objects.filter(service=service)
+
+            # If the user is authenticated, check their cart
+            user_cart = []
+            if request.user.is_authenticated:
+                user_cart = Cart.objects.filter(user=request.user).values_list('artisan_id', flat=True)
+
+            # Serialize artisans and include cart status
+            serializer = ArtisanSearchListSerializer(artisans, many=True)
+            artisans_with_cart_status = [
+                {**artisan, "already_in_cart": artisan["id"] in user_cart}
+                for artisan in serializer.data
+            ]
+
+            return Response(artisans_with_cart_status, status=status.HTTP_200_OK)
+        except Service.DoesNotExist:
+            return Response({"error": "Service not found"}, status=status.HTTP_404_NOT_FOUND)
 
 
 

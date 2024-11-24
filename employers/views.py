@@ -177,12 +177,11 @@ class JobSearchListView(generics.ListAPIView):
 
 
 
-
-
-
-from rest_framework import generics, permissions, serializers
 from rest_framework.authentication import TokenAuthentication
-
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from .models import OrderRequest
+from .serializers import OrderRequestSerializer
 
 class OrderRequestCreateView(generics.CreateAPIView):
     queryset = OrderRequest.objects.all()
@@ -217,51 +216,6 @@ class OrderRequestCreateView(generics.CreateAPIView):
 
 
 
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.permissions import IsAuthenticated
-from .models import OrderRequest
-from .serializers import OrderRequestSerializer
-from django.contrib.auth import get_user_model
-
-@api_view(['POST'])
-def order_request(request):
-    # Ensure the user is authenticated
-    if not request.user.is_authenticated:
-        return Response({'detail': 'Authentication credentials were not provided.'}, status=status.HTTP_401_UNAUTHORIZED)
-
-    serializer = OrderRequestSerializer(data=request.data)
-    if serializer.is_valid():
-        # Add the employer and artisan from the request or from the token
-        user = request.user
-        employer = user.employer  # Assuming User model has a one-to-one relation with Employer
-        artisan_id = request.data.get('artisan_id')
-        service_id = request.data.get('service_id')
-
-        # Set the employer and artisan in the validated data
-        serializer.validated_data['employer'] = employer
-        serializer.validated_data['artisan_id'] = artisan_id
-        serializer.validated_data['service_id'] = service_id
-        serializer.validated_data['date_ordered'] = timezone.now()
-
-        # Save the order request
-        serializer.save()
-        return Response({'message': 'Order placed successfully'}, status=status.HTTP_201_CREATED)
-    
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework import status
-from .models import OrderRequest
-from .serializers import OrderRequestSerializer
-
 class OrderRequestViewPage(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -276,34 +230,6 @@ class OrderRequestViewPage(APIView):
 
 
 
-from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from .models import Artisan, Order
-from .serializers import OrderRequestSerializer
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def create_order(request):
-    user = request.user
-    artisan_id = request.data.get('artisan')
-    try:
-        artisan = Artisan.objects.get(id=artisan_id)
-    except Artisan.DoesNotExist:
-        return Response({"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND)
-    
-    serializer = OrderRequestSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save(employer=user, artisan=artisan)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import UntypedToken
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
@@ -318,9 +244,6 @@ class VerifyTokenView(APIView):
             return Response({"valid": False}, status=400)
 
 
-
-from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.authentication import JWTAuthentication
 
 class OrderRequestCreateView(generics.CreateAPIView):
     queryset = OrderRequest.objects.all()
