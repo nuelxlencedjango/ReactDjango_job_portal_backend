@@ -117,8 +117,12 @@ class CartItemsView(APIView):
 class CheckArtisanInCartView(APIView):
     #permission_classes = [IsAuthenticated]
     permission_classes = [AllowAny]
+    
 
     def get(self, request, artisan_email):
+        if not request.user.is_authenticated:
+            return 'No issues'
+        
         user = request.user
         try:
             # Check if the artisan is already in the user's cart
