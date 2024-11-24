@@ -88,20 +88,20 @@ class ArtisanSearchListSerializer(serializers.ModelSerializer):
     user = UserSerializer()
     location = AreaSerializer()
     service = ServiceSerializer()
-    in_cart = serializers.SerializerMethodField()
+    #in_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Artisan
         fields = [
             'user', 'location', 'experience',
-            'service', 'profile_img', 'pay', 'in_cart',
+            'service', 'profile_img', 'pay',
         ]
         read_only_fields = ['date_joined']
 
     def get_profile_img(self, obj):
         return obj.profile_img.url if obj.profile_img else None
 
-    def get_in_cart(self, obj):
+    #def get_in_cart(self, obj):
         # Check if the artisan is in the user's cart
-        cart_items = self.context.get('cart_items', [])
-        return obj.id in cart_items
+     #   cart_items = self.context.get('cart_items', [])
+      #  return obj.id in cart_items
