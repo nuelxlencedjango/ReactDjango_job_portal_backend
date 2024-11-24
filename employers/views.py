@@ -107,8 +107,6 @@ class CartItemsView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-# end new
-
 
 
 
@@ -139,6 +137,11 @@ class CheckArtisanInCartView(APIView):
         else:
             # If the user is not logged in, return false (no cart)
             return Response({'in_cart': False}, status=200)
+
+# end new
+
+
+
 
 
 
