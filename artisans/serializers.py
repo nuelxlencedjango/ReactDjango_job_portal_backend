@@ -62,7 +62,7 @@ class ArtisanSerializer(serializers.ModelSerializer):
 
 
 
-class ArtisanSearchListSerializer(serializers.ModelSerializer):
+class ArtisanSearchListSerializerpop(serializers.ModelSerializer):
     profile_img = serializers.SerializerMethodField()
     user = UserSerializer()  # Include user details in the response
     location = AreaSerializer()  # Nested Location Serializer
@@ -80,3 +80,25 @@ class ArtisanSearchListSerializer(serializers.ModelSerializer):
         return obj.profile_img.url if obj.profile_img else None
 
 
+class ArtisanSearchListSerializer(serializers.ModelSerializer):
+    profile_img = serializers.SerializerMethodField()
+    user = UserSerializer()
+    location = AreaSerializer()
+    service = ServiceSerializer()
+    in_cart = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Artisan
+        fields = [
+            'user', 'location', 'experience',
+            'service', 'profile_img', 'pay', 'in_cart',
+        ]
+        read_only_fields = ['date_joined']
+
+    def get_profile_img(self, obj):
+        return obj.profile_img.url if obj.profile_img else None
+
+    def get_in_cart(self, obj):
+        # Check if the artisan is in the user's cart
+        cart_items = self.context.get('cart_items', [])
+        return obj.id in cart_items
