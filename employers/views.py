@@ -110,7 +110,6 @@ class CartItemsView(APIView):
 # end new
 
 
-# api/views.py
 
 
 class CheckArtisanInCartView(APIView):
@@ -139,34 +138,6 @@ class CheckArtisanInCartView(APIView):
 
         else:
             # If the user is not logged in, return false (no cart)
-            return Response({'in_cart': False}, status=200)
-
-
-
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from .models import Cart
-
-class CheckArtisappnInCartView(APIView):
-    permission_classes = [AllowAny]  
-
-    def get(self, request, artisan_email):
-        # Check if the user is logged in (Authenticated)
-        if request.user.is_authenticated:
-            user = request.user
-            try:
-                # Check if the artisan is already in the user's cart
-                cart = Cart.objects.get(user=user)
-                if cart.artisans.filter(user__email=artisan_email).exists():
-                    return Response({'in_cart': True}, status=200)
-                else:
-                    return Response({'in_cart': False}, status=200)
-            except Cart.DoesNotExist:
-                # If no cart exists for the user, return false
-                return Response({'in_cart': False}, status=200)
-        else:
-            # If user is not logged in, return false (no cart)
             return Response({'in_cart': False}, status=200)
 
 
