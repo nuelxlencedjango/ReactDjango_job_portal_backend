@@ -46,7 +46,7 @@ class ArtisansByServicekViewlll(APIView):
 
 
 
-class ArtisansByServicepViekkkw(APIView):
+class ArtisansByServiceView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, service_title):
@@ -69,30 +69,6 @@ class ArtisansByServicepViekkkw(APIView):
             response_data['error'] = 'Service not found'
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
-
-class ArtisansByServiceView(APIView): 
-    permission_classes = [AllowAny]
-
-    def get(self, request, service_title):
-        user = request.user if request.user.is_authenticated else None
-        response_data = {'service_title': service_title}
-
-        try:
-            service = Service.objects.get(title=service_title)
-            artisans = Artisan.objects.filter(service=service)
-
-            # Check cart items if the user is authenticated
-            cart_items = []
-            if user:
-                cart_items = user.cart.items.values_list('artisan_id', flat=True)
-
-            # Include `in_cart` in the serializer response
-            serializer = ArtisanSearchListSerializer(artisans, many=True, context={'cart_items': cart_items})
-
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Service.DoesNotExist:
-            response_data['error'] = 'Service not found'
-            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
 
 #list Area objects
