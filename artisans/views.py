@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 # api/views.py
-class ArtisansByServiceViewlll(APIView):
+class ArtisansByServicekViewlll(APIView): 
     permission_classes = [AllowAny]
     def get(self, request, service_title):
         response_data = {'service_title': service_title}
@@ -44,7 +44,9 @@ class ArtisansByServiceViewlll(APIView):
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
 
-class ArtisansByServiceViekkkw(APIView):
+
+
+class ArtisansByServicepViekkkw(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, service_title):
@@ -68,7 +70,7 @@ class ArtisansByServiceViekkkw(APIView):
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
 
-class ArtisansByServiceView(APIView):
+class ArtisansByServiceView(APIView): 
     permission_classes = [AllowAny]
 
     def get(self, request, service_title):
