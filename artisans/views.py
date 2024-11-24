@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 # api/views.py
-class ArtisansByServicekViewlll(APIView): 
+class ArtisansByServicekView(APIView): 
     permission_classes = [AllowAny]
     def get(self, request, service_title):
         response_data = {'service_title': service_title}
@@ -46,7 +46,7 @@ class ArtisansByServicekViewlll(APIView):
 
 
 
-class ArtisansByServiceView(APIView):
+class ArtisansByServiceViewwww(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, service_title):

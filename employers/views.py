@@ -110,6 +110,31 @@ class CartItemsView(APIView):
 # end new
 
 
+# api/views.py
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .models import Cart, Artisan
+from .serializers import CartSerializer
+
+class CheckArtisanInCartView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, artisan_email):
+        user = request.user
+        try:
+            # Check if the artisan is already in the user's cart
+            cart = Cart.objects.get(user=user)
+            if cart.artisans.filter(user__email=artisan_email).exists():
+                return Response({'in_cart': True}, status=200)
+            else:
+                return Response({'in_cart': False}, status=200)
+        except Cart.DoesNotExist:
+            # If no cart exists for the user, return false
+            return Response({'in_cart': False}, status=200)
+
+
 
 
 
