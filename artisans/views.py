@@ -61,13 +61,17 @@ class ArtisansByServiceView(APIView):
             if user:
                 cart_items = user.cart.items.values_list('artisan_id', flat=True)
 
-            # Include `in_cart` in the serializer response
+            # Include `in_cart` 
             serializer = ArtisanSearchListSerializer(artisans, many=True, context={'cart_items': cart_items})
 
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Service.DoesNotExist:
             response_data['error'] = 'Service not found'
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+
+
+
 
 
 
