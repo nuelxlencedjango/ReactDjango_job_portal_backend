@@ -61,21 +61,32 @@ REST_FRAMEWORK = {
 
 # Secret key and other settings...
 
+
+
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_COOKIE': 'access_token',
-    'AUTH_COOKIE_SECURE': True, 
-    'AUTH_COOKIE_HTTP_ONLY': True, 
-    'AUTH_COOKIE_PATH': '/',
-    'AUTH_COOKIE_SAMESITE': 'Lax',
+    'AUTH_COOKIE_SECURE': True,  # Set to True for HTTPS (use in production)
+    'AUTH_COOKIE_HTTP_ONLY': True,  # To prevent access to the cookie via JavaScript
+    'AUTH_COOKIE_PATH': '/',  # Cookie will be sent with every request
+    'AUTH_COOKIE_SAMESITE': 'None',  # Set to 'None' to allow cross-origin cookies
     'REFRESH_COOKIE_PATH': '/api/token/refresh/',
-    'AUTH_COOKIE_DOMAIN': os.getenv('AUTH_COOKIE_DOMAIN'),
+    #'AUTH_COOKIE_DOMAIN': os.getenv('AUTH_COOKIE_DOMAIN', '.example.com'),  # Update with your domain
+    #'AUTH_COOKIE_DOMAIN': os.getenv('AUTH_COOKIE_DOMAIN', '.example.com'),
+    'AUTH_COOKIE_DOMAIN': os.getenv('AUTH_COOKIE_DOMAIN', '.vercel.app'),  # Allow cookies to be shared across all subdomains under vercel.app
+
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
 }
+
+CSRF_COOKIE_SAMESITE = 'None'  # Allows CSRF cookie to be sent with cross-origin requests
+SESSION_COOKIE_SAMESITE = 'None'  # Allows session cookie to be sent with cross-origin requests
+
+CSRF_COOKIE_SECURE = True  # Ensure CSRF cookie is only sent over HTTPS in production
+SESSION_COOKIE_SECURE = True  # Ensure session cookie is only sent over HTTPS in production
 
 
 
