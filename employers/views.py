@@ -115,7 +115,8 @@ class CartItemsView(APIView):
 
 
 class CheckArtisanInCartView(APIView):
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request, artisan_email):
         user = request.user
