@@ -60,6 +60,7 @@ class ArtisansByServiceView(APIView):
             cart_items = []
             if user:
                 cart_items = user.cart.items.values_list('artisan_id', flat=True)
+                print('cart items:', cart_items)
 
             # Include `in_cart` 
             serializer = ArtisanSearchListSerializer(artisans, many=True, context={'cart_items': cart_items})
