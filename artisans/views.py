@@ -59,7 +59,7 @@ class ArtisansByServiceView(APIView):
 
             cart_items = []
             if user and hasattr(user, 'cart'):
-                cart_items = user.cart.items.values_list('artisan_email', flat=True)
+                cart_items = user.cart.items.values_list('artisan_id', flat=True)
                 print('cart items:', cart_items)
 
             # Include `in_cart` 
