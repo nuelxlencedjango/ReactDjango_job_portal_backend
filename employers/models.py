@@ -54,6 +54,18 @@ class CartItem(models.Model):
 
 
 
+class Checkout(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    full_name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone = models.CharField(max_length=15)
+    #shipping_address = models.TextField()
+   # billing_address = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.full_name
+
 
 #end new
 

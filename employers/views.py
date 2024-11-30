@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import *
 from rest_framework.views import APIView
-from .serializers import CartSerializer, CartItemSerializer
+from .serializers import CartSerializer, CartItemSerializer,CheckoutSerializer
 from django.utils.crypto import get_random_string
 from rest_framework.permissions import AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
@@ -137,6 +137,36 @@ class CheckArtisanInCartView(APIView):
         else:
             # If the user is not logged in, return false (no cart)
             return Response({'in_cart': False}, status=200)
+        
+
+
+
+class CheckoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = CheckoutSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+class EmployersDetailsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        data = {
+            "full_name": f"{user.first_name} {user.last_name}",
+            "email": user.email,
+            "phone": user.profile.phone,  
+           # "address": user.profile.address, 
+        }
+        return Response(data)
 
 # end new
 
