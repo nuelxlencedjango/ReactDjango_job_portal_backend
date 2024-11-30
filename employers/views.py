@@ -163,7 +163,7 @@ class EmployersDetailsView(APIView):
         data = {
             "full_name": f"{user.first_name} {user.last_name}",
             "email": user.email,
-            "phone": user.profile.phone,  
+            "phone": user.user.phone_number,  
            # "address": user.profile.address, 
         }
         return Response(data)
