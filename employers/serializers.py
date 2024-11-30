@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Cart, CartItem,Employer,JobPost,Order,OrderRequest
+from .models import Cart, CartItem,Employer,JobPost,Order,OrderRequest,Checkout
 from accounts.serializers import UserSerializer
 
 
@@ -43,8 +43,14 @@ class CartItemSerializer(serializers.ModelSerializer):
         }
 
 
+#checkout
+class CheckoutSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Checkout
+        fields = ['id', 'user', 'full_name', 'email', 'phone']
 
 
+#end new
 
 
 class EmployerSerializer(serializers.ModelSerializer):
