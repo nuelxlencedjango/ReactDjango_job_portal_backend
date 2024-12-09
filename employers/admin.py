@@ -4,13 +4,12 @@ from django.contrib.auth.admin import UserAdmin
 
 
 
-admin.site.register(Employer)
-admin.site.register(JobPost)
-admin.site.register(Cart)
-admin.site.register(CartItem)
+#admin.site.register(Employer)
+#admin.site.register(JobPost)
+#admin.site.register(Cart)
+#admin.site.register(CartItem)
 
-
-
+'''
 class OrderRequestAdmin(admin.ModelAdmin):
     
     list_display = ('employer','artisan','service','description','address',
@@ -21,3 +20,5 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ['employer','phone_number','data_ordered']
 
 admin.site.register(OrderRequest,OrderRequestAdmin)
+
+'''

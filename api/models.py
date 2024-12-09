@@ -31,3 +31,32 @@ class Service(models.Model):
 
 
 
+
+
+
+
+# Create your models here.
+
+class Area(models.Model):
+   area_code = models.CharField(max_length=3)
+   location = models.CharField(max_length=100,unique=True)
+    
+   def __str__(self):
+      return self.location
+   
+   class Meta:
+      verbose_name_plural = "Area"
+      
+
+
+
+class Profession(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+
+    def save(self, *args, **kwargs):
+        # Convert the name to title case before saving
+        self.name = self.name.title()
+        super(Profession, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name

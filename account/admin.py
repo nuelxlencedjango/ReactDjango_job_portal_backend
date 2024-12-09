@@ -1,7 +1,7 @@
 
 from django.contrib import admin
 from .models import CustomUser, ArtisanProfile, EmployerProfile, ManagerProfile
-from accounts.models import *
+from .models import *
 
 
 

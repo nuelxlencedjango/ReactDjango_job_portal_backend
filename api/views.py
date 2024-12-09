@@ -10,8 +10,8 @@ from rest_framework.response import Response
 
 from api.models import *
 from api.serializers import ServiceSerializer,IndustrySerializer
-from artisans.models import *
-from artisans.serializers import *
+#from artisans.models import *
+#from artisans.serializers import *
 
 
 

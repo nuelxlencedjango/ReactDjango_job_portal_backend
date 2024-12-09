@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 from accounts.serializers import *
 from artisans.models import *
 from django.conf import settings
-from .models import User
+#from .models import User
 import json
 
 
@@ -77,10 +77,11 @@ class LoginView(APIView):
         return response
 
 
+'''
 
 
 # views.py
-class ArtisanUserCreateView(generics.CreateAPIView):
+class assArtisanUserCreateView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
@@ -110,3 +111,44 @@ class ArtisanUserCreateView(generics.CreateAPIView):
         
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+'''
+
+
+
+
+
+
+# users/views.py
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import RegistrationSerializer
+
+class ArtisanRegistrationView(APIView):
+    def post(self, request):
+        serializer = RegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({"message": "Artisan registered successfully"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class EmployerRegistrationView(APIView):
+    def post(self, request):
+        serializer = RegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({"message": "Employer registered successfully"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+class ManagerRegistrationView(APIView):
+    def post(self, request):
+        serializer = RegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({"message": "Manager registered successfully"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

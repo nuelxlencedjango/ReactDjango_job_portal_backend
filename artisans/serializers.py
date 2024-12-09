@@ -1,7 +1,7 @@
 # serializers.py
 from rest_framework import serializers
-from .models import Area,Artisan,Profession
-from accounts.serializers import UserSerializer,User
+from .models import Area,Profession
+#from accounts.serializers import UserSerializer,User
 from api.serializers import ServiceSerializer
 from api.models import Service
 
@@ -35,7 +35,7 @@ class ArtisanSerializer(serializers.ModelSerializer):
     profile_img = serializers.SerializerMethodField()
 
     class Meta:
-        model = Artisan
+        #model = Artisan
         fields = ['user', 'nin', 'location', 'experience', 'address', 'phone', 'service', 'profile_img', 'date_joined']
         read_only_fields = ['date_joined']
 
@@ -47,7 +47,7 @@ class ArtisanSerializer(serializers.ModelSerializer):
             # nested serializers for fetching (GET request)
             self.fields['location'] = AreaSerializer()
             self.fields['service'] = ServiceSerializer()
-            self.fields['user'] = UserSerializer()
+          #  self.fields['user'] = UserSerializer()
         else:
             # PrimaryKeyRelatedField for creating/updating (POST, PUT, PATCH requests)
             self.fields['location'] = serializers.PrimaryKeyRelatedField(queryset=Area.objects.all())
@@ -64,12 +64,12 @@ class ArtisanSerializer(serializers.ModelSerializer):
 
 class ArtisanSearchListSerializerkm(serializers.ModelSerializer):
     profile_img = serializers.SerializerMethodField()
-    user = UserSerializer()  # Include user details in the response
+  #  user = UserSerializer()  # Include user details in the response
     location = AreaSerializer()  # Nested Location Serializer
     service = ServiceSerializer()  # Nested Service Serializer
 
     class Meta:
-        model = Artisan
+     #   model = Artisan
         fields = [
             'user', 'location', 'experience',
             'service', 'profile_img', 'pay',
@@ -85,13 +85,13 @@ class ArtisanSearchListSerializerkm(serializers.ModelSerializer):
 
 class ArtisanSearchListSerializer(serializers.ModelSerializer):
     profile_img = serializers.SerializerMethodField()
-    user = UserSerializer()
+   # user = UserSerializer()
     location = AreaSerializer()
     service = ServiceSerializer()
     #in_cart = serializers.SerializerMethodField()
 
     class Meta:
-        model = Artisan
+     #   model = Artisan
         fields = [
             'user', 'location', 'experience',
             'service', 'profile_img', 'pay',

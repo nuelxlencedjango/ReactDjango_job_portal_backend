@@ -14,7 +14,7 @@ class AreaAdmin(admin.ModelAdmin):
     list_display = ['location','area_code']
 
 
-admin.site.register(Artisan,ArtisansAdmin)
-admin.site.register(Area,AreaAdmin)
-admin.site.register(Profession)
+#admin.site.register(Artisan,ArtisansAdmin)
+#admin.site.register(Area,AreaAdmin)
+#admin.site.register(Profession)
 
