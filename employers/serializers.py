@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from .models import Cart, CartItem,Employer,JobPost,Order,OrderRequest,Checkout
-from accounts.serializers import UserSerializer
+#from .models import Cart, CartItem,Employer,JobPost,Order,OrderRequest,Checkout
+#from accounts.serializers import UserSerializer
 
 
 
@@ -11,14 +11,14 @@ class CartItemSerializer(serializers.ModelSerializer):
     service_title = serializers.CharField(source="service.title", read_only=True)
 
     class Meta:
-        model = CartItem
+       # model = CartItem
         fields = ['id', 'artisan', 'artisan_name', 'service', 'service_title', 'quantity', 'added_at']
 
 class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
 
     class Meta:
-        model = Cart
+      #  model = Cart
         fields = ['id', 'user', 'cart_code', 'paid', 'created_at', 'modified_at', 'items']
 
 
@@ -28,7 +28,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     artisan = serializers.SerializerMethodField()
 
     class Meta:
-        model = CartItem
+       # model = CartItem
         fields = ['id', 'artisan', 'added_at']
 
     def get_artisan(self, obj):
@@ -46,7 +46,7 @@ class CartItemSerializer(serializers.ModelSerializer):
 #checkout
 class CheckoutSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Checkout
+       # model = Checkout
         fields = ['id', 'user', 'full_name', 'email', 'phone']
 
 
@@ -54,10 +54,10 @@ class CheckoutSerializer(serializers.ModelSerializer):
 
 
 class EmployerSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+   # user = UserSerializer()
 
     class Meta:
-        model = Employer
+       # model = Employer
         fields = ('user', 'phone_number')
 
 
@@ -65,7 +65,7 @@ class EmployerSerializer(serializers.ModelSerializer):
 
 class JobPostSerializer(serializers.ModelSerializer):
     class Meta:
-        model = JobPost
+       # model = JobPost
         fields = '__all__'
 
 
@@ -75,10 +75,10 @@ class JobPostSerializer(serializers.ModelSerializer):
 
 
 from rest_framework import serializers
-from .models import OrderRequest
+#from .models import OrderRequest
 
 class OrderRequestSerializer(serializers.ModelSerializer):
     class Meta:
-        model = OrderRequest
+     #   model = OrderRequest
         fields = ['description', 'address', 'area', 'job_date', 'preferred_time', 'contact_person', 'phone_number', 'artisan', 'service', 'employer', 'date_ordered']
         read_only_fields = ['employer', 'date_ordered']

@@ -167,6 +167,98 @@ class EmployersDetailsView(APIView):
            # "address": user.profile.address, 
         }
         return Response(data)
+    
+
+
+#checking below
+
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from rest_framework import status
+from uuid import uuid4
+#from .models import Order
+
+@api_view(["POST"])
+def create_checkout(request):
+    try:
+        # Extract data from request
+        user = request.user
+        total_amount = request.data.get("total_amount")
+        items = request.data.get("items")
+        
+        # Generate unique ID for the order
+        order_id = str(uuid4())
+
+        # Save order in the database
+        order = Order.objects.create(
+            user=user,
+            order_id=order_id,
+            total_amount=total_amount
+        )
+        for item in items:
+            order.items.create(**item)
+        
+        # Return order_id
+        return Response({"order_id": order_id}, status=status.HTTP_201_CREATED)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+   
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from django.utils.timezone import now
+
+#from .models import CartItem, Employer
+from .serializers import CartItemSerializer
+
+
+class CartItemsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        employer = Employer.objects.filter(user=request.user).first()
+        if not employer:
+            return Response({"detail": "Employer profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        cart_items = CartItem.objects.filter(employer=employer)
+        serializer = CartItemSerializer(cart_items, many=True)
+        return Response({"cart_items": serializer.data}, status=status.HTTP_200_OK)
+
+
+class CheckoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        employer = Employer.objects.filter(user=request.user).first()
+        if not employer:
+            return Response({"detail": "Employer profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        cart_items = CartItem.objects.filter(employer=employer)
+        if not cart_items.exists():
+            return Response({"detail": "Cart is empty."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Calculate total
+        total_amount = sum(item.artisan.pay for item in cart_items)
+
+        # Create an order
+        order = Order.objects.create(
+            employer=employer,
+            total_amount=total_amount,
+            purchase_date=now().date(),
+        )
+
+        # Optionally, clear cart items after checkout
+        cart_items.delete()
+
+        return Response(
+            {"order_id": order.id, "total_amount": total_amount},
+            status=status.HTTP_201_CREATED,
+        )
+
+
 
 # end new
 
@@ -177,7 +269,7 @@ class EmployersDetailsView(APIView):
 
 
 class EmployerCreateView(generics.CreateAPIView):
-    queryset = Employer.objects.all()
+   # queryset = Employer.objects.all()
     serializer_class = EmployerSerializer
     permission_classes = [AllowAny]
 
@@ -216,7 +308,7 @@ class EmployerCreateView(generics.CreateAPIView):
 
 
 class EmployerSearchListView(generics.ListAPIView):
-    queryset = Employer.objects.all()
+   # queryset = Employer.objects.all()
     serializer_class = EmployerSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['employer_profile__location__location', 'industry__name']
@@ -228,7 +320,7 @@ class EmployerSearchListView(generics.ListAPIView):
 
 #job search list
 class JobSearchListView(generics.ListAPIView):
-    queryset = JobPost.objects.all()
+   # queryset = JobPost.objects.all()
     serializer_class = JobPostSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['location', 'job_type', 'industry']
@@ -241,11 +333,11 @@ class JobSearchListView(generics.ListAPIView):
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .models import OrderRequest
+#from .models import OrderRequest
 from .serializers import OrderRequestSerializer
 
 class OrderRequestCreateView(generics.CreateAPIView):
-    queryset = OrderRequest.objects.all()
+  #  queryset = OrderRequest.objects.all()
     serializer_class = OrderRequestSerializer
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [TokenAuthentication]
@@ -307,7 +399,7 @@ class VerifyTokenView(APIView):
 
 
 class OrderRequestCreateView(generics.CreateAPIView):
-    queryset = OrderRequest.objects.all()
+   # queryset = OrderRequest.objects.all()
     serializer_class = OrderRequestSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]

@@ -117,7 +117,7 @@ class ProfessionCreateView(generics.CreateAPIView):
 
 #list Artisans objects
 class ArtisansListView(generics.ListAPIView):
-    queryset = Artisan.objects.all()
+   # queryset = Artisan.objects.all()
     serializer_class = ArtisanSerializer
     permission_classes = [AllowAny]
 

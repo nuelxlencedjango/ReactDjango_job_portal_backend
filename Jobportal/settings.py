@@ -110,10 +110,11 @@ INSTALLED_APPS = [
 
     #installed app
     'api.apps.ApiConfig',
-    'accounts',
-    'artisans',
+    'account',
+    # 'accounts',
+    #'artisans',
     'transactions',
-    'employers',
+    #'employers',
     'dashboard',
     'services',
     'social_account',
@@ -243,7 +244,7 @@ cloudinary.config(
 
 
 #authentication
-AUTH_USER_MODEL ='accounts.User'
+AUTH_USER_MODEL ='account.CustomUser'
 authentication_backend = ['accounts.backends.EmailBackend']
 
 

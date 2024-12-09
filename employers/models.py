@@ -12,6 +12,7 @@ import uuid
 #new
 
 
+'''
 
 
 class Cart(models.Model):
@@ -59,6 +60,8 @@ class Checkout(models.Model):
     full_name = models.CharField(max_length=255)
     email = models.EmailField()
     phone = models.CharField(max_length=15)
+    #amount = models.CharField(max_length=15)
+    #uniqueId = models.CharField(max_length=15)
     #shipping_address = models.TextField()
    # billing_address = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -103,7 +106,12 @@ class JobPost(models.Model):
        
       ordering = ['-date_created']
  
+'''
 
+
+
+
+'''
 
 class OrderRequest(models.Model):
     employer = models.ForeignKey('Employer', on_delete=models.CASCADE)
@@ -122,7 +130,6 @@ class OrderRequest(models.Model):
     def __str__(self):
         return f"Order by {self.contact_person} for {self.service.title} (Employer: {self.employer.user.username}, Artisan: {self.artisan.user.username})"
 
-
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     artisan = models.ForeignKey(Artisan, on_delete=models.CASCADE)
@@ -135,4 +142,5 @@ class Order(models.Model):
 
     def __str__(self):
         return self.user 
+'''
     
