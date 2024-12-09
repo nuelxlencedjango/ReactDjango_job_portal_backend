@@ -8,4 +8,7 @@ admin.site.register(Service)
 admin.site.register(Industry)
 
 
+admin.site.register(Area)
+admin.site.register(Profession)
+
 

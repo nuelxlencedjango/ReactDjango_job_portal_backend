@@ -1,6 +1,6 @@
 
 from rest_framework import serializers
-from .models import User
+#from .models import User
 from artisans.models import *
 from employers.models import *
 
