@@ -7,7 +7,6 @@ from django.dispatch import receiver
 
 
 
-"""
 class User(AbstractUser):
     first_name =models.CharField(max_length=20,blank=True, null=True)
     last_name =models.CharField(max_length=20,blank=True, null=True)
@@ -18,7 +17,7 @@ class User(AbstractUser):
     is_admin = models.BooleanField(default=False)
     def __str__(self):
         return f"{self.last_name}"
-"""
+
 
     #USERNAME_FIELD = 'email'
     #REQUIRED_FIELDS = ['username']
@@ -59,9 +58,10 @@ class User(AbstractUser):
 
 
 
+'''
 
 # Custom User Model
-class CustomUser(AbstractUser):
+class User(AbstractUser):
     USER_TYPE_CHOICES = [
         ('admin', 'Admin'),
         ('manager', 'Manager'),
@@ -93,7 +93,7 @@ class CustomUser(AbstractUser):
 
 # Abstract Base Profile
 class BaseProfile(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=15, null=True, blank=True)
     location = models.ForeignKey('api.Area', on_delete=models.CASCADE, null=True, blank=True)
     date_joined = models.DateField(auto_now_add=True, null=True, blank=True)
@@ -127,6 +127,7 @@ class EmployerProfile(BaseProfile):
 class ManagerProfile(BaseProfile):
     department = models.CharField(max_length=100, null=True, blank=True)
 
+'''
 
 
 

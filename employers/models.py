@@ -106,12 +106,10 @@ class JobPost(models.Model):
        
       ordering = ['-date_created']
  
-'''
 
 
 
 
-'''
 
 class OrderRequest(models.Model):
     employer = models.ForeignKey('Employer', on_delete=models.CASCADE)
@@ -130,6 +128,9 @@ class OrderRequest(models.Model):
     def __str__(self):
         return f"Order by {self.contact_person} for {self.service.title} (Employer: {self.employer.user.username}, Artisan: {self.artisan.user.username})"
 
+
+
+
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     artisan = models.ForeignKey(Artisan, on_delete=models.CASCADE)
@@ -141,6 +142,6 @@ class Order(models.Model):
     additional_notes = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return self.user 
-'''
-    
+        return self.user
+
+'''        
