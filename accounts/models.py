@@ -10,13 +10,14 @@ from django.dispatch import receiver
 class User(AbstractUser):
     first_name =models.CharField(max_length=20,blank=True, null=True)
     last_name =models.CharField(max_length=20,blank=True, null=True)
-    email = models.EmailField(unique=True)
-    is_artisan = models.BooleanField(default=False)
-    is_employer = models.BooleanField(default=False)
-    is_manager = models.BooleanField(default=False)
-    is_admin = models.BooleanField(default=False)
+    #email = models.EmailField(unique=True)
+    #is_artisan = models.BooleanField(default=False)
+    #is_employer = models.BooleanField(default=False)
+    #is_manager = models.BooleanField(default=False)
+   # is_admin = models.BooleanField(default=False)
     def __str__(self):
         return f"{self.last_name}"
+    
 
 
     #USERNAME_FIELD = 'email'
@@ -127,11 +128,11 @@ class EmployerProfile(BaseProfile):
 class ManagerProfile(BaseProfile):
     department = models.CharField(max_length=100, null=True, blank=True)
 
+
+
+
+
 '''
-
-
-
-
 
 
 

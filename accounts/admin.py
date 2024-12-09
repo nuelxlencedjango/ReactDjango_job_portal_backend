@@ -1,6 +1,6 @@
 
 from django.contrib import admin
-from .models import User #, ArtisanProfile, EmployerProfile, ManagerProfile
+#from .models import User #, ArtisanProfile, EmployerProfile, ManagerProfile
 #from accounts.models import *
 
 
@@ -12,7 +12,7 @@ from .models import User #, ArtisanProfile, EmployerProfile, ManagerProfile
 
 
 
-admin.site.register(User)
+#admin.site.register(User)
 
 
 #admin.site.register(ArtisanProfile)

@@ -111,9 +111,9 @@ INSTALLED_APPS = [
     #installed app
     'api.apps.ApiConfig',
     'accounts',
-    'artisans',
+   # 'artisans',
     'transactions',
-    'employers',
+    #'employers',
     'dashboard',
     'services',
     'social_account',
