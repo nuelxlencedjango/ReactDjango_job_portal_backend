@@ -1,6 +1,6 @@
 
 from rest_framework import serializers
-from .models import CustomUser
+from .models import User
 from artisans.models import *
 from employers.models import *
 
@@ -50,7 +50,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import ArtisanProfile, EmployerProfile, ManagerProfile
+#from .models import ArtisanProfile, EmployerProfile, ManagerProfile
 
 User = get_user_model()
 
@@ -121,7 +121,7 @@ class ieeRegistrationSerializer(serializers.ModelSerializer):
 # users/serializers.py
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import ArtisanProfile, EmployerProfile, ManagerProfile
+#from .models import ArtisanProfile, EmployerProfile, ManagerProfile
 
 User = get_user_model()
 

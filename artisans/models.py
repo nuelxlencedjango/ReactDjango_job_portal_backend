@@ -12,7 +12,7 @@ from django.dispatch import receiver
 
 
 # Create your models here.
-'''
+
 
 class Area(models.Model):
    area_code = models.CharField(max_length=3)
@@ -44,16 +44,16 @@ class Profession(models.Model):
 
 class Artisan(models.Model):
     user = models.OneToOneField(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='artisan_profile')
-    nin = models.CharField(max_length=11, unique=True)
-    location = models.ForeignKey('Area', on_delete=models.CASCADE, null=True, blank=True)
-    service = models.ForeignKey('api.Service', related_name='artisans', on_delete=models.CASCADE, null=True, blank=True)
-    experience = models.IntegerField(help_text="Experience in years")
+    #nin = models.CharField(max_length=11, unique=True)
+    #location = models.ForeignKey('Area', on_delete=models.CASCADE, null=True, blank=True)
+    #service = models.ForeignKey('api.Service', related_name='artisans', on_delete=models.CASCADE, null=True, blank=True)
+    #experience = models.IntegerField(help_text="Experience in years")
     address = models.CharField(max_length=200, null=True, blank=True)
     phone = models.CharField(max_length=15, unique=True, null=True, blank=True)
     profile_img = CloudinaryField(blank=True, null=True)
     date_joined = models.DateField(auto_now_add=True, null=True, blank=True)
 
-    job_type = models.CharField(max_length=100, null=True, blank=True)
+    #job_type = models.CharField(max_length=100, null=True, blank=True)
     industry =  models.ForeignKey('api.Industry',related_name='industry_type',on_delete=models.CASCADE, null=True, blank=True)
     pay = models.DecimalField(max_digits=10, decimal_places=2,null=True, blank=True)
 
@@ -72,5 +72,3 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created and instance.is_artisan:
         Artisan.objects.create(user=instance)
 
-
-'''

@@ -23,13 +23,13 @@ from django.conf.urls.static import static
 #from  accounts.views import *
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
-#from account.views import LoginView
+from accounts.views import LoginView
 #, CustomTokenObtainPairView, CustomTokenRefreshView
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-     #path('account/login/', LoginView.as_view(), name='login'),
+     path('accounts/login/', LoginView.as_view(), name='login'),
 
    #tokenobtainedpairview
     #path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -40,10 +40,9 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),  
 
     path('api/', include('api.urls')),
-    #path('artisans/', include('artisans.urls')),
-    #path('accounts/', include('accounts.urls')),
-    path('account/', include('account.urls')),
-   # path('employers/', include('employers.urls')),
+    path('artisans/', include('artisans.urls')),
+    path('accounts/', include('accounts.urls')),
+    path('employers/', include('employers.urls')),
     path('dashboard/', include('dashboard.urls')),
     path('services/', include('services.urls')),
     path('transactions/', include('transactions.urls')),
