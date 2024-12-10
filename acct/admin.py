@@ -11,7 +11,7 @@ class UserAdmin(admin.ModelAdmin):
 
 
 admin.site.register(CustomUser)
-admin.site.register(BaseProfile)
+#admin.site.register(BaseProfile)
 
 admin.site.register(ArtisanProfile)
 admin.site.register(EmployerProfile)
