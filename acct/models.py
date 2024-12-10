@@ -5,64 +5,16 @@ from cloudinary.models import CloudinaryField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-
-'''
-class User(AbstractUser):
-    first_name =models.CharField(max_length=20,blank=True, null=True)
-    last_name =models.CharField(max_length=20,blank=True, null=True)
-    #email = models.EmailField(unique=True)
-    #is_artisan = models.BooleanField(default=False)
-    #is_employer = models.BooleanField(default=False)
-    #is_manager = models.BooleanField(default=False)
-   # is_admin = models.BooleanField(default=False)
-    def __str__(self):
-        return f"{self.last_name}"
-    
-
-
-    #USERNAME_FIELD = 'email'
-    #REQUIRED_FIELDS = ['username']
-'''
-   
-
-'''
-
-
-
-'''
+# Create your models here.
 
 
 
 
 
 
-
-
-
-
-
-
-
-# 1st modeel
-# models.py
-
-
-#1st model end
-
-
-#2nd model
-
-
-#end 2nd model
-
-
-
-
-
-'''
 
 # Custom User Model
-class User(AbstractUser):
+class CustomUser(AbstractUser):
     USER_TYPE_CHOICES = [
         ('admin', 'Admin'),
         ('manager', 'Manager'),
@@ -94,7 +46,7 @@ class User(AbstractUser):
 
 # Abstract Base Profile
 class BaseProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=15, null=True, blank=True)
     location = models.ForeignKey('api.Area', on_delete=models.CASCADE, null=True, blank=True)
     date_joined = models.DateField(auto_now_add=True, null=True, blank=True)
@@ -127,12 +79,3 @@ class EmployerProfile(BaseProfile):
 # Manager Profile
 class ManagerProfile(BaseProfile):
     department = models.CharField(max_length=100, null=True, blank=True)
-
-
-
-
-
-'''
-
-
-
