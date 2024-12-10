@@ -29,7 +29,7 @@ from accounts.views import LoginView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-     path('accounts/login/', LoginView.as_view(), name='login'),
+     #path('accounts/login/', LoginView.as_view(), name='login'),
 
    #tokenobtainedpairview
     #path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -40,9 +40,9 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),  
 
     path('api/', include('api.urls')),
-    path('artisans/', include('artisans.urls')),
-    path('accounts/', include('accounts.urls')),
-    path('employers/', include('employers.urls')),
+    #path('artisans/', include('artisans.urls')),
+    #path('accounts/', include('accounts.urls')),
+   # path('employers/', include('employers.urls')),
     path('dashboard/', include('dashboard.urls')),
     path('services/', include('services.urls')),
     path('transactions/', include('transactions.urls')),
