@@ -10,7 +10,7 @@ from .serializers import CustomUserSerializer
 from django.core.files.storage import default_storage
 from django.conf import settings
 
-class ArtisanRegistrationView(APIView):
+class xzArtisanRegistrationView(APIView):
     def post(self, request):
         data = request.data
         user_data = {
@@ -37,7 +37,7 @@ class ArtisanRegistrationView(APIView):
         return Response({"message": "Artisan registered successfully!"}, status=status.HTTP_201_CREATED)
 
 
-class EmployerRegistrationView(APIView):
+class polEmployerRegistrationView(APIView):
     def post(self, request):
         data = request.data
         user_data = {
@@ -59,7 +59,7 @@ class EmployerRegistrationView(APIView):
         return Response({"message": "Employer registered successfully!"}, status=status.HTTP_201_CREATED)
 
 
-class ManagerRegistrationView(APIView):
+class llManagerRegistrationView(APIView):
     def post(self, request):
         data = request.data
         user_data = {
