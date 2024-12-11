@@ -53,9 +53,11 @@ class CustomUserSerializer(serializers.ModelSerializer):
 class ArtisanProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = ArtisanProfile
-        fields = ['experience', 'job_type', 'industry', 'pay', 'profile_image', 'fingerprint_image', 'nin']
+        fields = ['experience', 'service', 'pay', 'profile_image', 'fingerprint_image', 'nin','phone_number','address']
 
 class EmployerProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmployerProfile
         fields = ['company_name', 'company_address']
+
+
