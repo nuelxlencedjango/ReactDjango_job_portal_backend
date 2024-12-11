@@ -2,6 +2,7 @@ from django.shortcuts import render
 
 # Create your views here.
 # users/views.py
+from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -94,6 +95,7 @@ from .models import CustomUser, ArtisanProfile, EmployerProfile
 from .serializers import CustomUserSerializer, ArtisanProfileSerializer, EmployerProfileSerializer
 
 class ArtisanRegistrationView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         user_serializer = CustomUserSerializer(data=request.data)
         if user_serializer.is_valid():
@@ -108,6 +110,7 @@ class ArtisanRegistrationView(APIView):
         return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class EmployerRegistrationView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         user_serializer = CustomUserSerializer(data=request.data)
         if user_serializer.is_valid():
