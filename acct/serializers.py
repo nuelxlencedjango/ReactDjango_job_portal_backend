@@ -32,7 +32,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'password', 'confirm_password']
+        fields = ['username', 'email', 'password', 'confirm_password','first_name','last_name',]
 
     def validate(self, data):
         if data['password'] != data['confirm_password']:
@@ -43,6 +43,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
         user = CustomUser.objects.create(
             username=validated_data['username'],
             email=validated_data['email'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
         )
         user.set_password(validated_data['password'])
         user.save()
