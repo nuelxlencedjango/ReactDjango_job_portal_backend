@@ -138,7 +138,7 @@ from rest_framework.permissions import AllowAny
 from .serializers import CustomUserSerializer, ArtisanProfileSerializer, EmployerProfileSerializer
 from .models import CustomUser, ArtisanProfile, EmployerProfile
 
-class ApprtisanRegistrationView(APIView):
+class bvApprtisanRegistrationView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -197,7 +197,7 @@ from rest_framework.views import APIView
 from .models import CustomUser, ArtisanProfile, EmployerProfile
 from .serializers import CustomUserSerializer, ArtisanProfileSerializer, EmployerProfileSerializer
 
-class ArtisanRegistrationView(APIView):
+class mnArtisanRegistrationView(APIView):
     permission_classes = [AllowAny]
     
     def post(self, request):
@@ -226,7 +226,7 @@ class ArtisanRegistrationView(APIView):
         return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class EmployerRegistrationView(APIView):
+class vcEmployerRegistrationView(APIView):
     permission_classes = [AllowAny]
     
     def post(self, request):
@@ -258,4 +258,70 @@ class EmployerRegistrationView(APIView):
 
 
 
+
+
+
+# views.py
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from rest_framework import status
+from django.db import transaction
+from .serializers import CustomUserSerializer, ArtisanProfileSerializer, EmployerProfileSerializer
+from .models import CustomUser
+
+
+class ArtisanRegistrationView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        # Start a transaction block
+        with transaction.atomic():
+            user_serializer = CustomUserSerializer(data=request.data)
+            if user_serializer.is_valid():
+                # Create the user
+                user = user_serializer.save()
+
+                # Now, try creating the artisan profile
+                artisan_profile_data = request.data.copy()
+                artisan_profile_data['user'] = user.id
+                artisan_serializer = ArtisanProfileSerializer(data=artisan_profile_data)
+                
+                if artisan_serializer.is_valid():
+                    artisan_serializer.save()
+                    return Response({'detail': 'Registration successful!'}, status=status.HTTP_201_CREATED)
+                else:
+                    # If ArtisanProfile creation fails, return the errors
+                    return Response(artisan_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                # If user creation fails, return the errors
+                return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class EmployerRegistrationView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        # Start a transaction block
+        with transaction.atomic():
+            user_serializer = CustomUserSerializer(data=request.data)
+            if user_serializer.is_valid():
+                # Create the user
+                user = user_serializer.save()
+
+                # Now, try creating the employer profile
+                employer_profile_data = request.data.copy()
+                employer_profile_data['user'] = user.id
+                employer_serializer = EmployerProfileSerializer(data=employer_profile_data)
+                
+                if employer_serializer.is_valid():
+                    employer_serializer.save()
+                    return Response({'detail': 'Registration successful!'}, status=status.HTTP_201_CREATED)
+                else:
+                    # If EmployerProfile creation fails, return the errors
+                    return Response(employer_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                # If user creation fails, return the errors
+                return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
