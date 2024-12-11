@@ -138,7 +138,7 @@ from rest_framework.permissions import AllowAny
 from .serializers import CustomUserSerializer, ArtisanProfileSerializer, EmployerProfileSerializer
 from .models import CustomUser, ArtisanProfile, EmployerProfile
 
-class ArtisanRegistrationView(APIView):
+class ApprtisanRegistrationView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -162,7 +162,7 @@ class ArtisanRegistrationView(APIView):
         return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class EmployerRegistrationView(APIView):
+class kEmployerRegistrationView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -184,3 +184,78 @@ class EmployerRegistrationView(APIView):
             return Response(employer_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+from django.db import transaction
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
+from .models import CustomUser, ArtisanProfile, EmployerProfile
+from .serializers import CustomUserSerializer, ArtisanProfileSerializer, EmployerProfileSerializer
+
+class ArtisanRegistrationView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        # Start a transaction block
+        with transaction.atomic():
+            user_serializer = CustomUserSerializer(data=request.data)
+            if user_serializer.is_valid():
+                # Create the user
+                user = user_serializer.save()
+                
+                # Now, try creating the artisan profile
+                artisan_profile_data = request.data.copy()  # Copy request data
+                artisan_profile_data['user'] = user.id
+                artisan_serializer = ArtisanProfileSerializer(data=artisan_profile_data)
+                
+                if artisan_serializer.is_valid():
+                    artisan_serializer.save()
+                    return Response({'detail': 'Registration successful!'}, status=status.HTTP_201_CREATED)
+                else:
+                    # If ArtisanProfile creation fails, raise an exception to roll back the transaction
+                    raise Exception("Artisan profile creation failed!")
+            else:
+                # If user creation fails, raise an exception to roll back the transaction
+                raise Exception("User creation failed!")
+        # If anything goes wrong, the transaction will automatically roll back
+        return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class EmployerRegistrationView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        # Start a transaction block
+        with transaction.atomic():
+            user_serializer = CustomUserSerializer(data=request.data)
+            if user_serializer.is_valid():
+                # Create the user
+                user = user_serializer.save()
+
+                # Now, try creating the employer profile
+                employer_profile_data = request.data.copy()  # Copy request data
+                employer_profile_data['user'] = user.id
+                employer_serializer = EmployerProfileSerializer(data=employer_profile_data)
+                
+                if employer_serializer.is_valid():
+                    employer_serializer.save()
+                    return Response({'detail': 'Registration successful!'}, status=status.HTTP_201_CREATED)
+                else:
+                    # If EmployerProfile creation fails, raise an exception to roll back the transaction
+                    raise Exception("Employer profile creation failed!")
+            else:
+                # If user creation fails, raise an exception to roll back the transaction
+                raise Exception("User creation failed!")
+        # If anything goes wrong, the transaction will automatically roll back
+        return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
