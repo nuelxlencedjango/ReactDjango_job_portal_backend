@@ -72,6 +72,8 @@ from rest_framework import serializers
 from .models import CustomUser, ArtisanProfile, EmployerProfile
 
 
+
+
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
@@ -86,16 +88,14 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        user = CustomUser.objects.create(
-            username=validated_data['username'],
-            email=validated_data['email'],
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name'],
-            user_type=validated_data['user_type']  # Make sure to save user_type
-        )
+        del validated_data['confirm_password']
+        user = CustomUser.objects.create(**validated_data)
         user.set_password(validated_data['password'])
         user.save()
         return user
+
+
+
 
 
 class ArtisanProfileSerializer(serializers.ModelSerializer):
