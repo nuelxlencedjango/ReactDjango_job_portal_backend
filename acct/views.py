@@ -11,6 +11,15 @@ from .serializers import CustomUserSerializer
 from django.core.files.storage import default_storage
 from django.conf import settings
 
+
+
+
+
+
+
+
+
+
 class xzArtisanRegistrationView(APIView):
     def post(self, request):
         data = request.data
@@ -365,23 +374,21 @@ def artisan_or_employer_register(request):
 
 
 
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from .models import CustomUser
-from .serializers import CustomUserSerializer
+
 
 class RegistrationView(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request):
         try:
             user_serializer = CustomUserSerializer(data=request.data)
             if user_serializer.is_valid():
-                user_serializer.save()
-                return Response({'detail': 'Registration successful!'}, status=status.HTTP_201_CREATED)
+                user = user_serializer.save()
+                return Response({
+                    'detail': 'Registration successful!', 'id': user.id, 
+                    'username': user.username }, status=status.HTTP_201_CREATED)
             else:
-                return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                formatted_errors = {key: value[0] for key, value in user_serializer.errors.items()}
+                return Response(formatted_errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
