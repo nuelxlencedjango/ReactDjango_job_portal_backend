@@ -272,7 +272,7 @@ from .serializers import CustomUserSerializer, ArtisanProfileSerializer, Employe
 from .models import CustomUser
 
 
-class ArtisanRegistrationView(APIView):
+class ltArtisanRegistrationView(APIView):
     permission_classes = [AllowAny]
     
     def post(self, request):
@@ -299,7 +299,7 @@ class ArtisanRegistrationView(APIView):
                 return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class EmployerRegistrationView(APIView):
+class kkEmployerRegistrationView(APIView):
     permission_classes = [AllowAny]
     
     def post(self, request):
@@ -325,3 +325,60 @@ class EmployerRegistrationView(APIView):
                 # If user creation fails, return the errors
                 return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+
+
+
+from django.http import JsonResponse
+from rest_framework.decorators import api_view
+from rest_framework.parsers import MultiPartParser, FormParser
+from .models import *
+from .serializers import *
+
+@api_view(['POST'])
+def artisan_or_employer_register(request):
+    csrf_token = request.META.get('HTTP_X_CSRFTOKEN')
+
+    # Validate CSRF token
+    if not csrf_token or not validate_csrf_token(csrf_token):
+        return JsonResponse({"error": "Invalid CSRF token"}, status=403)
+
+    user_type = request.data.get('user_type')
+
+    if user_type == "artisan":
+        serializer = ArtisanSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)
+
+    elif user_type == "employer":
+        serializer = EmployerSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)
+    
+    return JsonResponse({"error": "Invalid user type"}, status=400)
+
+
+
+
+
+
+
+
+class RegistrationView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        # Start a transaction block
+        with transaction.atomic():
+            user_serializer = CustomUserSerializer(data=request.data)
+            if user_serializer.is_valid():
+                # Create the user
+                user_serializer.save()
+                return Response({'detail': 'Registration successful!'}, status=status.HTTP_201_CREATED)
+            
+            return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+               
