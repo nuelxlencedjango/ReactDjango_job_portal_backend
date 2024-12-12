@@ -365,20 +365,23 @@ def artisan_or_employer_register(request):
 
 
 
-
-
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .models import CustomUser
+from .serializers import CustomUserSerializer
 
 class RegistrationView(APIView):
     permission_classes = [AllowAny]
-    
     def post(self, request):
-        # Start a transaction block
-        with transaction.atomic():
+        try:
             user_serializer = CustomUserSerializer(data=request.data)
             if user_serializer.is_valid():
-                # Create the user
                 user_serializer.save()
                 return Response({'detail': 'Registration successful!'}, status=status.HTTP_201_CREATED)
-            
-            return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-               
+            else:
+                return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
