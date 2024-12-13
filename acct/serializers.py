@@ -5,19 +5,6 @@ from .models import ArtisanProfile, EmployerProfile, ManagerProfile
 
 User = get_user_model()
 
-class klkkCustomUserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
-    confirm_password = serializers.CharField(write_only=True)
-
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'user_type', 'password', 'confirm_password']
-
-    def validate(self, data):
-        if data['password'] != data['confirm_password']:
-            raise serializers.ValidationError("Passwords do not match")
-        return data
-
 
 
 
@@ -66,13 +53,6 @@ class ppEmployerProfileSerializer(serializers.ModelSerializer):
 
 
 
-# serializers.py
-
-from rest_framework import serializers
-from .models import CustomUser, ArtisanProfile, EmployerProfile
-
-
-
 
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -80,21 +60,19 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'password', 'confirm_password', 'first_name', 'last_name', 'user_type']  
+        fields = ['username', 'email', 'password', 'confirm_password', 'first_name', 'last_name', 'user_type']
 
     def validate(self, data):
         if data['password'] != data['confirm_password']:
             raise serializers.ValidationError("Passwords do not match.")
         return data
-    
 
     def create(self, validated_data):
         del validated_data['confirm_password']
         user = CustomUser.objects.create(**validated_data)
-        user.set_password(validated_data['password'])
+        user.set_password(validated_data['password'])  # This encrypts the password
         user.save()
         return user
-
 
 
 

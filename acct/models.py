@@ -16,6 +16,11 @@ class CustomUser(AbstractUser):
     user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES)
     date_joined = models.DateField(auto_now_add=True, null=True, blank=True)
 
+
+    #USERNAME_FIELD = 'email'
+    #REQUIRED_FIELDS = ('username','username')
+    email = models.EmailField(unique=True)
+
     def __str__(self):
         return f"{self.username} ({self.get_user_type_display()})"
 
@@ -39,7 +44,7 @@ class CustomUser(AbstractUser):
 # Abstract Base Profile
 class BaseProfile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    phone_number = models.CharField(max_length=15, null=True, blank=True)
+    phone_number = models.CharField(max_length=15, null=True, blank=True, unique=True) 
     location = models.ForeignKey('api.Area', on_delete=models.CASCADE, null=True, blank=True)
     date_joined = models.DateField(auto_now_add=True, null=True, blank=True)
 
