@@ -457,29 +457,37 @@ class ArtisanRegistrationDetailView(APIView):
 
 
 
-from rest_framework import serializers, status
+
+
+# views.py
+
 from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.views import APIView
-from .models import CustomUser, ArtisanProfile
 from .serializers import CustomUserSerializer
+from .models import CustomUser, ArtisanProfile, EmployerProfile, ManagerProfile
 
 class UserRegistrationAndProfileCreation(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
-        user_serializer = CustomUserSerializer(data=request.data)
+        try:
+            user_serializer = CustomUserSerializer(data=request.data)
         
-        if user_serializer.is_valid():
-            user = user_serializer.save()  # Create the user
+            if user_serializer.is_valid():
+                user = user_serializer.save()  # Create the user
             
-            # Create an artisan profile
-            artisan_profile = ArtisanProfile.objects.create(user=user)
-            
-            # You can add artisan-specific fields here if necessary
-            return Response({
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "first_name": user.first_name,
-                "last_name": user.last_name
-            }, status=status.HTTP_201_CREATED)
+                # Trigger profile creation via signals (handled by Django signals)
+         
+                return Response({ "id": user.id,"username": user.username,
+                "email": user.email,"first_name": user.first_name,
+                "last_name": user.last_name, 'password':user.password, 'confirm_password': user.confirm_password, 'user_type':user.user_type  }, status=status.HTTP_201_CREATED)
+            else:
+                formatted_errors = {key: value[0] for key, value in user_serializer.errors.items()}
+                return Response(formatted_errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         
-        return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+       
+
+
