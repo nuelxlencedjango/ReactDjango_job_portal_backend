@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import CustomUser, ArtisanProfile, EmployerProfile, ManagerProfile
-from .serializers import CustomUserSerializer
+from .serializers import CustomUserSerializer,ArtisanProfileSerializer, EmployerProfileSerializer
 from django.core.files.storage import default_storage
 from django.conf import settings
 
@@ -15,93 +15,6 @@ from django.conf import settings
 
 
 
-
-
-
-
-
-class xzArtisanRegistrationView(APIView):
-    def post(self, request):
-        data = request.data
-        user_data = {
-            "username": data["username"],
-            "email": data["email"],
-            "user_type": "artisan",
-        }
-        
-        # Save user
-        user = CustomUser.objects.create_user(**user_data, password=data["password"])
-        
-        # Create Artisan Profile
-        ArtisanProfile.objects.create(
-            user=user,
-            experience=data["experience"],
-            job_type=data["job_type"],
-            profile_image=data.get("profile_image", None),
-            fingerprint_image=data.get("fingerprint_image", None),
-            industry=data.get("industry", None),
-            pay=data.get("pay", None),
-            nin=data["nin"]
-        )
-        
-        return Response({"message": "Artisan registered successfully!"}, status=status.HTTP_201_CREATED)
-
-
-class polEmployerRegistrationView(APIView):
-    def post(self, request):
-        data = request.data
-        user_data = {
-            "username": data["username"],
-            "email": data["email"],
-            "user_type": "employer",
-        }
-
-        # Save user
-        user = CustomUser.objects.create_user(**user_data, password=data["password"])
-        
-        # Create Employer Profile
-        EmployerProfile.objects.create(
-            user=user,
-            company_name=data["company_name"],
-            company_address=data["company_address"]
-        )
-        
-        return Response({"message": "Employer registered successfully!"}, status=status.HTTP_201_CREATED)
-
-
-class llManagerRegistrationView(APIView):
-    def post(self, request):
-        data = request.data
-        user_data = {
-            "username": data["username"],
-            "email": data["email"],
-            "user_type": "manager",
-        }
-
-        # Save user
-        user = CustomUser.objects.create_user(**user_data, password=data["password"])
-        
-        # Create Manager Profile
-        ManagerProfile.objects.create(
-            user=user,
-            department=data["department"]
-        )
-        
-        return Response({"message": "Manager registered successfully!"}, status=status.HTTP_201_CREATED)
-
-
-
-
-
-
-
-
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import CustomUser, ArtisanProfile, EmployerProfile
-from .serializers import CustomUserSerializer, ArtisanProfileSerializer, EmployerProfileSerializer
 
 class mkArtisanRegistrationView(APIView):
     permission_classes = [AllowAny]
@@ -412,49 +325,6 @@ class pooArtisanRegistrationDetailView(APIView):
 
 
 
-class ArtisanRegistrationDetailView(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        try:
-            # Retrieve the artisan data
-            artisan_data = request.data
-
-            # Get user ID from the authenticated user (request.user.id)
-            user_id = request.user.id
-
-            if not user_id:
-                return Response({'error': 'User information is required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                # Retrieve the user using the ID from the authenticated request
-                user = CustomUser.objects.get(id=user_id)
-            except CustomUser.DoesNotExist:
-                return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-            # Ensure the user is registered as an artisan (set user_type here)
-            user.user_type = 'artisan'
-            user.save()
-
-            # Add the user instance to the artisan profile data
-            artisan_data['user'] = user.id
-
-            # Validate and save the artisan profile
-            artisan_serializer = ArtisanProfileSerializer(data=artisan_data)
-            if artisan_serializer.is_valid():
-                artisan_serializer.save()
-                return Response({'detail': 'Artisan profile created successfully!'}, status=status.HTTP_201_CREATED)
-
-            # If validation fails, return errors
-            return Response(artisan_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        except Exception as e:
-            # General exception handler to catch unexpected errors
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-
-
 
 
 
@@ -489,5 +359,51 @@ class UserRegistrationAndProfileCreation(APIView):
 
         
        
+
+
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from .models import ArtisanProfile, CustomUser
+from .serializers import ArtisanProfileSerializer
+
+class ArtisanRegistrationDetailView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            # Ensure the user exists
+            user_id = request.data.get('user_id')
+            user = CustomUser.objects.get(id=user_id)
+
+            # Check if ArtisanProfile already exists
+            if ArtisanProfile.objects.filter(user=user).exists():
+                return Response({'detail': 'Artisan profile already exists for this user.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Prepare the artisan data from request
+            artisan_data = request.data
+            artisan_data['user'] = user  # Associate the user with the profile
+            
+            # Handle files (upload profile_img and fingerprint_image)
+            if 'profile_img' in request.FILES:
+                artisan_data['profile_image'] = request.FILES['profile_img']
+            if 'fingerprint_img' in request.FILES:
+                artisan_data['fingerprint_image'] = request.FILES['fingerprint_img']
+
+            # Serialize the data and validate
+            artisan_serializer = ArtisanProfileSerializer(data=artisan_data)
+            if artisan_serializer.is_valid():
+                artisan_serializer.save()  # Create the artisan profile
+                return Response({'detail': 'Artisan profile created successfully!'}, status=status.HTTP_201_CREATED)
+            else:
+                return Response(artisan_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        except CustomUser.DoesNotExist:
+            return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+        
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 
