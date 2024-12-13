@@ -403,12 +403,13 @@ class ArtisanRegistrationDetailView(APIView):
     def post(self, request):
         try:
             # Extract artisan data
+            user_info = request.user.id
             artisan_data = request.data
 
             # Retrieve the user by ID (user should already exist at this point)
             user_id = artisan_data.get('user')
             if not user_id:
-                return Response({'error': 'User information is required.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'User information is required.','user_info':user_info}, status=status.HTTP_400_BAD_REQUEST)
 
             try:
                 user = CustomUser.objects.get(id=user_id)
