@@ -341,35 +341,6 @@ class kkEmployerRegistrationView(APIView):
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.parsers import MultiPartParser, FormParser
-from .models import *
-from .serializers import *
-
-@api_view(['POST'])
-def artisan_or_employer_register(request):
-    csrf_token = request.META.get('HTTP_X_CSRFTOKEN')
-
-    # Validate CSRF token
-    if not csrf_token or not validate_csrf_token(csrf_token):
-        return JsonResponse({"error": "Invalid CSRF token"}, status=403)
-
-    user_type = request.data.get('user_type')
-
-    if user_type == "artisan":
-        serializer = ArtisanSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
-
-    elif user_type == "employer":
-        serializer = EmployerSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
-    
-    return JsonResponse({"error": "Invalid user type"}, status=400)
-
 
 
 
@@ -390,5 +361,75 @@ class RegistrationView(APIView):
             else:
                 formatted_errors = {key: value[0] for key, value in user_serializer.errors.items()}
                 return Response(formatted_errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+
+
+class ArtisanRegistrationDetailView(APIView):
+    permission_classes = [AllowAny]
+ 
+    def post(self, request):
+        #user = request.data.id
+        user_serializer = CustomUserSerializer(user=request.data.id)
+        user = CustomUser.objects.get(user = user_serializer)
+        user.user_type = 'artisan'
+        user.save()
+        
+       # if user_serializer.is_valid():
+            # Save the user
+        #    user = user_serializer.save()
+            
+            # Copy the data for EmployerProfile and add the user ID
+         #   employer_profile_data = request.data.copy()
+          #  employer_profile_data['user'] = user.id
+            
+            # Serialize and save EmployerProfile
+        artisan_serializer = ArtisanProfileSerializer(data=user_serializer)
+        if artisan_serializer.is_valid():
+                artisan_serializer.save()
+                return Response({'detail': 'Registration successful!'}, status=status.HTTP_201_CREATED)
+        return Response(artisan_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        #return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ArtisanRegistrationDetailView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            # Extract artisan data
+            artisan_data = request.data
+
+            # Retrieve the user by ID (user should already exist at this point)
+            user_id = artisan_data.get('user')
+            if not user_id:
+                return Response({'error': 'User information is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                user = CustomUser.objects.get(id=user_id)
+            except CustomUser.DoesNotExist:
+                return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            # Ensure the user_type is set to 'artisan'
+            user.user_type = 'artisan'
+            user.save()
+
+            # Add the user instance to the artisan profile data
+            artisan_data['user'] = user.id
+
+            # Validate and save the artisan profile
+            artisan_serializer = ArtisanProfileSerializer(data=artisan_data)
+            if artisan_serializer.is_valid():
+                artisan_serializer.save()
+                return Response({'detail': 'Artisan profile created successfully!'}, status=status.HTTP_201_CREATED)
+
+            # If validation fails, return errors
+            return Response(artisan_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

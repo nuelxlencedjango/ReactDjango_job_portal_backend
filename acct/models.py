@@ -2,14 +2,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from cloudinary.models import CloudinaryField
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-
-# Create your models here.
-
-
-
-
 
 
 
@@ -58,6 +50,8 @@ class BaseProfile(models.Model):
         return f"{self.user.username} Profile"
 
 
+
+#email unique,phone no unique
 # Artisan Profile
 class ArtisanProfile(BaseProfile):
     service = models.ForeignKey('api.Service', related_name='artisans', on_delete=models.CASCADE, null=True, blank=True)
