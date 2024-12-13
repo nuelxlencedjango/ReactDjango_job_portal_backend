@@ -92,7 +92,7 @@ class CaqustomUserSerializer(serializers.ModelSerializer):
 
    # def validate(self, data):
         # Check if passwords match
-    #    if data['password'] != data['confirm_password']: 
+     #    if data['password'] != data['confirm_password']:  
      #       raise serializers.ValidationError("Passwords do not match.")
       #  return data
 
@@ -124,16 +124,16 @@ from .models import CustomUser
 
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
-    confirm_password = serializers.CharField(write_only=True)
+    password2 = serializers.CharField(write_only=True)
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'password', 'confirm_password', 'first_name', 'last_name', 'user_type']
-        extra_kwargs = {'password': {'write_only': True}, 'confirm_password': {'write_only': True}}
+        fields = ['username', 'email', 'password', 'password2', 'first_name', 'last_name', 'user_type']
+        extra_kwargs = {'password': {'write_only': True}, 'password2': {'write_only': True}}
 
     def validate(self, data):
         # Check if passwords match
-        if data['password'] != data['confirm_password']:
+        if data['password'] != data['password2']:
             raise serializers.ValidationError("Passwords do not match.")
         return data
 
@@ -144,8 +144,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        # Remove confirm_password from the validated data since it's not needed for user creation
-        validated_data.pop('confirm_password', None)
+         # Remove confirm_password from the validated data since it's not needed for user creation 
+        validated_data.pop('password2', None)
 
         # Create the user with the validated data
         user = CustomUser.objects.create_user(
