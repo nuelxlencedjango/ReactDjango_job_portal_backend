@@ -451,3 +451,35 @@ class ArtisanRegistrationDetailView(APIView):
         except Exception as e:
             # General exception handler to catch unexpected errors
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+
+
+from rest_framework import serializers, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .models import CustomUser, ArtisanProfile
+from .serializers import CustomUserSerializer
+
+class UserRegistrationAndProfileCreation(APIView):
+    def post(self, request):
+        user_serializer = CustomUserSerializer(data=request.data)
+        
+        if user_serializer.is_valid():
+            user = user_serializer.save()  # Create the user
+            
+            # Create an artisan profile
+            artisan_profile = ArtisanProfile.objects.create(user=user)
+            
+            # You can add artisan-specific fields here if necessary
+            return Response({
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name
+            }, status=status.HTTP_201_CREATED)
+        
+        return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
