@@ -397,7 +397,7 @@ class ArtisanRegistrationDetailView(APIView):
         #return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ArtisanRegistrationDetailView(APIView):
+class pooArtisanRegistrationDetailView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -433,4 +433,49 @@ class ArtisanRegistrationDetailView(APIView):
             return Response(artisan_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+
+
+class ArtisanRegistrationDetailView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            # Retrieve the artisan data
+            artisan_data = request.data
+
+            # Get user ID from the authenticated user (request.user.id)
+            user_id = request.user.id
+
+            if not user_id:
+                return Response({'error': 'User information is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                # Retrieve the user using the ID from the authenticated request
+                user = CustomUser.objects.get(id=user_id)
+            except CustomUser.DoesNotExist:
+                return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            # Ensure the user is registered as an artisan (set user_type here)
+            user.user_type = 'artisan'
+            user.save()
+
+            # Add the user instance to the artisan profile data
+            artisan_data['user'] = user.id
+
+            # Validate and save the artisan profile
+            artisan_serializer = ArtisanProfileSerializer(data=artisan_data)
+            if artisan_serializer.is_valid():
+                artisan_serializer.save()
+                return Response({'detail': 'Artisan profile created successfully!'}, status=status.HTTP_201_CREATED)
+
+            # If validation fails, return errors
+            return Response(artisan_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            # General exception handler to catch unexpected errors
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
