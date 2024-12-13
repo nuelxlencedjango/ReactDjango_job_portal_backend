@@ -83,18 +83,18 @@ class CpoustomUserSerializer(serializers.ModelSerializer):
 
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
-    confirm_password = serializers.CharField(write_only=True)
+   # confirm_password = serializers.CharField(write_only=True)
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'password', 'confirm_password', 'first_name', 'last_name', 'user_type']
+        fields = ['username', 'email', 'password', 'first_name', 'last_name', 'user_type']
         extra_kwargs = {'password': {'write_only': True}}
 
-    def validate(self, data):
+   # def validate(self, data):
         # Check if passwords match
-        if data['password'] != data['confirm_password']:
-            raise serializers.ValidationError("Passwords do not match.")
-        return data
+    #    if data['password'] != data['confirm_password']:
+     #       raise serializers.ValidationError("Passwords do not match.")
+      #  return data
 
     def validate_email(self, value):
         # Ensure email is unique
