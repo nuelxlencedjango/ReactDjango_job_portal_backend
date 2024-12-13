@@ -368,42 +368,50 @@ from rest_framework.permissions import AllowAny
 from .models import ArtisanProfile, CustomUser
 from .serializers import ArtisanProfileSerializer
 
+
 class ArtisanRegistrationDetailView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
         try:
             # Ensure the user exists
-            user_id = request.user.id
-            user = CustomUser.objects.get(id=user_id)
+            user_id = request.data.get('username') 
+            if not user_id:
+                return Response({'error': 'Username is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Check if ArtisanProfile already exists
-            if ArtisanProfile.objects.filter(user=user).exists():
-                return Response({'detail': 'Artisan profile already exists for this user.'}, status=status.HTTP_400_BAD_REQUEST)
+            # Fetch the user instance
+            user = CustomUser.objects.get(user=user_id)
 
-            # Prepare the artisan data from request
+            # Check if ArtisanProfile already exists for the user
+            artisan_profile = ArtisanProfile.objects.filter(user=user).first()
+
+            if not artisan_profile:
+                return Response({'detail': 'Artisan profile not found. Please create an artisan profile first.'}, 
+                                 status=status.HTTP_400_BAD_REQUEST)
+
+            # If the ArtisanProfile exists, allow the user to add/update their details
             artisan_data = request.data
-            artisan_data['user'] = user  # Associate the user with the profile
-            
-            # Handle files (upload profile_img and fingerprint_image)
+            artisan_data['user'] = user  # Associate the user with the artisan profile
+
+            # Handle file uploads (profile_img and fingerprint_img)
             if 'profile_img' in request.FILES:
                 artisan_data['profile_image'] = request.FILES['profile_img']
             if 'fingerprint_img' in request.FILES:
                 artisan_data['fingerprint_image'] = request.FILES['fingerprint_img']
 
             # Serialize the data and validate
-            artisan_serializer = ArtisanProfileSerializer(data=artisan_data)
+            artisan_serializer = ArtisanProfileSerializer(artisan_profile, data=artisan_data, partial=True)  # partial=True allows updating specific fields
             if artisan_serializer.is_valid():
-                artisan_serializer.save()  # Create the artisan profile
-                return Response({'detail': 'Artisan profile created successfully!'}, status=status.HTTP_201_CREATED)
+                artisan_serializer.save()  # Update the artisan profile
+                return Response({'detail': 'Artisan profile updated successfully!'}, status=status.HTTP_200_OK)
             else:
                 return Response(artisan_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
         except CustomUser.DoesNotExist:
             return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
-        
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+        except Exception as e:
+            # It's better to handle specific exceptions if possible
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
