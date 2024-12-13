@@ -369,34 +369,6 @@ class RegistrationView(APIView):
 
 
 
-class ArtisanRegistrationDetailView(APIView):
-    permission_classes = [AllowAny]
- 
-    def post(self, request):
-        #user = request.data.id
-        user_serializer = CustomUserSerializer(user=request.data.id)
-        user = CustomUser.objects.get(user = user_serializer)
-        user.user_type = 'artisan'
-        user.save()
-        
-       # if user_serializer.is_valid():
-            # Save the user
-        #    user = user_serializer.save()
-            
-            # Copy the data for EmployerProfile and add the user ID
-         #   employer_profile_data = request.data.copy()
-          #  employer_profile_data['user'] = user.id
-            
-            # Serialize and save EmployerProfile
-        artisan_serializer = ArtisanProfileSerializer(data=user_serializer)
-        if artisan_serializer.is_valid():
-                artisan_serializer.save()
-                return Response({'detail': 'Registration successful!'}, status=status.HTTP_201_CREATED)
-        return Response(artisan_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        #return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 class pooArtisanRegistrationDetailView(APIView):
     permission_classes = [AllowAny]
 
