@@ -391,7 +391,7 @@ class ArtisanRegistrationDetailView(APIView):
 
             # If the ArtisanProfile exists, allow the user to add/update their details
             artisan_data = request.data
-            artisan_data['user'] = user  # Associate the user with the artisan profile
+            artisan_data['username'] = user  # Associate the user with the artisan profile
 
             # Handle file uploads (profile_img and fingerprint_img)
             if 'profile_img' in request.FILES:
