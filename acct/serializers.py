@@ -19,7 +19,7 @@ class rtCustomUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'password', 'confirm_password','first_name','last_name',]
+        fields = ['username', 'email', 'password','first_name','last_name',]
 
     def validate(self, data):
         if data['password'] != data['confirm_password']:
@@ -54,6 +54,33 @@ class ppEmployerProfileSerializer(serializers.ModelSerializer):
 
 
 
+class CpoustomUserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+    #confirm_password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'email', 'password', 'first_name', 'last_name', 'user_type']
+        extra_kwargs = {'password': {'write_only': True}}
+        
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        user = CustomUser.objects.create_user(
+            username=validated_data['username'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
+            email=validated_data['email'],
+            )
+      
+        user.set_password(password)
+        user.save()
+        return user
+
+
+
+
+
+
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
@@ -61,19 +88,33 @@ class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['username', 'email', 'password', 'confirm_password', 'first_name', 'last_name', 'user_type']
+        extra_kwargs = {'password': {'write_only': True}}
 
     def validate(self, data):
+        # Check if passwords match
         if data['password'] != data['confirm_password']:
             raise serializers.ValidationError("Passwords do not match.")
         return data
 
+    def validate_email(self, value):
+        # Ensure email is unique
+        if CustomUser.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Email is already taken.")
+        return value
+
     def create(self, validated_data):
-        del validated_data['confirm_password']
-        user = CustomUser.objects.create(**validated_data)
-        user.set_password(validated_data['password'])  # This encrypts the password
+        password = validated_data.pop('password')
+        user = CustomUser.objects.create_user(
+            username=validated_data['username'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
+            email=validated_data['email'],
+            user_type=validated_data.get('user_type', 'default_value') 
+        )
+
+        user.set_password(password)
         user.save()
         return user
-
 
 
 
