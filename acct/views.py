@@ -374,7 +374,7 @@ class ArtisanRegistrationDetailView(APIView):
     def post(self, request):
         try:
             # Ensure the user exists
-            user_id = request.data.get('user_id')
+            user_id = request.user.id
             user = CustomUser.objects.get(id=user_id)
 
             # Check if ArtisanProfile already exists
