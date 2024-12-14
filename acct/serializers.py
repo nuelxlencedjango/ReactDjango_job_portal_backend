@@ -51,28 +51,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 
 
-class hjjArtisanProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ArtisanProfile
-        fields = ['experience', 'service', 'pay', 'profile_image', 'fingerprint_image', 'nin', 'phone_number', 'address']
 
-
-
-
-from rest_framework import serializers
-from .models import ArtisanProfile, CustomUser  # Ensure you import the right model
-
-class AkoortisanProfileSerializer(serializers.ModelSerializer):
-    # The 'user' field should be included and either required or read-only
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
-
-    class Meta:
-        model = ArtisanProfile
-        fields = ['user', 'experience', 'service', 'pay', 'profile_image', 'fingerprint_image', 'nin', 'phone_number', 'address']
-
-    def create(self, validated_data):
-        # Create the ArtisanProfile instance with the validated data
-        return ArtisanProfile.objects.create(**validated_data)
 
 
 
@@ -81,26 +60,6 @@ class EmployerProfileSerializer(serializers.ModelSerializer):
         model = EmployerProfile
         fields = ['company_name', 'company_address']
 
-
-
-
-from rest_framework import serializers
-from .models import ArtisanProfile, CustomUser
-
-class frrArtisanProfileSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
-    
-    # You can add file validation here, if needed
-    profile_image = serializers.ImageField(required=False)
-    fingerprint_image = serializers.ImageField(required=False)
-
-    class Meta:
-        model = ArtisanProfile
-        fields = ['user', 'experience', 'service', 'pay', 'profile_image', 'fingerprint_image', 'nin', 'phone_number', 'address','date_joined']
-
-    
-    def create(self, validated_data):
-        return ArtisanProfile.objects.create(**validated_data)
 
 
 
@@ -113,12 +72,12 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
     
     # Custom fields to get URLs for the images
-    profile_image_url = serializers.SerializerMethodField()
-    fingerprint_image_url = serializers.SerializerMethodField()
+    profile_image = serializers.SerializerMethodField()
+    fingerprint_image = serializers.SerializerMethodField()
 
     class Meta:
         model = ArtisanProfile
-        fields = ['user', 'experience', 'service', 'pay', 'profile_image_url', 'fingerprint_image_url', 
+        fields = ['user', 'experience','location' 'service', 'pay', 'profile_image', 'fingerprint_image', 
                   'nin', 'phone_number', 'address', 'date_joined']
         read_only_fields = ['date_joined']
 
