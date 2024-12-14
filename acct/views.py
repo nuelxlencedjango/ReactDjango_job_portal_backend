@@ -557,9 +557,9 @@ class UserRegistrationDetailView(APIView):
                         artisan = artisan_serializer.save() 
                         if 'profile_img' in request.FILES:
                             artisan.profile_image = request.FILES['profile_img']
-                        if 'fingerprint_img' in request.FILES:
+                        if 'fingerprint_image' in request.FILES:
                             artisan.fingerprint_image = request.FILES['fingerprint_img']
-                            
+
                         artisan.save()    
                          # Save the new artisan profile
                         return Response({'detail': 'Artisan profile created successfully!'}, status=status.HTTP_201_CREATED)
