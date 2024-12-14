@@ -51,10 +51,29 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 
 
-class ArtisanProfileSerializer(serializers.ModelSerializer):
+class hjjArtisanProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = ArtisanProfile
         fields = ['experience', 'service', 'pay', 'profile_image', 'fingerprint_image', 'nin', 'phone_number', 'address']
+
+
+
+
+from rest_framework import serializers
+from .models import ArtisanProfile, CustomUser  # Ensure you import the right model
+
+class ArtisanProfileSerializer(serializers.ModelSerializer):
+    # The 'user' field should be included and either required or read-only
+    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
+
+    class Meta:
+        model = ArtisanProfile
+        fields = ['user', 'experience', 'service', 'pay', 'profile_image', 'fingerprint_image', 'nin', 'phone_number', 'address']
+
+    def create(self, validated_data):
+        # Create the ArtisanProfile instance with the validated data
+        return ArtisanProfile.objects.create(**validated_data)
+
 
 
 class EmployerProfileSerializer(serializers.ModelSerializer):
