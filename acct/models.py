@@ -45,7 +45,7 @@ class CustomUser(AbstractUser):
 class BaseProfile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=15, null=True, blank=True, unique=True) 
-    location = models.ForeignKey('api.Area', on_delete=models.CASCADE, null=True, blank=True)
+    #location = models.ForeignKey('api.Area', on_delete=models.CASCADE, null=True, blank=True)
     date_joined = models.DateField(auto_now_add=True, null=True, blank=True)
 
     class Meta:
@@ -62,6 +62,7 @@ class ArtisanProfile(BaseProfile):
     service = models.ForeignKey('api.Service', related_name='artisans', on_delete=models.CASCADE, null=True, blank=True)
     experience = models.PositiveIntegerField(null=True, blank=True)
     fingerprint_image = CloudinaryField('fingerprints', null=True, blank=True)
+    location = models.ForeignKey('api.Area', on_delete=models.CASCADE, null=True, blank=True)
     address = models.CharField(max_length=255, null=True, blank=True)
     profile_image = CloudinaryField('profile_images', null=True, blank=True)
     nin = models.CharField(max_length=11, unique=True,null=True, blank=True)
@@ -72,6 +73,7 @@ class ArtisanProfile(BaseProfile):
 
 # Employer Profile
 class EmployerProfile(BaseProfile):
+    location = models.ForeignKey('api.Area', on_delete=models.CASCADE, null=True, blank=True)
     company_name = models.CharField(max_length=255, null=True, blank=True)
 
 

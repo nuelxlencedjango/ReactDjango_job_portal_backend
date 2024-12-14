@@ -1,3 +1,5 @@
+'''
+
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -21,3 +23,4 @@ def save_user_profile(sender, instance, **kwargs):
         instance.employerprofile.save()
     elif hasattr(instance, 'managerprofile'):
         instance.managerprofile.save()
+'''
