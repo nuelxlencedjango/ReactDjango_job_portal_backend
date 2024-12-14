@@ -73,12 +73,12 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
     
     # Custom fields to get URLs for the images
     profile_image = serializers.SerializerMethodField() 
-    fingerprint_image = serializers.SerializerMethodField()
+   # fingerprint_image = serializers.SerializerMethodField()
 
     class Meta:
         model = ArtisanProfile
-        fields = ['user', 'experience','location', 'service', 'pay', 'profile_image',  'fingerprint_image', 
-                  'nin', 'phone_number', 'address', 'date_joined']
+        fields = ['user', 'experience','location', 'service', 'pay', 'profile_image', 'nin', 
+                  'phone_number', 'address', 'date_joined']
         read_only_fields = ['date_joined']
 
     def get_profile_image_url(self, obj):
@@ -87,11 +87,7 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
             return obj.profile_image.url 
         return None
 
-    def get_fingerprint_image_url(self, obj):
-        """Returns the URL of the fingerprint image, if it exists."""
-        if obj.fingerprint_image:
-            return obj.fingerprint_image.url
-        return None
+ 
 
     def create(self, validated_data):
         return ArtisanProfile.objects.create(**validated_data)

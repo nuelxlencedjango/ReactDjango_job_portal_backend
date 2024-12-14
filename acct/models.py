@@ -61,7 +61,7 @@ class BaseProfile(models.Model):
 class ArtisanProfile(BaseProfile):
     service = models.ForeignKey('api.Service', related_name='artisans', on_delete=models.CASCADE, null=True, blank=True)
     experience = models.PositiveIntegerField(null=True, blank=True)
-    fingerprint_image = CloudinaryField( null=True, blank=True)
+    #fingerprint_image = CloudinaryField( null=True, blank=True)
     #location = models.ForeignKey('api.Area', on_delete=models.CASCADE, null=True, blank=True)
     address = models.CharField(max_length=255, null=True, blank=True)
     profile_image = CloudinaryField( null=True, blank=True)
