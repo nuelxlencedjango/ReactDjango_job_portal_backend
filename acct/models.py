@@ -22,7 +22,7 @@ class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
 
     def __str__(self):
-        return f"{self.username} ({self.get_user_type_display()})"
+        return f"{self.username} - ({self.get_user_type_display()})"
 
     @property
     def is_admin(self):
