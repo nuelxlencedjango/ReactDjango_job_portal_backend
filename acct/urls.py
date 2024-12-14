@@ -8,7 +8,7 @@ urlpatterns = [
     #path('employer-register/', views.EmployerRegistrationView.as_view(), name='employer-register'),
    # path('register/manager/', views.ManagerRegistrationView.as_view(), name='manager-register'),
     path('registration/', views.UserRegistrationAndProfileCreation.as_view(), name='registration'),
-    path('artisan-register/', views.ArtisanRegistrationDetailView.as_view(), name='artisan-register'),
+    path('user-register/', views.UserRegistrationDetailView.as_view(), name='user-register'),
    
 ]
 
