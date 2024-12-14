@@ -87,7 +87,7 @@ class EmployerProfileSerializer(serializers.ModelSerializer):
 from rest_framework import serializers
 from .models import ArtisanProfile, CustomUser
 
-class ArtisanProfileSerializer(serializers.ModelSerializer):
+class frrArtisanProfileSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
     
     # You can add file validation here, if needed
@@ -96,7 +96,44 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ArtisanProfile
-        fields = ['user', 'experience', 'service', 'pay', 'profile_image', 'fingerprint_image', 'nin', 'phone_number', 'address']
+        fields = ['user', 'experience', 'service', 'pay', 'profile_image', 'fingerprint_image', 'nin', 'phone_number', 'address','date_joined']
+
+    
+    def create(self, validated_data):
+        return ArtisanProfile.objects.create(**validated_data)
+
+
+
+
+
+from rest_framework import serializers
+from .models import ArtisanProfile, CustomUser
+
+class ArtisanProfileSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
+    
+    # Custom fields to get URLs for the images
+    profile_image_url = serializers.SerializerMethodField()
+    fingerprint_image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ArtisanProfile
+        fields = ['user', 'experience', 'service', 'pay', 'profile_image_url', 'fingerprint_image_url', 
+                  'nin', 'phone_number', 'address', 'date_joined']
+        read_only_fields = ['date_joined']
+
+    def get_profile_image_url(self, obj):
+        """Returns the URL of the profile image, if it exists."""
+        if obj.profile_image:
+            return obj.profile_image.url
+        return None
+
+    def get_fingerprint_image_url(self, obj):
+        """Returns the URL of the fingerprint image, if it exists."""
+        if obj.fingerprint_image:
+            return obj.fingerprint_image.url
+        return None
 
     def create(self, validated_data):
         return ArtisanProfile.objects.create(**validated_data)
+
