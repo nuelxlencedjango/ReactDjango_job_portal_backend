@@ -375,7 +375,7 @@ class UserRegistrationDetailView(APIView):
         try:
             # Ensure the user exists
             user_id = request.data.get('username') 
-            user_type = request.data.get('user_type') 
+            #user_type = request.data.get('user_type') 
 
             if not user_id:
                 return Response({'error': 'Username is required.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -387,7 +387,7 @@ class UserRegistrationDetailView(APIView):
                 return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
 
             # Process based on user_type (either 'artisan' or 'employer')
-            if user_type == "artisan":
+            if user.user_type == "artisan":
                 # Ensure the artisan profile doesn't already exist
                 artisan_profile = ArtisanProfile.objects.filter(user=user).first()
 
@@ -411,7 +411,7 @@ class UserRegistrationDetailView(APIView):
                 else:
                     return Response({'error': 'Artisan profile already exists for this user.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            elif user_type == "employer":
+            elif user.user_type == "employer":
                 # Ensure the employer profile doesn't already exist
                 employer_profile = EmployerProfile.objects.filter(user=user).first()
 
