@@ -553,9 +553,9 @@ class UserRegistrationDetailView(APIView):
 
                     # If profile_img or fingerprint_img are provided, add them
                     if 'profile_img' in request.FILES:
-                        artisan_data['profile_image'] = request.FILES['profile_img']
+                        artisan_data.profile_image = request.FILES['profile_img']
                     if 'fingerprint_img' in request.FILES:
-                        artisan_data['fingerprint_image'] = request.FILES['fingerprint_img']
+                        artisan_data.fingerprint_image = request.FILES['fingerprint_img']
 
                     artisan_serializer = ArtisanProfileSerializer(data=artisan_data)
                     if artisan_serializer.is_valid():
