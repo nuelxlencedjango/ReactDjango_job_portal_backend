@@ -6,7 +6,7 @@ from .models import CustomUser, ArtisanProfile, EmployerProfile, ManagerProfile,
 
 class UserAdmin(admin.ModelAdmin):
     
-    list_display = ('username','first_name','last_name','email','artisan','employer','manager','admin')
+    list_display = ('username','first_name','last_name','email','artisan','employer','manager','admin','date_joined')
 
 
 
