@@ -50,6 +50,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 
 
+
 class ArtisanProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = ArtisanProfile
