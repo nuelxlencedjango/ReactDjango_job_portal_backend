@@ -77,7 +77,7 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ArtisanProfile
-        fields = ['user', 'experience','location' 'service', 'pay', 'profile_image', 'fingerprint_image', 
+        fields = ['user', 'experience','location', 'service', 'pay', 'profile_image', 'fingerprint_image', 
                   'nin', 'phone_number', 'address', 'date_joined']
         read_only_fields = ['date_joined']
 
