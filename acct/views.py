@@ -380,7 +380,7 @@ class ArtisanRegistrationDetailView(APIView):
                 return Response({'error': 'Username is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
             # Fetch the user instance
-            user = CustomUser.objects.get(user=user_id)
+            user = CustomUser.objects.get(username=user_id)
 
             # Check if ArtisanProfile already exists for the user
             artisan_profile = ArtisanProfile.objects.filter(user=user).first()
@@ -415,3 +415,55 @@ class ArtisanRegistrationDetailView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from rest_framework import status
+from .models import CustomUser, ArtisanProfile
+from .serializers import ArtisanProfileSerializer
+
+class ArpotisanRegistrationDetailView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            # Get the username or email provided in the request
+            user_id = request.data.get('username')  # Assuming username is provided
+            if not user_id:
+                return Response({'error': 'Username is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Fetch the user instance using username or email
+            try:
+                user = CustomUser.objects.get(username=user_id)  # Or use email if provided
+            except CustomUser.DoesNotExist:
+                return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            # Check if the artisan profile already exists for this user
+            artisan_profile = ArtisanProfile.objects.filter(user=user).first()
+
+            if artisan_profile:
+                # Artisan profile already exists, return a message
+                return Response({'detail': 'Artisan profile already exists for this user.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Prepare the artisan data from request
+            artisan_data = request.data
+            artisan_data['user'] = user  # Associate the user with the profile
+
+            # Handle file uploads (profile_img and fingerprint_img)
+            if 'profile_img' in request.FILES:
+                artisan_data['profile_image'] = request.FILES['profile_img']
+            if 'fingerprint_img' in request.FILES:
+                artisan_data['fingerprint_image'] = request.FILES['fingerprint_img']
+
+            # Serialize the data and validate
+            artisan_serializer = ArtisanProfileSerializer(data=artisan_data)
+            if artisan_serializer.is_valid():
+                artisan_serializer.save()  # Create the artisan profile
+                return Response({'detail': 'Artisan profile created successfully!'}, status=status.HTTP_201_CREATED)
+            else:
+                return Response(artisan_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
