@@ -395,7 +395,7 @@ class UserRegistrationDetailView(APIView):
                 if not artisan_profile:
                     artisan_data = request.data.copy()  # Make a copy of the data
                     artisan_data['user'] = user  # Assign the user instance to the artisan profile
-                    artisan_data['user_type'] = "artisan"
+                   # artisan_data['user_type'] = "artisan"
 
                     if 'profile_img' in request.FILES:
                         artisan_data['profile_image'] = request.FILES['profile_img']
@@ -419,7 +419,7 @@ class UserRegistrationDetailView(APIView):
                 if not employer_profile:
                     employer_data = request.data.copy()  # Make a copy of the data
                     employer_data['user'] = user  # Assign the user instance to the employer profile
-                    employer_data['user_type'] = "employer"
+                    #employer_data['user_type'] = "employer"
 
                     employer_serializer = EmployerProfileSerializer(data=employer_data)
                     if employer_serializer.is_valid():
