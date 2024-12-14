@@ -62,7 +62,7 @@ class hjjArtisanProfileSerializer(serializers.ModelSerializer):
 from rest_framework import serializers
 from .models import ArtisanProfile, CustomUser  # Ensure you import the right model
 
-class ArtisanProfileSerializer(serializers.ModelSerializer):
+class AkoortisanProfileSerializer(serializers.ModelSerializer):
     # The 'user' field should be included and either required or read-only
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
 
@@ -80,3 +80,23 @@ class EmployerProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmployerProfile
         fields = ['company_name', 'company_address']
+
+
+
+
+from rest_framework import serializers
+from .models import ArtisanProfile, CustomUser
+
+class ArtisanProfileSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
+    
+    # You can add file validation here, if needed
+    profile_image = serializers.ImageField(required=False)
+    fingerprint_image = serializers.ImageField(required=False)
+
+    class Meta:
+        model = ArtisanProfile
+        fields = ['user', 'experience', 'service', 'pay', 'profile_image', 'fingerprint_image', 'nin', 'phone_number', 'address']
+
+    def create(self, validated_data):
+        return ArtisanProfile.objects.create(**validated_data)
