@@ -23,7 +23,7 @@ from django.conf.urls.static import static
 #from  accounts.views import *
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
-from accounts.views import LoginView
+#from accounts.views import LoginView
 #, CustomTokenObtainPairView, CustomTokenRefreshView
 
 

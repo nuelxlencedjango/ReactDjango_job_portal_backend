@@ -62,7 +62,7 @@ class ArtisanSerializer(serializers.ModelSerializer):
 
 
 
-class ArtisanSearchListSerializerkm(serializers.ModelSerializer):
+class ArtisanSearchListSerializerkm(serializers.ModelSerializer):  
     profile_img = serializers.SerializerMethodField()
   #  user = UserSerializer()  # Include user details in the response
     location = AreaSerializer()  # Nested Location Serializer
@@ -83,7 +83,7 @@ class ArtisanSearchListSerializerkm(serializers.ModelSerializer):
 
 
 
-class ArtisanSearchListSerializer(serializers.ModelSerializer):
+class ArtisanSearchListSerializer(serializers.ModelSerializer): 
     profile_img = serializers.SerializerMethodField()
    # user = UserSerializer()
     location = AreaSerializer()
