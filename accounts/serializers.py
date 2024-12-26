@@ -1,7 +1,7 @@
 
 from rest_framework import serializers
 #from .models import User
-from artisans.models import *
+#from artisans.models import *
 from employers.models import *
 
 from django.contrib.auth import get_user_model, authenticate

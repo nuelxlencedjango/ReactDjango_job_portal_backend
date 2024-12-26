@@ -92,3 +92,23 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return ArtisanProfile.objects.create(**validated_data)
 
+
+
+
+
+
+# serializers.py
+from rest_framework import serializers
+from .models import Fingerprint
+
+class FingerprintSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Fingerprint
+        fields = ['id', 'artisan_profile', 'fingerprint_image', 'fingerprint_template', 'created_at']
+        read_only_fields = ['created_at']
+
+    def validate_fingerprint_image(self, value):
+        # Add validation if needed (e.g., image size, type)
+        if value.size > 5 * 1024 * 1024:  # Limit size to 5 MB
+            raise serializers.ValidationError("Image size is too large")
+        return value

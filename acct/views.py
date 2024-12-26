@@ -109,3 +109,55 @@ class UserRegistrationDetailView(APIView):
         except Exception as e:
             # Handle any unexpected errors
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+
+
+
+
+
+
+# views.py
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .models import Fingerprint, ArtisanProfile
+from .serializers import FingerprintSerializer
+from django.core.files.base import ContentFile
+import base64
+
+class FingerprintUploadView(APIView):
+    def post(self, request, *args, **kwargs):
+        # Ensure user is authenticated and get the artisan profile
+        artisan_profile = ArtisanProfile.objects.get(user=request.user)
+        
+        # Step 1: Get the fingerprint image or template from the request
+        fingerprint_image = request.FILES.get('fingerprint_image') or request.data.get('fingerprint_image')
+        fingerprint_template = request.data.get('fingerprint_template')
+        
+        if not fingerprint_image and not fingerprint_template:
+            return Response({'error': 'Either fingerprint image or template is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Step 2: If it's a base64 string (optional), decode it
+        if isinstance(fingerprint_image, str):  # Check if base64 string
+            if fingerprint_image.startswith('data:image'):
+                image_data = fingerprint_image.split(",")[1]
+                image_data = base64.b64decode(image_data)
+                fingerprint_image = ContentFile(image_data, name="fingerprint_image.jpg")
+        
+        # Step 3: Create a Fingerprint record
+        fingerprint = Fingerprint(
+            artisan_profile=artisan_profile,
+            fingerprint_image=fingerprint_image,
+            fingerprint_template=fingerprint_template
+        )
+        
+        fingerprint.save()
+
+        # Step 4: Return success response
+        return Response({
+            'message': 'Fingerprint uploaded successfully.',
+            'fingerprint_id': fingerprint.id
+        }, status=status.HTTP_201_CREATED)

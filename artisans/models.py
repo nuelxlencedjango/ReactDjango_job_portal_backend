@@ -13,7 +13,7 @@ from django.dispatch import receiver
 
 # Create your models here.
 
-'''
+
 class Area(models.Model):
    area_code = models.CharField(max_length=3)
    location = models.CharField(max_length=100,unique=True)
@@ -37,9 +37,6 @@ class Profession(models.Model):
 
     def __str__(self):
         return self.name
-'''
-
-'''
 
 
 class Artisan(models.Model):
@@ -71,5 +68,3 @@ class Artisan(models.Model):
 def create_user_profile(sender, instance, created, **kwargs):
     if created and instance.is_artisan:
         Artisan.objects.create(user=instance)
-
-'''

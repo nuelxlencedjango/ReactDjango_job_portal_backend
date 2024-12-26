@@ -80,3 +80,26 @@ class EmployerProfile(BaseProfile):
 # Manager Profile
 class ManagerProfile(BaseProfile):
     department = models.CharField(max_length=100, null=True, blank=True)
+
+
+
+
+# models.py
+from django.db import models
+from cloudinary.models import CloudinaryField
+from django.conf import settings  # To link it to the User model
+
+class Fingerprint(models.Model):
+    artisan_profile = models.ForeignKey('ArtisanProfile', related_name='fingerprints', on_delete=models.CASCADE)
+    # The actual fingerprint image or template
+    fingerprint_image = CloudinaryField(null=True, blank=True)
+    # Optionally, add more fields like fingerprint template, etc.
+    fingerprint_template = models.TextField(null=True, blank=True)  # If you store it as a template
+    # A timestamp for when the fingerprint was captured
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Fingerprint for {self.artisan_profile.user.username} at {self.created_at}"
+
+    class Meta:
+        ordering = ['-created_at']
