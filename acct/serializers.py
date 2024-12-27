@@ -1,8 +1,7 @@
 # users/serializers.py
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
+#from django.contrib.auth import get_user_model
 from .models import CustomUser, ArtisanProfile, EmployerProfile
-
 
 
 
@@ -51,30 +50,11 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 
 
-
-
-
-
-class EmployerProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EmployerProfile
-        fields = ['id','company_name']
-
-
-
-
-
-
-from rest_framework import serializers
-from .models import ArtisanProfile, CustomUser
-
 class ArtisanProfileSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
-    
     # Custom fields to get URLs for the images
     profile_image = serializers.SerializerMethodField() 
    # fingerprint_image = serializers.SerializerMethodField()
-
     class Meta:
         model = ArtisanProfile
         fields = ['user', 'experience','location', 'service', 'pay', 'profile_image', 'nin', 
@@ -86,13 +66,20 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
         if obj.profile_image: 
             return obj.profile_image.url 
         return None
-
- 
-
     def create(self, validated_data):
         return ArtisanProfile.objects.create(**validated_data)
 
 
+
+class EmployerProfileSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
+    class Meta:
+        model = EmployerProfile
+        fields = ['user','company_name','phone_number','location']
+        read_only_fields = ['date_joined']
+ 
+    def create(self, validated_data):
+        return EmployerProfile.objects.create(**validated_data)
 
 
 
