@@ -34,8 +34,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
         # Create the user with the validated data
         user = CustomUser.objects.create_user(
             username=validated_data['username'],
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name'],
+            first_name=validated_data['first_name'].capitalize(),
+            last_name=validated_data['last_name'].capitalize(),
             email=validated_data['email'],
             user_type=validated_data.get('user_type')  
             #user_type=validated_data.get('user_type', 'default_value')  
