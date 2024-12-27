@@ -58,6 +58,7 @@ class UserRegistrationDetailView(APIView):
             # Fetch the user instance
             try:
                 user = CustomUser.objects.get(username=user_id)
+                
             except CustomUser.DoesNotExist:
                 return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -70,7 +71,6 @@ class UserRegistrationDetailView(APIView):
                 if not artisan_profile:
                     artisan_data = request.data.copy()  # Make a copy of the data
                     artisan_data['user'] = user.id  # Assign the user ID to the artisan profile
-
 
                     artisan_serializer = ArtisanProfileSerializer(data=artisan_data)
                     if artisan_serializer.is_valid():
