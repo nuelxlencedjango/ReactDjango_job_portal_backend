@@ -58,7 +58,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
 class EmployerProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmployerProfile
-        fields = ['company_name']
+        fields = ['id','company_name']
 
 
 
