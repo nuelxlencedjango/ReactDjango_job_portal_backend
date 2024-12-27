@@ -52,7 +52,7 @@ class ArtisanSearchListSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['date_joined']
 
-    def get_profile_img(self, obj):
+    def get_profile_image(self, obj):
         return obj.profile_image.url if obj.profile_image else None
 
     #def get_in_cart(self, obj):
