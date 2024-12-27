@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import *
 from acct.models import ArtisanProfile
+from acct.serializers import CustomUserSerializer 
 
 
 
@@ -40,7 +41,7 @@ class ProfessionSerializer(serializers.ModelSerializer):
 
 class ArtisanSearchListSerializer(serializers.ModelSerializer): 
     profile_image = serializers.SerializerMethodField()
-   # user = UserSerializer()
+    user = CustomUserSerializer()
     location = AreaSerializer()
     service = ServiceSerializer()
     #in_cart = serializers.SerializerMethodField()
