@@ -39,7 +39,7 @@ class ProfessionSerializer(serializers.ModelSerializer):
 
 
 class ArtisanSearchListSerializer(serializers.ModelSerializer): 
-    profile_img = serializers.SerializerMethodField()
+    profile_image = serializers.SerializerMethodField()
    # user = UserSerializer()
     location = AreaSerializer()
     service = ServiceSerializer()
@@ -48,12 +48,12 @@ class ArtisanSearchListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ArtisanProfile
         fields = [
-            'user', 'location', 'experience', 'service', 'profile_img', 'pay',
+            'user', 'location', 'experience', 'service', 'profile_image', 'pay', 
         ]
         read_only_fields = ['date_joined']
 
     def get_profile_img(self, obj):
-        return obj.profile_img.url if obj.profile_img else None
+        return obj.profile_image.url if obj.profile_image else None
 
     #def get_in_cart(self, obj):
         # Check if the artisan is in the user's cart
