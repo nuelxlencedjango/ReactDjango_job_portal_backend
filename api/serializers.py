@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from api.models import *
-
+from .models import *
+from acct.models import ArtisanProfile
 
 
 
@@ -46,7 +46,7 @@ class ArtisanSearchListSerializer(serializers.ModelSerializer):
     #in_cart = serializers.SerializerMethodField()
 
     class Meta:
-     #   model = Artisan
+        model = ArtisanProfile
         fields = [
             'user', 'location', 'experience', 'service', 'profile_img', 'pay',
         ]
