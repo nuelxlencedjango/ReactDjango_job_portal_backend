@@ -17,7 +17,7 @@ urlpatterns = [
     
 
      
-    #path('artisans-by-service/<str:service_title>/', ArtisansByServiceView.as_view(), name='artisans-by-service'),
+    path('artisans-by-service/<str:service_title>/', ArtisansByServiceView.as_view(), name='artisans-by-service'),
 
     
     path('profession-list/', ServiceListView.as_view(), name='profession-list'),
