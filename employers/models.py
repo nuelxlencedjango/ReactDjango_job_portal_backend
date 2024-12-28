@@ -88,12 +88,12 @@ class Employer(models.Model):
     
 
 
-class JobPost(models.Model):
+class JobPost(models.Model): 
     employer = models.ForeignKey(Employer, on_delete=models.CASCADE, related_name='job_posts')
     title = models.CharField(max_length=255)
     description = models.TextField()
     location = models.CharField(max_length=255)
-    job_type = models.CharField(max_length=50, choices=[('full-time', 'Full-Time'), ('part-time', 'Part-Time'), ('contract', 'Contract')])
+    job_type =  models.CharField(max_length=50, choices=[('full-time', 'Full-Time'), ('part-time', 'Part-Time'), ('contract', 'Contract')])
     industry = models.CharField(max_length=255)
     salary = models.DecimalField(max_digits=10, decimal_places=2)
     date_created = models.DateTimeField(auto_now_add=True)
@@ -102,7 +102,7 @@ class JobPost(models.Model):
         return self.title
     
     class Meta:
-      verbose_name_plural='JobPosts'
+      verbose_name_plural='JobPosts' 
        
       ordering = ['-date_created']
  
