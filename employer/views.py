@@ -1,6 +1,6 @@
 
 from django.shortcuts import render
-#from rest_framework import generics, serializers, status,permissions
+from rest_framework import generics, serializers, status,permissions
 #from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -13,13 +13,29 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 
 from .models import *
+from acct.models import CustomUser, ArtisanProfile,EmployerProfile
 from .serializers import *
 from django.db import transaction
 import json
 
+from rest_framework_simplejwt.tokens import UntypedToken
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 # Create your views here.
 
 
+
+
+
+
+class VerifyTokenView(APIView):
+    def post(self, request):
+        token = request.data.get("token")
+        try:
+            # Validate token
+            UntypedToken(token)
+            return Response({"valid": True})
+        except (InvalidToken, TokenError):
+            return Response({"valid": False}, status=400)
 
 
 
@@ -51,3 +67,151 @@ class CheckArtisanInCartView(APIView):
             # If the user is not logged in, return false (no cart)
             return Response({'in_cart': False}, status=200)
         
+
+
+
+class AddToCartView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        artisan_email = request.data.get('artisan_email')  
+
+        if not artisan_email:
+            return Response({"error": "Artisan email is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            artisan = ArtisanProfile.objects.get(user__email=artisan_email) 
+            service = artisan.service
+        except ArtisanProfile.DoesNotExist:
+            return Response({"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Get or create the cart
+        cart, _ = Cart.objects.get_or_create(user=request.user, paid=False)
+
+        # Check or create the cart item
+        cart_item, created = CartItem.objects.get_or_create(
+            cart=cart, artisan=artisan, service=service)
+        
+        if not created:
+            cart_item.quantity += 1
+            cart_item.save()
+
+          
+        return Response({"message": "Item added to cart successfully."}, status=status.HTTP_201_CREATED)
+
+
+
+
+
+class CartItemsView(APIView):  
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """
+        Get all cart items for the logged-in user (Employer) along with user details.
+        """
+        try:
+            # Fetch user details
+            user_data = {
+                "email": request.user.email,
+                "username": request.user.username,
+                "first_name": request.user.first_name,
+                "last_name": request.user.last_name,
+            }
+
+            # Try to retrieve the user's cart
+            cart = Cart.objects.filter(user=request.user, paid=False).first()  # `.first()` avoids exceptions if no cart exists
+            if cart:
+                # Fetch cart items if the cart exists
+                cart_items = CartItem.objects.filter(cart=cart)
+                cart_items_data = CartItemSerializer(cart_items, many=True).data
+            else:
+                cart_items_data = []  # Empty list if no cart exists
+
+            # Combine user details and cart items in the response
+            response_data = { "user_data": user_data,"cart_items": cart_items_data,}
+
+            return Response(response_data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def delete(self, request, pk):
+        """
+        Remove a specific item from the cart.
+        """
+        try:
+            cart = Cart.objects.get(user=request.user, paid=False)
+            cart_item = CartItem.objects.get(pk=pk, cart=cart)  # Ensure item belongs to this cart
+            cart_item.delete()
+            
+            return Response({"detail": "Cart item removed successfully."}, status=status.HTTP_204_NO_CONTENT)
+        except Cart.DoesNotExist:
+            return Response({"error": "Cart not found."}, status=status.HTTP_404_NOT_FOUND)
+        except CartItem.DoesNotExist:
+            return Response({"error": "Cart item not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+class CartItemsView(APIView):  
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        employer = EmployerProfile.objects.filter(user=request.user).first()
+        if not employer:
+            return Response({"detail": "Employer profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        cart_items = CartItem.objects.filter(employer=employer)
+        serializer = CartItemSerializer(cart_items, many=True)
+        return Response({"cart_items": serializer.data}, status=status.HTTP_200_OK)
+
+
+
+
+class CheckoutView(APIView): 
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = CheckoutSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class CheckoutViewT(APIView): 
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        employer = EmployerProfile.objects.filter(user=request.user).first()
+        if not employer:
+            return Response({"detail": "Employer profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        cart_items = CartItem.objects.filter(employer=employer)
+        if not cart_items.exists():
+            return Response({"detail": "Cart is empty."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Calculate total
+        total_amount = sum(item.artisan.pay for item in cart_items)
+
+        # Create an order
+        order = Order.objects.create(
+            employer=employer,
+            total_amount=total_amount,
+            purchase_date=now().date(),
+        )
+
+        # Optionally, clear cart items after checkout
+        cart_items.delete()
+
+        return Response(
+            {"order_id": order.id, "total_amount": total_amount},
+            status=status.HTTP_201_CREATED,
+        )
+
+
+
+
