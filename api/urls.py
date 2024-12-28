@@ -10,17 +10,18 @@ from .views import *
 urlpatterns = [
     path('', ServiceListView.as_view(), name='home'),
     path('industry-list/', IndustryListView.as_view(), name='industry-list'),
+    path('location-list/', AreaListView.as_view(), name='location-list'),
 
+    path('artisans-by-service/<str:service_title>/', ArtisansByServiceView.as_view(), name='artisans-by-service'),
 
-   path('location-list/', AreaListView.as_view(), name='location-list'),
+    path('profession-list/', ServiceListView.as_view(), name='profession-list'),
+    path('artisans-search/', ArtisanSearchListView.as_view(), name='artisans-search'),
+
+    
     #path('add_location/', AreaCreateView.as_view(), name='add_location'),
     
 
      
-    path('artisans-by-service/<str:service_title>/', ArtisansByServiceView.as_view(), name='artisans-by-service'),
-
-    
-    path('profession-list/', ServiceListView.as_view(), name='profession-list'),
     #path('add_profession/', ProfessionCreateView.as_view(), name='add_profession'),
     
   
@@ -28,8 +29,7 @@ urlpatterns = [
 
     #path('add_artisan/', ArtisanRegistrationView.as_view(), name='add_artisan'),
    
-    #path('artisans-search/', ArtisanSearchListView.as_view(), name='artisans-search'),
-
+   
 
   
 ]

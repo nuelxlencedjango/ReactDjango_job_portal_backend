@@ -2,7 +2,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
-from artisans.models import *
+from acct.models import CustomUser
 from django.conf import settings
 import random
 import string
@@ -12,12 +12,12 @@ import uuid
 #new
 
 
-'''
+
 
 
 class Cart(models.Model):
     #user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cart')
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='cart')
     cart_code = models.CharField(max_length=11, unique=True, editable=False)
     paid = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -39,9 +39,9 @@ class Cart(models.Model):
         return f"Cart {self.cart_code} for {self.user.last_name}"
 
 class CartItem(models.Model):
-    employer = models.ForeignKey(User, on_delete=models.CASCADE, null=True,blank=True)
+    employer = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True,blank=True)
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
-    artisan = models.ForeignKey('artisans.Artisan', on_delete=models.CASCADE)
+    artisan = models.ForeignKey('acct.ArtisanProfile', on_delete=models.CASCADE)
     service = models.ForeignKey('api.Service', on_delete=models.CASCADE)
     unique_reference = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     quantity = models.PositiveIntegerField(default=1)
@@ -56,12 +56,12 @@ class CartItem(models.Model):
 
 
 class Checkout(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
     full_name = models.CharField(max_length=255)
     email = models.EmailField()
     phone = models.CharField(max_length=15)
-    #amount = models.CharField(max_length=15)
-    #uniqueId = models.CharField(max_length=15)
+    amount = models.CharField(max_length=15,null=True, blank=True)
+    unique_reference = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     #shipping_address = models.TextField()
    # billing_address = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -72,7 +72,7 @@ class Checkout(models.Model):
 
 #end new
 
-
+'''
 class Employer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='employer_profile')
     phone_number = models.CharField(max_length=15, unique=True, null=True, blank=True)
