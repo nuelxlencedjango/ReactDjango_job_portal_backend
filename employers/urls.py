@@ -5,6 +5,14 @@ from . import views
 
 
 urlpatterns = [
+  path('check-artisan/<str:artisan_email>/', CheckArtisanInCartView.as_view(), name='check-artisan'),
+ 
+
+  
+  
+  
+  
+  
    path('add_employer/', EmployerCreateView.as_view(), name='add_employer'),
    # path('order-request/', OrderRequestCreateView.as_view(), name='order-request'),
 
@@ -16,8 +24,7 @@ urlpatterns = [
      path('checkout/', CheckoutView.as_view(), name='checkout'),
     path('employer-details/', EmployersDetailsView.as_view(), name='employer-details'),
 
-     path('check-artisan/<str:artisan_email>/', CheckArtisanInCartView.as_view(), name='check-artisan'),
- 
+     
        path('auth/verify-token/', VerifyTokenView.as_view(), name='verify-token'),
     #  path('order/', OrderRequestViewPage.as_view(), name='orders'),
 ]
