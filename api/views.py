@@ -105,3 +105,31 @@ class ArtisansByServiceView(APIView):
         except Service.DoesNotExist:
             response_data['error'] = 'Service not found'
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+        
+
+
+
+
+#Artisan search/filter view
+class ArtisanSearchListView(generics.ListAPIView):
+    serializer_class = ArtisanSearchListSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        queryset = ArtisanProfile.objects.all()
+        service = self.request.query_params.get('service', None) 
+        location = self.request.query_params.get('location', None) 
+        job_type = self.request.query_params.get('job_type', None) 
+        industry = self.request.query_params.get('industry', None) 
+        
+        if service:
+            queryset = queryset.filter(service__title__icontains=service) 
+        if location:
+            queryset = queryset.filter(location__id=location) 
+        if job_type:
+            queryset = queryset.filter(job_type__icontains=job_type) 
+        if industry:
+            queryset = queryset.filter(industry__name__icontains=industry) 
+        
+        return queryset
+
