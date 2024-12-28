@@ -18,9 +18,9 @@ import json
 
 
 
-class LogoutView(APIView):
+class LogoutView(APIView): 
     def post(self, request, *args, **kwargs):
-        response = Response({"message": "Logout successful"})
+        response = Response({"message": "Logout successful"}) 
         response.delete_cookie('access_token')
         response.delete_cookie('refresh_token')
         return response
@@ -41,7 +41,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 
-User = get_user_model()
+User = get_user_model() 
 
 def set_cookie(response, token, cookie_name):
     response.set_cookie(
@@ -53,7 +53,7 @@ def set_cookie(response, token, cookie_name):
         path='/',
     )
 
-class LoginView(APIView):
+class LoginView(APIView): 
     permission_classes = [AllowAny]
     def post(self, request, *args, **kwargs):
         username = request.data.get('username')

@@ -5,14 +5,18 @@ from django.shortcuts import render
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.contrib.auth import authenticate
 from rest_framework import status
 from .models import CustomUser, ArtisanProfile, EmployerProfile
 from .serializers import CustomUserSerializer,ArtisanProfileSerializer, EmployerProfileSerializer
 from django.core.files.storage import default_storage
 from django.conf import settings
 
+from rest_framework_simplejwt.tokens import RefreshToken
+#from django.contrib.auth import get_user_model
 
 
+#User = get_user_model() 
 
 
 # views.py
@@ -112,6 +116,33 @@ class UserRegistrationDetailView(APIView):
 
 
 
+
+
+def set_cookie(response, token, cookie_name):
+    response.set_cookie(cookie_name,token,httponly=True,secure=True,samesite='Lax',
+        path='/',)
+    
+
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request, *args, **kwargs):
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        user = authenticate(username=username, password=password)
+        if user is None:
+            return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
+        refresh_token = str(refresh)
+
+        response = Response({'refresh': refresh_token,'access': access_token,})
+
+        set_cookie(response, access_token, 'access_token')
+        set_cookie(response, refresh_token, 'refresh_token')
+
+        return response
 
 
 
