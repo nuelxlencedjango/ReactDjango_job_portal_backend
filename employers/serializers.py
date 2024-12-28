@@ -6,7 +6,7 @@ from rest_framework import serializers
 
 #new
 #cart serializer and cart item
-class CartItemSerializer(serializers.ModelSerializer):
+class CartItemSerializer(serializers.ModelSerializer): 
     artisan_name = serializers.CharField(source="artisan.user.first_name", read_only=True)
     service_title = serializers.CharField(source="service.title", read_only=True)
 
@@ -14,7 +14,7 @@ class CartItemSerializer(serializers.ModelSerializer):
        # model = CartItem
         fields = ['id', 'artisan', 'artisan_name', 'service', 'service_title', 'quantity', 'added_at']
 
-class CartSerializer(serializers.ModelSerializer):
+class CartSerializer(serializers.ModelSerializer): 
     items = CartItemSerializer(many=True, read_only=True)
 
     class Meta:
@@ -28,7 +28,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     artisan = serializers.SerializerMethodField()
 
     class Meta:
-       # model = CartItem
+       # model = CartItem 
         fields = ['id', 'artisan', 'added_at']
 
     def get_artisan(self, obj):
@@ -43,10 +43,10 @@ class CartItemSerializer(serializers.ModelSerializer):
         }
 
 
-#checkout
-class CheckoutSerializer(serializers.ModelSerializer):
+#checkout 
+class CheckoutSerializer(serializers.ModelSerializer): 
     class Meta:
-       # model = Checkout
+       # model = Checkout 
         fields = ['id', 'user', 'full_name', 'email', 'phone']
 
 

@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from rest_framework.views import APIView
-from .serializers import CartSerializer, CartItemSerializer,CheckoutSerializer
+from .serializers import CartSerializer, CartItemSerializer,CheckoutSerializer 
 from django.utils.crypto import get_random_string
 from rest_framework.permissions import AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
@@ -62,7 +62,7 @@ class AddToCartView(APIView):
 
 
 
-class CartItemsView(APIView):
+class CartItemsView(APIView):   
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -121,7 +121,7 @@ class CartItemsView(APIView):
 
 
 
-class CheckoutView(APIView):
+class CheckoutView(APIView): 
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
@@ -195,7 +195,7 @@ from django.utils.timezone import now
 from .serializers import CartItemSerializer
 
 
-class CartItemsView(APIView):
+class CartItemsView(APIView):  
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -208,7 +208,7 @@ class CartItemsView(APIView):
         return Response({"cart_items": serializer.data}, status=status.HTTP_200_OK)
 
 
-class CheckoutView(APIView):
+class CheckoutView(APIView): 
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
