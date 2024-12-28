@@ -4,17 +4,17 @@ from rest_framework import generics, serializers, status,permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .models import *
+
 from rest_framework.views import APIView
 from .serializers import CartSerializer, CartItemSerializer,CheckoutSerializer
 from django.utils.crypto import get_random_string
 from rest_framework.permissions import AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
-from artisans.models import *
-from accounts.serializers import *
-from employers.models import *
-from employers.serializers import *
+#from artisans.models import *
+#from accounts.serializers import *
+from .models import *
+from .serializers import *
 from django.db import transaction
 import json
 

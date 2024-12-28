@@ -6,8 +6,8 @@ from django.contrib.auth.admin import UserAdmin
 
 #admin.site.register(Employer)
 #admin.site.register(JobPost)
-#admin.site.register(Cart)
-#admin.site.register(CartItem)
+admin.site.register(Cart)
+admin.site.register(CartItem)
 
 '''
 class OrderRequestAdmin(admin.ModelAdmin):
