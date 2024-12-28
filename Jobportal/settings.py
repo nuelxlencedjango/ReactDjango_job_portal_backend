@@ -114,7 +114,7 @@ INSTALLED_APPS = [
     #'accounts',
    # 'artisans',
     'transactions',
-    #'employers',
+    'employers',
     'dashboard',
     'services',
     'social_account',
