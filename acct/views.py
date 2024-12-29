@@ -13,6 +13,10 @@ from django.core.files.storage import default_storage
 from django.conf import settings
 
 from rest_framework_simplejwt.tokens import RefreshToken
+
+
+from rest_framework.permissions import IsAuthenticated
+
 #from django.contrib.auth import get_user_model
 
 
@@ -147,6 +151,21 @@ class LoginView(APIView):
 
 
 
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            # Get the refresh token from request
+            refresh_token = request.data.get('refresh_token')
+            
+            if refresh_token:
+                token = RefreshToken(refresh_token)
+                token.blacklist()  # Blacklist the refresh token to prevent further use
+            return Response({"message": "Logged out successfully"}, status=200)
+
+        except Exception as e:
+            return Response({"message": str(e)}, status=400)
 
 
 
