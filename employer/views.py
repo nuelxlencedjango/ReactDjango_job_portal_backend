@@ -70,9 +70,18 @@ class CheckArtisanInCartView(APIView):
 
 
 
+
+
+
 class AddToCartView(APIView):
     permission_classes = [IsAuthenticated]
+
     def post(self, request):
+        # Ensure the user is an employer
+        if not request.user.is_employer:
+            return Response({"error": "Only employers can add items to the cart."},
+                status=status.HTTP_403_FORBIDDEN )
+
         artisan_email = request.data.get('artisan_email')  
 
         if not artisan_email:
@@ -84,19 +93,22 @@ class AddToCartView(APIView):
         except ArtisanProfile.DoesNotExist:
             return Response({"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND)
 
-      
+        # Create or retrieve the cart for the authenticated user
         cart, _ = Cart.objects.get_or_create(user=request.user, paid=False)
 
         # Check or create the cart item
         cart_item, created = CartItem.objects.get_or_create(
-            cart=cart, artisan=artisan, service=service)
+            cart=cart, artisan=artisan, service=service
+        )
         
         if not created:
+            # If the item already exists, just increment the quantity
             cart_item.quantity += 1
             cart_item.save()
 
-          
         return Response({"message": "Item added to cart successfully."}, status=status.HTTP_201_CREATED)
+
+
 
 
 
