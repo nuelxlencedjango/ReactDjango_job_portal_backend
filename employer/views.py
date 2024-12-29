@@ -154,9 +154,9 @@ class CartItemsView(APIView):
                 
             }
             
-            if user_data.user_type != "employer":
+            #if user_data.user_type != "employer":
             #if not user_data:
-                return Response({"error": 'Only those registered as Employers can make a demand'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+             #   return Response({"error": 'Only those registered as Employers can make a demand'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             # Try to retrieve the user's cart
             cart = Cart.objects.filter(user=request.user, paid=False).first()  # `.first()` avoids exceptions if no cart exists
