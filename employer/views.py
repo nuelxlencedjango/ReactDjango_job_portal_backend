@@ -84,12 +84,8 @@ class AddToCartView(APIView):
         except ArtisanProfile.DoesNotExist:
             return Response({"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Get or create the cart 
-        user_data = CustomUser.objects.get(username = request.user, user_type ="employer" )
-        if not user_data:
-            return Response({"error": "You must register an employer."}, status=status.HTTP_404_NOT_FOUND)
-            
-        cart, _ = Cart.objects.get_or_create(user=user_data, paid=False)
+      
+        cart, _ = Cart.objects.get_or_create(user=request.user, paid=False)
 
         # Check or create the cart item
         cart_item, created = CartItem.objects.get_or_create(
