@@ -38,7 +38,7 @@ class CartItemSerializer(serializers.ModelSerializer):
             "id": obj.artisan.id,
             "first_name": obj.artisan.user.first_name,
             "last_name": obj.artisan.user.last_name,
-            "profile_img": obj.artisan.profile_image.url if obj.artisan.profile_image else None,
+            "profile_image": obj.artisan.profile_image.url if obj.artisan.profile_image else None,
             "location": obj.artisan.location.location if obj.artisan.location else None,
             "service": obj.artisan.service.title if obj.artisan.service else None,
             "pay": obj.artisan.pay,
