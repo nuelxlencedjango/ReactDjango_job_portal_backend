@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import *
 from acct.models import CustomUser, ArtisanProfile
 from acct.serializers import CustomUserSerializer 
-
+from api.models import Area
 
 
 
@@ -52,3 +52,35 @@ class CheckoutSerializer(serializers.ModelSerializer):
     class Meta:
        # model = Checkout 
         fields = ['id', 'user', 'full_name', 'email', 'phone']
+
+
+
+
+
+
+
+class JobDetailsSerializer(serializers.ModelSerializer):
+    employer = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=False)
+    artisan = serializers.CharField()  # Artisan is treated as text (CharField)
+    location = serializers.PrimaryKeyRelatedField(queryset=Area.objects.all())  
+
+    class Meta:
+        model = JobDetails
+        fields = [
+            'id', 'employer', 'description', 'artisan', 'address',
+            'contact_person', 'contact_person_phone', 'expectedDate',
+            'location'
+        ]
+        read_only_fields = ['date_created', 'added_at']
+
+    def validate_contact_person_phone(self, value):
+        """Validate the phone number."""
+        if not value.isdigit():
+            raise serializers.ValidationError("Phone number must be numeric.")
+        if len(value) < 10 or len(value) > 11:
+            raise serializers.ValidationError("Phone number must be between 11 digits.")
+        return value
+
+
+
+
