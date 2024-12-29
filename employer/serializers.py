@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import *
 from acct.models import CustomUser, ArtisanProfile
-from acct.serializers import CustomUserSerializer 
+from acct.serializers import CustomUserSerializer,EmployerProfileSerializer
 from api.models import Area
 
 
@@ -28,10 +28,10 @@ class CartSerializer(serializers.ModelSerializer):
 #cart item retrival
 class CartItemSerializer(serializers.ModelSerializer):
     artisan = serializers.SerializerMethodField()
-
+    employer  = EmployerProfileSerializer()
     class Meta:
         model = CartItem 
-        fields = ['id', 'artisan', 'added_at']
+        fields = ['id', 'artisan', 'added_at', 'employer']
 
     def get_artisan(self, obj):
         return {
