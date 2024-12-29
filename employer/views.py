@@ -149,23 +149,21 @@ class CartItemsView(APIView):
         """
         Get all cart items for the logged-in user (Employer) along with user details.
         """
+        if not request.user.is_employer:
+            return Response({"error": "Only employers can add items to the cart."},
+                status=status.HTTP_403_FORBIDDEN )
+
         try:
             # Fetch user details
             #user_data = CustomUser.objects.get(user = request.user )
-
             
             user_data = {
                 "email": request.user.email,
                 "username": request.user.username,
                 "first_name": request.user.first_name,
                 "last_name": request.user.last_name,
-                
-            }
+                }
             
-            #if user_data.user_type != "employer":
-            #if not user_data:
-             #   return Response({"error": 'Only those registered as Employers can make a demand'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
             # Try to retrieve the user's cart
             cart = Cart.objects.filter(user=request.user, paid=False).first()  # `.first()` avoids exceptions if no cart exists
             if cart:
