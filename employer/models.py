@@ -48,10 +48,12 @@ class CartItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
     added_at = models.DateTimeField(auto_now_add=True)
 
-    def save(self, *args, **kwargs):
+    '''
+    def save(self, *args, **kwargs):  
         if not self.employer:
             self.employer =  self.cart.user
             super().save(*args, **kwargs)
+     '''
 
     #price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) 
 
