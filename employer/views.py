@@ -152,6 +152,7 @@ class CartItemsView(APIView):
                 # Fetch cart items if the cart exists
                 cart_items = CartItem.objects.filter(cart=cart)
                 cart_items_data = CartItemSerializer(cart_items, many=True).data
+                
             else:
                 cart_items_data = []  # Empty list if no cart exists
 
@@ -182,24 +183,6 @@ class CartItemsView(APIView):
 
 
 
-class CartItemsView(APIView):  
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        employer = EmployerProfile.objects.filter(user=request.user).first()
-        if not employer:
-            return Response({"detail": "Employer profile not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        # Fetch the cart associated with the employer's user
-        cart = Cart.objects.filter(user=employer.user).first()
-        if not cart:
-            return Response({"detail": "Cart not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        # Fetch all CartItems related to the cart
-        cart_items = CartItem.objects.filter(cart=cart)
-        serializer = CartItemSerializer(cart_items, many=True)
-
-        return Response({"cart_items": serializer.data}, status=status.HTTP_200_OK)
 
 
 
