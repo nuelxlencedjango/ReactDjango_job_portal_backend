@@ -7,6 +7,7 @@ from django.contrib.auth.admin import UserAdmin
 admin.site.register(Cart)
 admin.site.register(CartItem)
 admin.site.register(Checkout)
+admin.site.register(JobDetails)
 
 
 
