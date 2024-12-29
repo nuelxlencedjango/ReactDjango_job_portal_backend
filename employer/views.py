@@ -85,7 +85,7 @@ class AddToCartView(APIView):
             return Response({"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND)
 
         # Get or create the cart 
-        user_data = EmployerProfile.objects.get(user = request.user )
+        user_data = CustomUser.objects.get(user = request.user, user_type ="employer" )
         if not user_data:
             return Response({"error": "You must register an employer."}, status=status.HTTP_404_NOT_FOUND)
             
