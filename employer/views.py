@@ -107,7 +107,7 @@ class JobDetailsView(APIView):
 
     def post(self, request):
         # Get the current logged-in user (employer)
-        user = EmployerProfile.objects.get(user=request.user)
+        user = CustomUser.objects.get(user=request.user)
         if not user:
             return Response({"error": "User is not logged in."}, status=status.HTTP_400_BAD_REQUEST)
 
