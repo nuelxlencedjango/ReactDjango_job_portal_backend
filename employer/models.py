@@ -51,7 +51,7 @@ class CartItem(models.Model):
     #price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) 
 
     def __str__(self):
-        return f"{self.quantity} x {self.service.title} (Artisan: {self.artisan.user.username}, Employer: {self.employer.last_name})"
+        return f"{self.quantity} x {self.service.title} (Artisan: {self.artisan.user.username}, Employer: {self.employer.user})"
 
 
 
@@ -87,6 +87,6 @@ class JobDetails(models.Model):
 
     
     def __str__(self):
-        return f" Employer: {self.employer.last_name} x  (Artisan: {self.artisan.user.first_name})"
+        return f" Employer: {self.employer.last_name} x  (Artisan: {self.artisan})"
 
 
