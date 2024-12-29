@@ -84,7 +84,7 @@ class AddToCartView(APIView):
         except ArtisanProfile.DoesNotExist:
             return Response({"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Get or create the cart
+        # Get or create the cart 
         cart, _ = Cart.objects.get_or_create(user=request.user, paid=False)
 
         # Check or create the cart item
@@ -98,6 +98,34 @@ class AddToCartView(APIView):
           
         return Response({"message": "Item added to cart successfully."}, status=status.HTTP_201_CREATED)
 
+
+
+
+
+class JobDetailsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        # Get the current logged-in user (employer)
+        user = request.user
+        if not user:
+            return Response({"error": "User is not logged in."}, status=status.HTTP_400_BAD_REQUEST)
+
+        job_data = request.data
+        job_data['employer'] = user.id  # Set the employer to the logged-in user ID (manually or via the request)
+
+        # Use the serializer to validate the data
+        serializer = JobDetailsSerializer(data=job_data)
+        if serializer.is_valid():
+            # Create the JobDetails instance from the validated data
+            job_details = serializer.save()  # This will handle creation using the validated data
+
+            # After successful creation, serialize the created JobDetails and return it
+            job_details_serialized = JobDetailsSerializer(job_details)
+            return Response(job_details_serialized.data, status=status.HTTP_201_CREATED)
+
+        # If validation fails, return errors
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
