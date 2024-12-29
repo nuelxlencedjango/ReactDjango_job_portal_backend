@@ -26,7 +26,7 @@ class CartSerializer(serializers.ModelSerializer):
 
 
 #cart item retrival
-class CartItemSerializer(serializers.ModelSerializer):
+class CartItemSerializerkp(serializers.ModelSerializer):
     artisan = serializers.SerializerMethodField()
     employer  = EmployerProfileSerializer()
     class Meta:
