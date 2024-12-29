@@ -182,7 +182,6 @@ class CartItemsView(APIView):
 
 
 
-
 class CartItemsView(APIView):  
     permission_classes = [IsAuthenticated]
 
@@ -191,10 +190,16 @@ class CartItemsView(APIView):
         if not employer:
             return Response({"detail": "Employer profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        cart_items = CartItem.objects.filter(employer=employer)
-        serializer = CartItemSerializer(cart_items, many=True)
-        return Response({"cart_items": serializer.data}, status=status.HTTP_200_OK)
+        # Fetch the cart associated with the employer's user
+        cart = Cart.objects.filter(user=employer.user).first()
+        if not cart:
+            return Response({"detail": "Cart not found."}, status=status.HTTP_404_NOT_FOUND)
 
+        # Fetch all CartItems related to the cart
+        cart_items = CartItem.objects.filter(cart=cart)
+        serializer = CartItemSerializer(cart_items, many=True)
+
+        return Response({"cart_items": serializer.data}, status=status.HTTP_200_OK)
 
 
 
