@@ -44,7 +44,7 @@ class CheckArtisanInCartView(APIView):
 
     def get(self, request, artisan_email):
         # Check if the user is logged in (Authenticated)
-        if request.user.is_authenticated:
+        if request.user:
             user = request.user
             try:
                 # Get the user's cart
