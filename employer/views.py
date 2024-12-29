@@ -85,7 +85,11 @@ class AddToCartView(APIView):
             return Response({"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND)
 
         # Get or create the cart 
-        cart, _ = Cart.objects.get_or_create(user=request.user, paid=False)
+        user_data = EmployerProfile.objects.get(user = request.user )
+        if not user_data:
+            return Response({"error": "You must register an employer."}, status=status.HTTP_404_NOT_FOUND)
+            
+        cart, _ = Cart.objects.get_or_create(user=user_data, paid=False)
 
         # Check or create the cart item
         cart_item, created = CartItem.objects.get_or_create(
@@ -139,12 +143,17 @@ class CartItemsView(APIView):
         """
         try:
             # Fetch user details
+            user_data = EmployerProfile.objects.get(user = request.user )
+            '''
             user_data = {
                 "email": request.user.email,
                 "username": request.user.username,
                 "first_name": request.user.first_name,
                 "last_name": request.user.last_name,
             }
+            '''
+            if not user_data:
+                return Response({"error": 'Only those registered as Employers can make a demand'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             # Try to retrieve the user's cart
             cart = Cart.objects.filter(user=request.user, paid=False).first()  # `.first()` avoids exceptions if no cart exists
