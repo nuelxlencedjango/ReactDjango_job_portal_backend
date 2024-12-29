@@ -143,16 +143,17 @@ class CartItemsView(APIView):
         """
         try:
             # Fetch user details
-            user_data = CustomUser.objects.get(user = request.user )
+            #user_data = CustomUser.objects.get(user = request.user )
 
-            '''
+            
             user_data = {
                 "email": request.user.email,
                 "username": request.user.username,
                 "first_name": request.user.first_name,
                 "last_name": request.user.last_name,
+                
             }
-            '''
+            
             if user_data.user_type != "employer":
             #if not user_data:
                 return Response({"error": 'Only those registered as Employers can make a demand'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
