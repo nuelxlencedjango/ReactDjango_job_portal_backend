@@ -443,6 +443,7 @@ class CartItemsView(APIView):
                  # Fetch cart items if the cart exists
                 cart_items = CartItem.objects.filter(cart=cart)
                 cart_items_data = CartItemSerializer(cart_items, many=True).data
+                cart_items_data = cart_items_data['items']
                 
             else:
                 cart_items_data = []
