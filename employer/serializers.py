@@ -121,6 +121,8 @@ from rest_framework import serializers
 from .models import CartItem, Cart
 
 class ArtisanDetailSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(source='user.first_name', read_only=True)
+    last_name = serializers.CharField(source='user.last_name', read_only=True)
     location = serializers.CharField(source="location.location", read_only=True)
     service = serializers.CharField(source="service.title", read_only=True)
     profile_image = serializers.SerializerMethodField()
@@ -145,3 +147,6 @@ class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
         fields = ['id', 'user', 'cart_code', 'paid', 'created_at', 'modified_at', 'items']
+
+
+
