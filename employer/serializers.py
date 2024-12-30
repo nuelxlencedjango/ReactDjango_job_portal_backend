@@ -7,6 +7,8 @@ from api.models import Area
 
 
 #new
+'''
+
 #cart serializer and cart item
 class CartItemSerializernn(serializers.ModelSerializer): 
     artisan_name = serializers.CharField(source="artisan.user.first_name", read_only=True)
@@ -46,7 +48,7 @@ class CartItemSerializerll(serializers.ModelSerializer):
     
 
 
-
+'''
 
 
 from rest_framework import serializers
