@@ -467,7 +467,7 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import CartSerializer
 from .models import Cart
 
-class CartItemView(APIView):
+class CartItemsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
