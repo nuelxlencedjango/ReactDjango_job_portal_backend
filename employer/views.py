@@ -229,7 +229,6 @@ def get_cart_items(request):
 
 
 
-
 class CheckoutView(APIView): 
     permission_classes = [IsAuthenticated]
 
