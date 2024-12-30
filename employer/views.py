@@ -437,8 +437,13 @@ class CartItemsView(APIView):
 
             cart = Cart.objects.filter(user=request.user, paid=False).first()
             if cart:
-                cart_data = CartSerializer(cart).data
-                cart_items_data = cart_data['items']
+                #cart_data = CartSerializer(cart).data
+                #cart_items_data = cart_data['items']
+
+                 # Fetch cart items if the cart exists
+                cart_items = CartItem.objects.filter(cart=cart)
+                cart_items_data = CartItemSerializer(cart_items, many=True).data
+                
             else:
                 cart_items_data = []
 
