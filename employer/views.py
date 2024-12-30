@@ -142,7 +142,7 @@ class JobDetailsView(APIView):
 
 
 
-class CartItemsViewyyyy(APIView):  
+class CartItemsView(APIView):  
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -240,7 +240,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 
-class CartItemsView(APIView):
+class CartItemsViewfddd(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -266,6 +266,40 @@ class CartItemsView(APIView):
             }
         })
 
+
+
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from .models import Cart, CartItem
+from .serializers import CartSerializer
+
+class CartItemsViewaaa(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Get the logged-in user
+        user = request.user
+
+        # Retrieve the cart for this user
+        try:
+            cart = Cart.objects.get(user=user, paid=False)
+        except Cart.DoesNotExist:
+            return Response({"message": "Cart not found or already paid."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Serialize the cart data
+        serializer = CartSerializer(cart)
+
+        # Send the serialized data back
+        return Response({
+            "cart_items": serializer.data['items'],  # Get cart items data from the serialized cart
+            "user_data": {
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email
+            }
+        })
 
 
 
