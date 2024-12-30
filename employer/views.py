@@ -499,13 +499,37 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Cart
 from .serializers import CartSerializer
 
+class CartItemViewqqq(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        if CustomUser.objects.get(username =user, user_type='employer'):
+            try:
+                cart = Cart.objects.get(user=request.user, paid = False)
+                serializer = CartSerializer(cart)
+                serializer['user'] = user
+                return Response(serializer.data, status=200)
+            except Cart.DoesNotExist:
+                return Response({"detail": "Cart not found."}, status=404)
+
+
+
 class CartItemView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        user = request.user
+        if user.user_type != 'employer':
+            return Response({"detail": "User is not an employer."}, status=403)
+
         try:
-            cart = Cart.objects.get(user=request.user)
+            cart = Cart.objects.get(user=user, paid=False)
             serializer = CartSerializer(cart)
-            return Response(serializer.data, status=200)
+            return Response( 
+                { "cart": serializer.data, "user": { "id": user.id,
+                        "first_name": user.first_name,
+                        "last_name": user.last_name, },},status=200,
+                        )
         except Cart.DoesNotExist:
             return Response({"detail": "Cart not found."}, status=404)
