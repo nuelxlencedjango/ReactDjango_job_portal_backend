@@ -420,7 +420,7 @@ class CartItemsViewkkk(APIView):
 
 
 
-class CartItemsView(APIView):
+class CartItemsViewaaa(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
