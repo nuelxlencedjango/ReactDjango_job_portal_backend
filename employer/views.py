@@ -533,3 +533,26 @@ class CartItemView(APIView):
                         )
         except Cart.DoesNotExist:
             return Response({"detail": "Cart not found."}, status=404)
+        
+        
+    def delete(self, request, pk):
+        """
+        Remove a specific item from the cart.
+        """
+        try:
+            # Fetch the cart of the logged-in user
+            cart = Cart.objects.get(user=request.user, paid=False)
+            
+            # Ensure the cart item exists in the user's cart
+            cart_item = CartItem.objects.get(pk=pk, cart=cart)
+            cart_item.delete()  # Remove the cart item
+            
+            return Response({"detail": "Cart item removed successfully."}, status=status.HTTP_204_NO_CONTENT)
+        
+        except Cart.DoesNotExist:
+            return Response({"error": "Cart not found."}, status=status.HTTP_404_NOT_FOUND)
+        except CartItem.DoesNotExist:
+            return Response({"error": "Cart item not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
