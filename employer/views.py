@@ -480,12 +480,31 @@ class CartItemViewss(APIView):
 
 
 
-class CartItemView(APIView):
+class CartItemViewkk(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         try:
             cart = Cart.objects.prefetch_related('items__artisan__user', 'items__artisan__location').get(user=request.user)
+            serializer = CartSerializer(cart)
+            return Response(serializer.data, status=200)
+        except Cart.DoesNotExist:
+            return Response({"detail": "Cart not found."}, status=404)
+
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .models import Cart
+from .serializers import CartSerializer
+
+class CartItemView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            cart = Cart.objects.get(user=request.user)
             serializer = CartSerializer(cart)
             return Response(serializer.data, status=200)
         except Cart.DoesNotExist:

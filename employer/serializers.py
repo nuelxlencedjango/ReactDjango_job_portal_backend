@@ -86,7 +86,7 @@ class JobDetailsSerializer(serializers.ModelSerializer):
 
 
 
-class CartItemSerializer(serializers.ModelSerializer):
+class CartItemSerializerpp(serializers.ModelSerializer):
     artisan_details = serializers.SerializerMethodField()
 
     class Meta:
@@ -106,8 +106,41 @@ class CartItemSerializer(serializers.ModelSerializer):
             "service": artisan.service.title if artisan.service else None,
         }
 
+class CartSerializerbb(serializers.ModelSerializer):
+    items = CartItemSerializerpp(many=True)
+
+    class Meta:
+        model = Cart
+        fields = ['id', 'user', 'cart_code', 'paid', 'created_at', 'modified_at', 'items']
+
+
+
+
+
+from rest_framework import serializers
+from .models import CartItem, Cart
+
+class ArtisanDetailSerializer(serializers.ModelSerializer):
+    location = serializers.CharField(source="location.location", read_only=True)
+    service = serializers.CharField(source="service.title", read_only=True)
+    profile_image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ArtisanProfile
+        fields = ['id', 'first_name', 'last_name', 'location', 'pay', 'profile_image', 'experience', 'service']
+
+    def get_profile_image(self, obj):
+        return obj.profile_image.url if obj.profile_image else None
+
+class CartItemSerializer(serializers.ModelSerializer):
+    artisan = ArtisanDetailSerializer(read_only=True)
+
+    class Meta:
+        model = CartItem
+        fields = ['id', 'artisan', 'added_at']
+
 class CartSerializer(serializers.ModelSerializer):
-    items = CartItemSerializer(many=True)
+    items = CartItemSerializer(many=True, read_only=True)
 
     class Meta:
         model = Cart
