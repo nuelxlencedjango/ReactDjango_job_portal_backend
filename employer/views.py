@@ -142,7 +142,7 @@ class JobDetailsView(APIView):
 
 
 
-class CartItemsView(APIView):  
+class CartItemsViewyyyy(APIView):  
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -199,6 +199,32 @@ class CartItemsView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+from django.http import JsonResponse
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from .models import Cart, CartItem
+from .serializers import CartSerializer
+from rest_framework.response import Response
+from rest_framework import status
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])  # Ensure the user is authenticated
+def get_cart_items(request):
+    try:
+        # Get the authenticated user
+        user = request.user
+
+        # Try to get the user's cart (assuming only one cart per user)
+        cart = Cart.objects.get(user=user)
+
+        # Serialize the cart and its items
+        serializer = CartSerializer(cart)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    except Cart.DoesNotExist:
+        return Response({"detail": "Cart not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
 
