@@ -8,7 +8,7 @@ from api.models import Area
 
 #new
 #cart serializer and cart item
-class CartItemSerializer(serializers.ModelSerializer): 
+class CartItemSerializernn(serializers.ModelSerializer): 
     artisan_name = serializers.CharField(source="artisan.user.first_name", read_only=True)
     service_title = serializers.CharField(source="service.title", read_only=True)
 
@@ -16,7 +16,7 @@ class CartItemSerializer(serializers.ModelSerializer):
         model = CartItem
         fields = ['id', 'artisan', 'artisan_name', 'service', 'service_title', 'quantity', 'added_at']
 
-class CartSerializer(serializers.ModelSerializer): 
+class CartSerializernn(serializers.ModelSerializer): 
     items = CartItemSerializer(many=True, read_only=True)
 
     class Meta:
@@ -26,7 +26,7 @@ class CartSerializer(serializers.ModelSerializer):
 
 
 #cart item retrival
-class CartItemSerializer(serializers.ModelSerializer):
+class CartItemSerializerll(serializers.ModelSerializer):
     artisan = serializers.SerializerMethodField()
     employer  = EmployerProfileSerializer()
     class Meta:
@@ -47,15 +47,50 @@ class CartItemSerializer(serializers.ModelSerializer):
 
 
 
+
+
+from rest_framework import serializers
+from .models import CartItem
+from acct.models import ArtisanProfile  # Assuming ArtisanProfile is in the 'acct' app
+from api.models import Service  # Assuming Service is in the 'api' app
+from .serializers import EmployerProfileSerializer  # Assuming you have this serializer for employers
+
+class CartItemSerializer(serializers.ModelSerializer):
+    # Including artisan details
+    artisan = serializers.SerializerMethodField()  # Custom method to fetch artisan data
+    employer = EmployerProfileSerializer(read_only=True)  # Assuming you have an EmployerProfileSerializer
+    
+    class Meta:
+        model = CartItem
+        fields = ['id', 'artisan', 'added_at', 'employer', 'quantity']  # Add the fields you want in the response
+
+    def get_artisan(self, obj):
+        """Custom method to fetch detailed artisan data."""
+        return {
+            "id": obj.artisan.id,
+            "first_name": obj.artisan.user.first_name,
+            "last_name": obj.artisan.user.last_name,
+            "profile_image": obj.artisan.profile_image.url if obj.artisan.profile_image else None,
+            "location": obj.artisan.location.location if obj.artisan.location else None,
+            "service": obj.artisan.service.title if obj.artisan.service else None,
+            "pay": obj.artisan.pay,
+        }
+
+
+
+class CartSerializer(serializers.ModelSerializer):
+    items = CartItemSerializer(many=True, read_only=True)  # Nested CartItemSerializer
+
+    class Meta:
+        model = Cart
+        fields = ['id', 'user', 'cart_code', 'paid', 'created_at', 'modified_at', 'items']
+
+
 #checkout 
 class CheckoutSerializer(serializers.ModelSerializer): 
     class Meta:
        # model = Checkout 
         fields = ['id', 'user', 'full_name', 'email', 'phone']
-
-
-
-
 
 
 
