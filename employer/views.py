@@ -420,7 +420,7 @@ class CartItemsViewkkk(APIView):
 
 
 
-class CartItemsView(APIView):
+class CartItemsViewk(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -458,3 +458,25 @@ class CartItemsView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import CartItem
+from .serializers import CartItemSerializer
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_cart_items(request):
+    try:
+        user = request.user
+        cart_items = CartItem.objects.filter(user=user)  # Adjust filter logic as needed
+        serializer = CartItemSerializer(cart_items, many=True)
+        return Response({
+            "cart_items": serializer.data,
+            "user_data": {
+                "first_name": user.first_name,
+                "email": user.email,
+            }
+        })
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
