@@ -473,7 +473,8 @@ class CartItemViewqw(APIView):
     def get(self, request):
         try:
             cart = Cart.objects.get(user=request.user)
-            serializer = CartSerializer(cart)
+            cart = CartItem.objects.filter(cart=cart)
+            serializer = CartItemSerializer(cart)
             return Response(serializer.data, status=200)
         except Cart.DoesNotExist:
             return Response({"detail": "Cart not found."}, status=404)
