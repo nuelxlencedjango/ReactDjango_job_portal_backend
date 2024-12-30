@@ -8,7 +8,7 @@ from api.models import Area
 
 #new
 #cart serializer and cart item
-class CartItemSerializer(serializers.ModelSerializer): 
+class CartItemSerializerw(serializers.ModelSerializer): 
     artisan_name = serializers.CharField(source="artisan.user.first_name", read_only=True)
     service_title = serializers.CharField(source="service.title", read_only=True)
 
@@ -16,8 +16,8 @@ class CartItemSerializer(serializers.ModelSerializer):
         model = CartItem
         fields = ['id', 'artisan', 'artisan_name', 'service', 'service_title', 'quantity', 'added_at']
 
-class CartSerializer(serializers.ModelSerializer): 
-    items = CartItemSerializer(many=True, read_only=True)
+class CartSerializerw(serializers.ModelSerializer): 
+    items = CartItemSerializerw(many=True, read_only=True)
 
     class Meta:
         model = Cart
@@ -26,7 +26,7 @@ class CartSerializer(serializers.ModelSerializer):
 
 
 #cart item retrival
-class CartItemSerializer(serializers.ModelSerializer):
+class CartItemSerializerw(serializers.ModelSerializer):
     artisan = serializers.SerializerMethodField()
     employer  = EmployerProfileSerializer()
     class Meta:
@@ -86,3 +86,29 @@ class JobDetailsSerializer(serializers.ModelSerializer):
 
 
 
+class CartItemSerializer(serializers.ModelSerializer):
+    artisan_details = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CartItem
+        fields = ['id', 'artisan_details', 'added_at', 'quantity', 'service_title']
+
+    def get_artisan_details(self, obj):
+        artisan = obj.artisan
+        return {
+            "id": artisan.id,
+            "first_name": artisan.user.first_name,
+            "last_name": artisan.user.last_name,
+            "profile_image": artisan.profile_image.url if artisan.profile_image else None,
+            "location": artisan.location.location if artisan.location else None,
+            "pay": artisan.pay,
+            "experience": artisan.experience,
+            "service": artisan.service.title if artisan.service else None,
+        }
+
+class CartSerializer(serializers.ModelSerializer):
+    items = CartItemSerializer(many=True)
+
+    class Meta:
+        model = Cart
+        fields = ['id', 'user', 'cart_code', 'paid', 'created_at', 'modified_at', 'items']
