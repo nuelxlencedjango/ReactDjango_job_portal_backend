@@ -357,7 +357,7 @@ from rest_framework.views import APIView
 from .models import Cart, CartItem
 from .serializers import CartSerializer, CartItemSerializer
 
-class CartItemsView(APIView):
+class CartItemsViewkkk(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -414,5 +414,41 @@ class CartItemsView(APIView):
             return Response({"error": "Cart not found."}, status=status.HTTP_404_NOT_FOUND)
         except CartItem.DoesNotExist:
             return Response({"error": "Cart item not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+class CartItemsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not request.user.is_employer:
+            return Response({"error": "Only employers can view items in the cart."}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            user_data = {
+                "email": request.user.email,
+                "username": request.user.username,
+                "first_name": request.user.first_name,
+                "last_name": request.user.last_name,
+            }
+
+            cart = Cart.objects.filter(user=request.user, paid=False).first()
+            if cart:
+                cart_data = CartSerializer(cart).data
+                cart_items_data = cart_data['items']
+            else:
+                cart_items_data = []
+
+            # Return the correct key "cart_items"
+            response_data = {
+                "user_data": user_data,
+                "cart_items": cart_items_data,  # Corrected this key
+            }
+
+            return Response(response_data, status=status.HTTP_200_OK)
+
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
