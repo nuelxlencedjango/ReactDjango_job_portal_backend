@@ -2,6 +2,7 @@
 from django.urls import path
 from .views import *
 
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
 
 #app_name = 'api'
@@ -17,7 +18,10 @@ urlpatterns = [
     path('profession-list/', ServiceListView.as_view(), name='profession-list'),
     path('artisans-search/', ArtisanSearchListView.as_view(), name='artisans-search'),
 
-    
+      
+   path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+   # path('api-auth/', include('rest_framework.urls')), 
     #path('add_location/', AreaCreateView.as_view(), name='add_location'),
     
 
