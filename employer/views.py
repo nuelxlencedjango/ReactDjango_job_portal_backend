@@ -529,7 +529,9 @@ class CartItemView(APIView):
             return Response( 
                 { "cart": serializer.data, "user": { "id": user.id,
                         "first_name": user.first_name,
-                        "last_name": user.last_name, },},status=200,
+                        "last_name": user.last_name, 
+                        "email": user.email, },
+                },status=200,
                         )
         except Cart.DoesNotExist:
             return Response({"detail": "Cart not found."}, status=404)
