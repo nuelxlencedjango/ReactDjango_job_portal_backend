@@ -2,7 +2,7 @@
 from rest_framework import serializers
 #from django.contrib.auth import get_user_model
 from .models import CustomUser, ArtisanProfile, EmployerProfile
-
+from .models import Fingerprint 
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -54,7 +54,6 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
     # Custom fields to get URLs for the images
     profile_image = serializers.SerializerMethodField() 
-   # fingerprint_image = serializers.SerializerMethodField()
     class Meta:
         model = ArtisanProfile
         fields = ['user', 'experience','location', 'service', 'pay', 'profile_image', 'nin', 
@@ -84,18 +83,21 @@ class EmployerProfileSerializer(serializers.ModelSerializer):
 
 
 
-# serializers.py
-from rest_framework import serializers
-from .models import Fingerprint
+
 
 class FingerprintSerializer(serializers.ModelSerializer):
     class Meta:
         model = Fingerprint
-        fields = ['id', 'artisan_profile', 'fingerprint_image', 'fingerprint_template', 'created_at']
+        fields = ['id', 'artisan_profile', 'fingerprint_image', 'created_at']
         read_only_fields = ['created_at']
 
     def validate_fingerprint_image(self, value):
-        # Add validation if needed (e.g., image size, type)
-        if value.size > 5 * 1024 * 1024:  # Limit size to 5 MB
-            raise serializers.ValidationError("Image size is too large")
+        # Check if the image is provided and its format is valid
+        if value is None:
+            raise serializers.ValidationError("No image provided.")
+        
+       
+        if not value.name.lower().endswith(('.png', '.jpg', '.jpeg')):
+            raise serializers.ValidationError("Invalid image format. Only PNG, JPG, or JPEG are allowed.")
+        
         return value
