@@ -104,7 +104,7 @@ class ArtisanProfileViewSet(viewsets.ModelViewSet):
 # artisan_search_view.py
 from django.shortcuts import render
 from django.http import JsonResponse
-from .models import ArtisanProfile
+
 from django.views import View
 
 class ArtisanSearchView2(View):
