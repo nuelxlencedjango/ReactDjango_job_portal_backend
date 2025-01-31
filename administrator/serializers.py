@@ -16,9 +16,7 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
 
 
 
-# serializers.py
-from rest_framework import serializers
-from .models import ArtisanProfile
+
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
