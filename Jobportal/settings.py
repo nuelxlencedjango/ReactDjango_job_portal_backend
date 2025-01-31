@@ -119,6 +119,7 @@ INSTALLED_APPS = [
     'services',
     'social_account',
     'employer',
+    'administrator',
 
    
 ]

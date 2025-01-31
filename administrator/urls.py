@@ -5,6 +5,6 @@ from .views import ArtisanProfileViewSet ,ArtisanSearchView
 
 
 urlpatterns = [
-    path('api/artisans/search/', ArtisanSearchView.as_view(), name='artisan_search'),
+    path('artisans/search/', ArtisanSearchView.as_view(), name='artisan_search'),
     path('api/artisans/search/', ArtisanProfileViewSet.as_view(), name='artisan_search'),
 ]
