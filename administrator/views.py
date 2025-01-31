@@ -98,3 +98,22 @@ class ArtisanProfileViewSet(viewsets.ModelViewSet):
         )
         serializer = self.get_serializer(artisans, many=True)
         return Response(serializer.data)
+
+
+
+# artisan_search_view.py
+from django.shortcuts import render
+from django.http import JsonResponse
+from .models import ArtisanProfile
+from django.views import View
+
+class ArtisanSearchView2(View):
+    def get(self, request):
+        query = request.GET.get('query', '')
+        artisans = ArtisanProfile.objects.filter(
+            Q(user__username__icontains=query) | 
+            Q(user__email__icontains=query) | 
+            Q(phone_number__icontains=query)
+        )
+        artisan_data = [{"name": artisan.user.username, "email": artisan.user.email} for artisan in artisans]
+        return JsonResponse(artisan_data, safe=False)
