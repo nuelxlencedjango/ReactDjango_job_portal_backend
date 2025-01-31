@@ -4,7 +4,6 @@ from django.contrib.auth.models import AbstractUser
 from cloudinary.models import CloudinaryField
 
 
-
 # Custom User Model
 class CustomUser(AbstractUser):
     USER_TYPE_CHOICES = [
@@ -61,7 +60,6 @@ class BaseProfile(models.Model):
 class ArtisanProfile(BaseProfile):
     service = models.ForeignKey('api.Service', related_name='artisans', on_delete=models.CASCADE, null=True, blank=True)
     experience = models.PositiveIntegerField(null=True, blank=True)
-    #fingerprint_image = CloudinaryField( null=True, blank=True)
     #location = models.ForeignKey('api.Area', on_delete=models.CASCADE, null=True, blank=True)
     address = models.CharField(max_length=255, null=True, blank=True)
     profile_image = CloudinaryField( null=True, blank=True)
@@ -88,18 +86,12 @@ class ManagerProfile(BaseProfile):
 
 
 
-# models.py
-from django.db import models
-from cloudinary.models import CloudinaryField
-from django.conf import settings  # To link it to the User model
 
-class Fingerprint(models.Model):
+class Fingerprint(models.Model): 
     artisan_profile = models.ForeignKey('ArtisanProfile', related_name='fingerprints', on_delete=models.CASCADE)
-    # The actual fingerprint image or template
+
     fingerprint_image = CloudinaryField(null=True, blank=True)
-    # Optionally, add more fields like fingerprint template, etc.
-    fingerprint_template = models.TextField(null=True, blank=True)  # If you store it as a template
-    # A timestamp for when the fingerprint was captured
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -107,3 +99,11 @@ class Fingerprint(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+
+
+
+
+
+
+
