@@ -53,6 +53,10 @@ class UserRegistrationAndProfileCreation(APIView):
        
 
 
+
+
+
+
 class UserRegistrationDetailView(APIView):
     permission_classes = [AllowAny]
 
@@ -127,47 +131,21 @@ def set_cookie(response, token, cookie_name):
         path='/',)
     
 
-
-
-
-# views.py
-
-# views.py
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import AllowAny
-from django.contrib.auth import authenticate
-from rest_framework_simplejwt.tokens import RefreshToken
-import logging
-
-logger = logging.getLogger(__name__)
-
 class LoginView(APIView):
     permission_classes = [AllowAny]
-
     def post(self, request, *args, **kwargs):
         username = request.data.get('username')
         password = request.data.get('password')
 
-        logger.info(f"Login attempt: username={username}, password={password}")  # Log credentials
-
         user = authenticate(username=username, password=password)
         if user is None:
-            logger.warning("Invalid credentials")  # Log invalid credentials
             return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-
-        logger.info(f"User authenticated: {user.username}")  # Log successful authentication
 
         refresh = RefreshToken.for_user(user)
         access_token = str(refresh.access_token)
         refresh_token = str(refresh)
 
-        response = Response({
-            'refresh': refresh_token,
-            'access': access_token,
-            'user_type': user.user_type,
-        })
+        response = Response({'refresh': refresh_token,'access': access_token,})
 
         set_cookie(response, access_token, 'access_token')
         set_cookie(response, refresh_token, 'refresh_token')
@@ -192,8 +170,6 @@ class LogoutView(APIView):
 
         except Exception as e:
             return Response({"message": str(e)}, status=400)
-
-
 
 
 
