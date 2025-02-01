@@ -53,10 +53,6 @@ class UserRegistrationAndProfileCreation(APIView):
        
 
 
-
-
-
-
 class UserRegistrationDetailView(APIView):
     permission_classes = [AllowAny]
 
@@ -131,8 +127,15 @@ def set_cookie(response, token, cookie_name):
         path='/',)
     
 
+
+
+
+# views.py
+
+
 class LoginView(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request, *args, **kwargs):
         username = request.data.get('username')
         password = request.data.get('password')
@@ -145,7 +148,9 @@ class LoginView(APIView):
         access_token = str(refresh.access_token)
         refresh_token = str(refresh)
 
-        response = Response({'refresh': refresh_token,'access': access_token,})
+        response = Response({'refresh': refresh_token,'access': access_token,
+            'user_type': user.user_type, 
+        })
 
         set_cookie(response, access_token, 'access_token')
         set_cookie(response, refresh_token, 'refresh_token')
@@ -170,6 +175,8 @@ class LogoutView(APIView):
 
         except Exception as e:
             return Response({"message": str(e)}, status=400)
+
+
 
 
 
