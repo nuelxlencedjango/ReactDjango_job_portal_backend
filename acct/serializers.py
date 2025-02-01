@@ -5,6 +5,10 @@ from .models import CustomUser, ArtisanProfile, EmployerProfile
 from .models import Fingerprint 
 
 
+
+
+
+
 class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     password2 = serializers.CharField(write_only=True)
@@ -18,6 +22,10 @@ class CustomUserSerializer(serializers.ModelSerializer):
         # Check if passwords match
         if data['password'] != data['password2']:
             raise serializers.ValidationError("Passwords do not match.")
+
+        # manager with user_type='manager' not allowed to register
+        if data.get('user_type') == 'manager':
+            raise serializers.ValidationError("Managers cannot be created through this endpoint.")
         return data
 
     def validate_email(self, value):
@@ -27,7 +35,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-         # Remove confirm_password from the validated data since it's not needed for user creation 
+        # Remove confirm_password from the validated data since it's not needed for user creation
         validated_data.pop('password2', None)
 
         # Create the user with the validated data
@@ -36,8 +44,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
             first_name=validated_data['first_name'].capitalize(),
             last_name=validated_data['last_name'].capitalize(),
             email=validated_data['email'],
-            user_type=validated_data.get('user_type')  
-            #user_type=validated_data.get('user_type', 'default_value')  
+            user_type=validated_data.get('user_type')
         )
 
         # Set and hash the password before saving
@@ -45,8 +52,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
-
-
 
 
 
