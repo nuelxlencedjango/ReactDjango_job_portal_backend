@@ -29,7 +29,7 @@ class CustomUser(AbstractUser):
 
     @property
     def is_manager(self):
-        return self.user_type == 'manager'
+        return self.user_type == 'manager' 
 
     @property
     def is_employer(self):
