@@ -8,6 +8,8 @@ from django.shortcuts import render
 
 
 
+
+
 # views.py
 from django.http import JsonResponse
 from django.views import View
