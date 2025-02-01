@@ -140,6 +140,8 @@ class LoginView(APIView):
         username = request.data.get('username')
         password = request.data.get('password')
 
+        print(f"Username: {username}, Password: {password}") 
+
         user = authenticate(username=username, password=password)
         if user is None:
             return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
