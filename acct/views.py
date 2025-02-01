@@ -40,9 +40,9 @@ class UserRegistrationAndProfileCreation(APIView):
             
                 # Trigger profile creation via signals (handled by Django signals)
          
-                return Response({ "id": user.id,"username": user.username, #'password':user.password, 
+                return Response({ "id": user.id,"username": user.username,
                 "email": user.email,"first_name": user.first_name,
-                "last_name": user.last_name, 'user_type':user.user_type  }, status=status.HTTP_201_CREATED)
+                "last_name": user.last_name, 'password':user.password, 'user_type':user.user_type  }, status=status.HTTP_201_CREATED)
             else:
                 formatted_errors = {key: value[0] for key, value in user_serializer.errors.items()}
                 return Response(formatted_errors, status=status.HTTP_400_BAD_REQUEST)
