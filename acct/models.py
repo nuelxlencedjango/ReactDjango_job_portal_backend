@@ -95,7 +95,7 @@ class Fingerprint(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Fingerprint for {self.artisan_profile.user.first_name} at {self.created_at}"
+        return f"Fingerprint for {self.artisan_profile.user.first_name} {self.artisan_profile.user.last_name} at {self.created_at}"
 
     class Meta:
         ordering = ['-created_at']
