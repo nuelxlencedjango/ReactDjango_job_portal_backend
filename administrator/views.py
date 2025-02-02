@@ -60,7 +60,7 @@ class ArtisanSearchView(View):
                 'phone_number': artisan.phone_number,
                 'service': artisan.service.title if artisan.service else None,
                 'experience': artisan.experience,
-                'location': artisan.location.name if artisan.location else None,
+                'location': artisan.location.location if artisan.location else None,
                 'profile_image': artisan.profile_image.url if artisan.profile_image else None,
             }
             for artisan in artisans
