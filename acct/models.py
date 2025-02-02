@@ -77,11 +77,17 @@ class ArtisanProfile(BaseProfile):
 class EmployerProfile(BaseProfile):
     
     company_name = models.CharField(max_length=255, null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name}"
 
 
 # Manager Profile
 class ManagerProfile(BaseProfile):
     department = models.CharField(max_length=100, null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name}"
 
 
 
