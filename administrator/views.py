@@ -3,20 +3,13 @@ from django.shortcuts import render
 # Create your views here.
 
 
-
-
-
-
-
-
-
 # views.py
 from django.http import JsonResponse
 from django.views import View
 from acct.models import ArtisanProfile
 from .serializers import ArtisanProfileSerializer
 
-class ArtisanSearchView(View):
+class ArtisanSearchView2(View):
     def get(self, request, *args, **kwargs):
         # Get query parameters
         name = request.GET.get('name', '')
@@ -42,7 +35,7 @@ from django.http import JsonResponse
 from django.views import View
 
 
-class ArtisanSearchView2(View):
+class ArtisanSearchView(View):
     def get(self, request, *args, **kwargs):
         # Get query parameters
         name = request.GET.get('name', '')
