@@ -2,6 +2,7 @@
 from django.urls import path
 from . import views
 from .views import *
+from .views import FingerprintUploadView
 
 urlpatterns = [
     #path('artisan-register/', views.ArtisanRegistrationView.as_view(), name='artisan-register'),
@@ -11,7 +12,8 @@ urlpatterns = [
     path('user-register/', views.UserRegistrationDetailView.as_view(), name='user-register'),
     #path('api/logout/', LogoutView.as_view(), name='logout'),
     
-    path('upload-fingerprint/', FingerprintUploadView.as_view(), name='upload_fingerprint'),
+
+    path('upload-fingerprint/<int:artisan_id>/', FingerprintUploadView.as_view(), name='upload-fingerprint'),
    
 ]
 
