@@ -45,7 +45,7 @@ class ArtisanSearchView(View):
         # Filter artisans based on the provided parameters
         artisans = ArtisanProfile.objects.all()
         if name:
-            artisans = artisans.filter(user__username__icontains=name)
+            artisans = artisans.filter(user__first_name__icontains=name)
         if email:
             artisans = artisans.filter(user__email__icontains=email)
         if phone_number:
@@ -55,7 +55,7 @@ class ArtisanSearchView(View):
         results = [
             {
                 'id': artisan.id,
-                'name': artisan.user.username,
+                'name': artisan.user.first_name,
                 'email': artisan.user.email,
                 'phone_number': artisan.phone_number,
                 'service': artisan.service.title if artisan.service else None,
