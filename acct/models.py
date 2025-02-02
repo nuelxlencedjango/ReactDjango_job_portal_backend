@@ -70,7 +70,7 @@ class ArtisanProfile(BaseProfile):
 
 
     def __str__(self):
-        return f"{self.user.first_name}, {self.service.title}"
+        return f"{self.user.first_name}  ({self.service.title})"
 
 
 # Employer Profile
