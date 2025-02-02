@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from rest_framework import status
 from .models import CustomUser, ArtisanProfile, EmployerProfile,Fingerprint
-from .serializers import CustomUserSerializer,ArtisanProfileSerializer, EmployerProfileSerializer
+from .serializers import CustomUserSerializer,ArtisanProfileSerializer, EmployerProfileSerializer,FingerprintSerializer
 from django.core.files.storage import default_storage
 from django.conf import settings
 
@@ -16,15 +16,10 @@ import base64
 from django.core.files.base import ContentFile
 from django.core.exceptions import ValidationError
 from PIL import Image
-from io import BytesIO
-
+#from io import BytesIO
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 
-#from django.contrib.auth import get_user_model
-
-
-#User = get_user_model() 
 
 
 # views.py
@@ -179,92 +174,53 @@ class LogoutView(APIView):
 
 
 
-from .models import Fingerprint, ArtisanProfile
-from .serializers import FingerprintSerializer
-from django.core.files.base import ContentFile
-import base64
-
-class FingerprintUploadViewlpld(APIView):
-    def post(self, request, *args, **kwargs):
-        # Ensure user is authenticated and get the artisan profile
-        artisan_profile = ArtisanProfile.objects.get(user=request.user)
-        if not artisan_profile:
-            return Response({'error': 'User Profile not found.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Get the fingerprint image
-        fingerprint_image = request.FILES.get('fingerprint_image') or request.data.get('fingerprint_image')
-        
-        if not fingerprint_image:
-            return Response({'error': 'Fingerprint image.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Step 2: If it's a base64 string (optional), decode it
-        if isinstance(fingerprint_image, str):  # Check if base64 string
-            if fingerprint_image.startswith('data:image'):
-                image_data = fingerprint_image.split(",")[1]
-                image_data = base64.b64decode(image_data)
-                fingerprint_image = ContentFile(image_data, name="fingerprint_image.jpg")
-        
-        # Step 3: Create a Fingerprint record
-        fingerprint = Fingerprint(
-            artisan_profile=artisan_profile,
-            fingerprint_image=fingerprint_image,
-           
-        )
-        
-        fingerprint.save()
-
-        # Step 4: Return success response
-        return Response({
-            'message': 'Fingerprint uploaded successfully.',
-            'fingerprint_id': fingerprint.id
-        }, status=status.HTTP_201_CREATED)
-
 
 
 
 
 
 class FingerprintUploadView(APIView):
-    def post(self, request, *args, **kwargs):
-        # Ensure user is authenticated and get the artisan profile
-        artisan_profile = ArtisanProfile.objects.get(user=request.user)
-        if not artisan_profile:
-            return Response({'error': 'User Profile not found.'}, status=status.HTTP_400_BAD_REQUEST)
+    permission_classes = [IsAuthenticated] 
 
-        # Get the fingerprint image from the request (either as a file or base64 string)
+    def post(self, request, artisan_id, *args, **kwargs):
+        try:
+            # artisan profile by ID
+            artisan_profile = ArtisanProfile.objects.get(id=artisan_id)
+        except ArtisanProfile.DoesNotExist:
+            return Response({'error': 'Artisan profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # the fingerprint image from the request (either as a file or base64 string)
         fingerprint_image = request.FILES.get('fingerprint_image') or request.data.get('fingerprint_image')
 
         if not fingerprint_image:
             return Response({'error': 'Fingerprint image is required.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Step 1: Validate if it's a valid image file (PNG, JPG, JPEG)
+
+        # Validate if it's a valid image file (PNG, JPG, JPEG)
         if isinstance(fingerprint_image, str):  # If it's a base64 string
             if fingerprint_image.startswith('data:image'):
                 # Decode base64 string into an image file
                 image_data = fingerprint_image.split(",")[1]
                 image_data = base64.b64decode(image_data)
-                fingerprint_image = ContentFile(image_data, name="fingerprint_image.jpg")  # Temporary file name
+                fingerprint_image = ContentFile(image_data, name="fingerprint_image.jpg")
 
-        # Step 2: Validate file type for images (only PNG, JPG, JPEG)
-        if isinstance(fingerprint_image, ContentFile):  # If it's a file (either uploaded or from base64)
+        # File type for images (only PNG, JPG, JPEG)
+        if isinstance(fingerprint_image, ContentFile):
             try:
                 image = Image.open(fingerprint_image)
                 image_format = image.format.lower()
 
                 if image_format not in ['jpeg', 'png']:
-                    raise ValidationError("Invalid image format. Only PNG, JPG, or JPEG are allowed.")
+                    return Response({'error': 'Invalid image format. Only PNG, JPG, or JPEG are allowed.'}, status=status.HTTP_400_BAD_REQUEST)
             except Exception as e:
                 return Response({'error': 'Invalid image file.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Step 3: Create a Fingerprint record
+        # Create a Fingerprint record
         fingerprint = Fingerprint(
-            artisan_profile=artisan_profile,
-            fingerprint_image=fingerprint_image,
+            artisan_profile=artisan_profile, fingerprint_image=fingerprint_image,
         )
-
         fingerprint.save()
 
-        # Step 4: Return success response
+        # Return success response
         return Response({
             'message': 'Fingerprint uploaded successfully.',
             'fingerprint_id': fingerprint.id
