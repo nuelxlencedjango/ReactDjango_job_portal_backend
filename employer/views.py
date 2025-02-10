@@ -23,6 +23,11 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 # Create your views here.
 
 
+from django.shortcuts import get_object_or_404, redirect
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from .models import Cart
+
 
 
 
@@ -98,7 +103,7 @@ class AddToCartView(APIView):
 
         # Check or create the cart item
         cart_item, created = CartItem.objects.get_or_create(
-            cart=cart, artisan=artisan, service=service
+            cart=cart, artisan=artisan, service=service,paid =False,
         )
         
         if not created:
@@ -199,107 +204,6 @@ class CartItemsViewcc(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-
-
-
-class CartItemsViewvb(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        # Get the logged-in user
-        user = request.user
-
-        # Retrieve the cart for this user
-        try:
-            cart = Cart.objects.get(user=user, paid=False)
-        except Cart.DoesNotExist:
-            return Response({"message": "Cart not found or already paid."}, status=status.HTTP_404_NOT_FOUND)
-
-        # Serialize the cart data
-        serializer = CartSerializer(cart)
-
-        # Send the serialized data back
-        return Response({
-            "cart_items": serializer.data['items'],
-            "user_data": {
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "email": user.email
-            }
-        })
-
-
-
-from rest_framework import permissions, status
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
-from .models import Cart, CartItem
-from .serializers import CartSerializer
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
-
-
-class CartItemsViewfddd(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        # Get the logged-in user
-        user = request.user
-
-        # Retrieve the cart for this user
-        try:
-            cart = Cart.objects.get(user=user, paid=False)
-        except Cart.DoesNotExist:
-            return Response({"message": "Cart not found or already paid."}, status=status.HTTP_404_NOT_FOUND)
-
-        # Serialize the cart data
-        serializer = CartSerializer(cart)
-
-        # Send the serialized data back
-        return Response({
-            "cart_items": serializer.data['items'],
-            "user_data": {
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "email": user.email
-            }
-        })
-
-
-
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from .models import Cart, CartItem
-from .serializers import CartSerializer
-
-class CartItemsViewaaa(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        # Get the logged-in user
-        user = request.user
-
-        # Retrieve the cart for this user
-        try:
-            cart = Cart.objects.get(user=user, paid=False)
-        except Cart.DoesNotExist:
-            return Response({"message": "Cart not found or already paid."}, status=status.HTTP_404_NOT_FOUND)
-
-        # Serialize the cart data
-        serializer = CartSerializer(cart)
-
-        # Send the serialized data back
-        return Response({
-            "cart_items": serializer.data['items'],  # Get cart items data from the serialized cart
-            "user_data": {
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "email": user.email
-            }
-        })
 
 
 
@@ -420,98 +324,6 @@ class CartItemsViewkkk(APIView):
 
 
 
-class CartItemViewaa(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        if not request.user.is_employer:
-            return Response({"error": "Only employers can view items in the cart."}, status=status.HTTP_403_FORBIDDEN)
-
-        try:
-            user_data = {
-                "email": request.user.email,
-                "username": request.user.username,
-                "first_name": request.user.first_name,
-                "last_name": request.user.last_name,
-            }
-
-            cart = Cart.objects.filter(user=request.user, paid=False).first()
-            if cart:
-                #cart_data = CartSerializer(cart).data
-                #cart_items_data = cart_data['items']
-
-                 # Fetch cart items if the cart exists
-                cart_items = CartItem.objects.filter(cart=cart)
-                cart_items_data = CartItemSerializer(cart_items, many=True).data
-                cart_items_data = cart_items_data['items']
-                
-            else:
-                cart_items_data = []
-
-            # Return the correct key "cart_items"
-            response_data = {
-                "user_data": user_data,
-                "cart_items": cart_items_data,  # Corrected this key
-            }
-
-            return Response(response_data, status=status.HTTP_200_OK)
-
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from .serializers import CartSerializer
-from .models import Cart
-
-class CartItemViewss(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        try:
-            cart = Cart.objects.get(user=request.user)
-            serializer = CartSerializer(cart)
-            return Response(serializer.data, status=200)
-        except Cart.DoesNotExist:
-            return Response({"detail": "Cart not found."}, status=404)
-
-
-
-class CartItemViewkk(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        try:
-            cart = Cart.objects.prefetch_related('items__artisan__user', 'items__artisan__location').get(user=request.user)
-            serializer = CartSerializer(cart)
-            return Response(serializer.data, status=200)
-        except Cart.DoesNotExist:
-            return Response({"detail": "Cart not found."}, status=404)
-
-
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from .models import Cart
-from .serializers import CartSerializer
-
-class CartItemViewqqq(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        user = request.user
-        if CustomUser.objects.get(username =user, user_type='employer'):
-            try:
-                cart = Cart.objects.get(user=request.user, paid = False)
-                serializer = CartSerializer(cart)
-                serializer['user'] = user
-                return Response(serializer.data, status=200)
-            except Cart.DoesNotExist:
-                return Response({"detail": "Cart not found."}, status=404)
 
 
 
@@ -557,3 +369,16 @@ class CartItemView(APIView):
             return Response({"error": "Cart item not found."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+
+def payment_success_view(request, cart_id):
+    cart = get_object_or_404(Cart, id=cart_id)
+    
+    # Mark the cart and its items as paid
+    cart.mark_as_paid()
+    
+    # Redirect to the frontend homepage
+    return HttpResponseRedirect(reverse('frontend_homepage'))

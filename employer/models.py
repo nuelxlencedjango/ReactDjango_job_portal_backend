@@ -9,12 +9,7 @@ import uuid
 # Create your models here.
 
 
-
-
-
-
 class Cart(models.Model):
-    #user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='cart')
     cart_code = models.CharField(max_length=11, unique=True, editable=False)
     paid = models.BooleanField(default=False)
@@ -33,9 +28,19 @@ class Cart(models.Model):
             if not Cart.objects.filter(cart_code=code).exists():
                 return code
 
+    def mark_as_paid(self):
+        """Mark all items in the cart as paid."""
+        self.items.update(paid=True)
+        self.paid = True
+        self.save()
+
+    def get_unpaid_items(self):
+        """Return only unpaid items in the cart."""
+        return self.items.filter(paid=False)
+
     def __str__(self):
         return f"Cart {self.cart_code} for {self.user.last_name}"
-    
+
 
 
 
@@ -47,6 +52,7 @@ class CartItem(models.Model):
     unique_reference = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     quantity = models.PositiveIntegerField(default=1)
     added_at = models.DateTimeField(auto_now_add=True)
+    paid = models.BooleanField(default=False) 
 
     def save(self, *args, **kwargs):
         if not self.employer:

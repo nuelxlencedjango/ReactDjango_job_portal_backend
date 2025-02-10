@@ -46,6 +46,7 @@ class CartItem(models.Model):
     unique_reference = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     quantity = models.PositiveIntegerField(default=1)
     added_at = models.DateTimeField(auto_now_add=True)
+    paid = models.BooleanField(default=False) 
 
     #price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) 
 
