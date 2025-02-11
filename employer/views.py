@@ -401,12 +401,12 @@ class PaymentInformationView(APIView):
     def post(self, request):
         tx_ref = request.data.get("tx_ref")
         amount = request.data.get("amount")
-        customer_name = request.data.get("customer_name")
-        customer_email = request.data.get("customer_email")
-        customer_phone = request.data.get("customer_phone")
+        #customer_name = request.data.get("customer_name")
+        #customer_email = request.data.get("customer_email")
+        #customer_phone = request.data.get("customer_phone")
         status = request.data.get("status", "pending")
 
-        if not all([tx_ref, amount, customer_name, customer_email, customer_phone]):
+        if not all([tx_ref, amount, ]):
             return Response({"detail": "Missing required fields."}, status=400)
 
         try:
@@ -415,9 +415,9 @@ class PaymentInformationView(APIView):
                 user=request.user,
                 tx_ref=tx_ref,
                 amount=amount,
-                customer_name=customer_name,
-                customer_email=customer_email,
-                customer_phone=customer_phone,
+                #customer_name=customer_name,
+                #customer_email=customer_email,
+                #customer_phone=customer_phone,
                 status=status,
             )
 
