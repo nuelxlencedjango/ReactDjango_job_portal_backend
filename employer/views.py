@@ -395,7 +395,7 @@ from rest_framework.authentication import TokenAuthentication
 
 
 class PaymentInformationView(APIView):
-    authentication_classes = [TokenAuthentication]
+   #authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
