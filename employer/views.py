@@ -382,3 +382,31 @@ def payment_success_view(request, cart_id):
     
     # Redirect to the frontend homepage
     return HttpResponseRedirect(reverse('frontend_homepage'))
+
+
+
+
+
+
+
+class ConfirmPaymentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        tx_ref = request.data.get('tx_ref')  
+        if not tx_ref:
+            return Response({'detail': 'Transaction reference (tx_ref) is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # associat with the current user
+            cart = get_object_or_404(Cart, user=request.user, paid=False)
+
+            # Mark the cart and its items as paid
+            cart.mark_as_paid()
+
+            return Response({'detail': 'Cart items marked as paid.', 'tx_ref': tx_ref}, status=status.HTTP_200_OK)
+
+        except Cart.DoesNotExist:
+            return Response({'detail': 'No unpaid cart found for the user.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'detail': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
