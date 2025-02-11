@@ -13,7 +13,7 @@ urlpatterns = [
    path('checkout/', CheckoutView.as_view(), name='checkout'),
    path('job-details/', JobDetailsView.as_view(), name='job-details'),
    
-   #path('add_employer/', EmployerCreateView.as_view(), name='add_employer'),
+   path('payment_confirmation/', ConfirmPaymentView.as_view(), name='payment_confirmation'),
    # path('order-request/', OrderRequestCreateView.as_view(), name='order-request'),
 
     
