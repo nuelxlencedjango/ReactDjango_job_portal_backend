@@ -394,7 +394,7 @@ from rest_framework.authentication import TokenAuthentication
 
 
 
-class SavePaymentInformationView(APIView):
+class PaymentInformationView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -430,6 +430,8 @@ class SavePaymentInformationView(APIView):
                 {"detail": f"An error occurred: {str(e)}"},
                 status=500,
             )
+        
+        
 
 
 class PaymentConfirmationView(APIView):
