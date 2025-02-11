@@ -394,24 +394,20 @@ from rest_framework.authentication import TokenAuthentication
 
 
 
-class PaymentInformationView(APIView):
+class SavePaymentInformationView(APIView):
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # data from the request
         tx_ref = request.data.get("tx_ref")
         amount = request.data.get("amount")
         customer_name = request.data.get("customer_name")
         customer_email = request.data.get("customer_email")
         customer_phone = request.data.get("customer_phone")
-        status = request.data.get("status", "pending")  
+        status = request.data.get("status", "pending")
 
-        # Validate required fields
         if not all([tx_ref, amount, customer_name, customer_email, customer_phone]):
-            return Response(
-                {"detail": "Missing required fields."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response({"detail": "Missing required fields."}, status=400)
 
         try:
             # Save payment information to the database
@@ -424,22 +420,21 @@ class PaymentInformationView(APIView):
                 customer_phone=customer_phone,
                 status=status,
             )
+
             return Response(
                 {"detail": "Payment information saved.", "id": payment_info.id},
-                status=status.HTTP_201_CREATED,
+                status=201,
             )
         except Exception as e:
             return Response(
                 {"detail": f"An error occurred: {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status=500,
             )
 
 
-
-
 class PaymentConfirmationView(APIView):
-    authentication_classes = [TokenAuthentication] 
-    permission_classes = [IsAuthenticated] 
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         # Extract query parameters
@@ -448,7 +443,7 @@ class PaymentConfirmationView(APIView):
         transaction_id = request.query_params.get('transaction_id')
 
         if status != 'successful':
-            return Response({'detail': 'Payment was not successful.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'Payment was not successful.'}, status=400)
 
         try:
             # Find the cart associated with the authenticated user and transaction reference
@@ -461,18 +456,12 @@ class PaymentConfirmationView(APIView):
                 'detail': 'Payment confirmed successfully.',
                 'tx_ref': tx_ref,
                 'transaction_id': transaction_id,
-            }, status=status.HTTP_200_OK)
+            }, status=200)
 
         except Cart.DoesNotExist:
-            return Response({'detail': 'Cart not found or already paid.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'detail': 'Cart not found or already paid.'}, status=404)
         except Exception as e:
-            return Response({'detail': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-
-
-
-
+            return Response({'detail': f'An error occurred: {str(e)}'}, status=500)
 
 
 class MarkPaymentAsSuccessfulView(APIView):
@@ -484,7 +473,7 @@ class MarkPaymentAsSuccessfulView(APIView):
         if not tx_ref:
             return Response(
                 {"detail": "Transaction reference (tx_ref) is required."},
-                status=status.HTTP_400_BAD_REQUEST,
+                status=400,
             )
 
         try:
@@ -495,15 +484,15 @@ class MarkPaymentAsSuccessfulView(APIView):
 
             return Response(
                 {"detail": "Payment marked as successful.", "tx_ref": tx_ref},
-                status=status.HTTP_200_OK,
+                status=200,
             )
         except PaymentInformation.DoesNotExist:
             return Response(
                 {"detail": "Payment not found."},
-                status=status.HTTP_404_NOT_FOUND,
+                status=404,
             )
         except Exception as e:
             return Response(
                 {"detail": f"An error occurred: {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status=500,
             )
