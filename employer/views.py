@@ -386,27 +386,37 @@ def payment_success_view(request, cart_id):
 
 
 
+from rest_framework.authentication import TokenAuthentication
 
 
+class PaymentConfirmationView(APIView):
+    authentication_classes = [TokenAuthentication]  # Use token authentication
+    permission_classes = [IsAuthenticated]  # Require authentication
 
-class ConfirmPaymentView(APIView):
-    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        # Extract query parameters
+        status = request.query_params.get('status')
+        tx_ref = request.query_params.get('tx_ref')
+        transaction_id = request.query_params.get('transaction_id')
 
-    def post(self, request):
-        tx_ref = request.data.get('tx_ref')  
-        if not tx_ref:
-            return Response({'detail': 'Transaction reference (tx_ref) is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        if status != 'successful':
+            return Response({'detail': 'Payment was not successful.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # associat with the current user
-            cart = get_object_or_404(Cart, user=request.user, paid=False)
+            # Find the cart associated with the authenticated user and transaction reference
+            cart = Cart.objects.get(user=request.user, cart_code=tx_ref, paid=False)
 
-            # Mark the cart and its items as paid
+            # Mark the cart as paid
             cart.mark_as_paid()
 
-            return Response({'detail': 'Cart items marked as paid.', 'tx_ref': tx_ref}, status=status.HTTP_200_OK)
+            return Response({
+                'detail': 'Payment confirmed successfully.',
+                'tx_ref': tx_ref,
+                'transaction_id': transaction_id,
+            }, status=status.HTTP_200_OK)
 
         except Cart.DoesNotExist:
-            return Response({'detail': 'No unpaid cart found for the user.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'detail': 'Cart not found or already paid.'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'detail': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
