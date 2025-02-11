@@ -26,7 +26,7 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from .models import Cart
+
 
 
 
@@ -386,12 +386,60 @@ def payment_success_view(request, cart_id):
 
 
 
+
+
+
 from rest_framework.authentication import TokenAuthentication
 
 
+
+
+class PaymentInformationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        # data from the request
+        tx_ref = request.data.get("tx_ref")
+        amount = request.data.get("amount")
+        customer_name = request.data.get("customer_name")
+        customer_email = request.data.get("customer_email")
+        customer_phone = request.data.get("customer_phone")
+        status = request.data.get("status", "pending")  
+
+        # Validate required fields
+        if not all([tx_ref, amount, customer_name, customer_email, customer_phone]):
+            return Response(
+                {"detail": "Missing required fields."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            # Save payment information to the database
+            payment_info = PaymentInformation.objects.create(
+                user=request.user,
+                tx_ref=tx_ref,
+                amount=amount,
+                customer_name=customer_name,
+                customer_email=customer_email,
+                customer_phone=customer_phone,
+                status=status,
+            )
+            return Response(
+                {"detail": "Payment information saved.", "id": payment_info.id},
+                status=status.HTTP_201_CREATED,
+            )
+        except Exception as e:
+            return Response(
+                {"detail": f"An error occurred: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+
+
 class PaymentConfirmationView(APIView):
-    authentication_classes = [TokenAuthentication]  # Use token authentication
-    permission_classes = [IsAuthenticated]  # Require authentication
+    authentication_classes = [TokenAuthentication] 
+    permission_classes = [IsAuthenticated] 
 
     def get(self, request):
         # Extract query parameters
@@ -420,3 +468,42 @@ class PaymentConfirmationView(APIView):
         except Exception as e:
             return Response({'detail': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+
+
+
+
+
+
+class MarkPaymentAsSuccessfulView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        tx_ref = request.data.get("tx_ref")
+
+        if not tx_ref:
+            return Response(
+                {"detail": "Transaction reference (tx_ref) is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            # Find the payment by tx_ref and update its status
+            payment_info = PaymentInformation.objects.get(tx_ref=tx_ref, user=request.user)
+            payment_info.status = "successful"
+            payment_info.save()
+
+            return Response(
+                {"detail": "Payment marked as successful.", "tx_ref": tx_ref},
+                status=status.HTTP_200_OK,
+            )
+        except PaymentInformation.DoesNotExist:
+            return Response(
+                {"detail": "Payment not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as e:
+            return Response(
+                {"detail": f"An error occurred: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

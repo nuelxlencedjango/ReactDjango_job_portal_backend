@@ -13,14 +13,12 @@ urlpatterns = [
    path('checkout/', CheckoutView.as_view(), name='checkout'),
    path('job-details/', JobDetailsView.as_view(), name='job-details'),
    
+   path('payment-details/', PaymentInformationView.as_view(), name='payment-details'),
    path('payment_confirmation/', PaymentConfirmationView.as_view(), name='payment_confirmation'),
-   # path('order-request/', OrderRequestCreateView.as_view(), name='order-request'),
 
-    
-    #path('employer-details/', EmployersDetailsView.as_view(), name='employer-details'),
+   #path('employer-details/', EmployersDetailsView.as_view(), name='employer-details'),
+   
     path('auth/verify-token/', VerifyTokenView.as_view(), name='verify-token'),
     #  path('order/', OrderRequestViewPage.as_view(), name='orders'),
 ]
-
-
 
