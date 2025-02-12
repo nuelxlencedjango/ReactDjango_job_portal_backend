@@ -76,36 +76,45 @@ class CheckArtisanInCartView(APIView):
             return Response({'in_cart': False}, status=200)
         
 
-
-
 class AddToCartView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # Check if the user is an employer
+        # Ensure the user is an employer
         if not request.user.is_employer:
-            return Response({"error": "Only employers can add items to the cart."},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {"error": "Only employers can add items to the cart."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         artisan_email = request.data.get("artisan_email")
 
         if not artisan_email:
-            return Response({"error": "Artisan email is required."}, 
-                             status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Artisan email is required."}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             artisan = ArtisanProfile.objects.get(user__email=artisan_email)
             service = artisan.service
         except ArtisanProfile.DoesNotExist:
             return Response(
-                {"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND)
+                {"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND
+            )
 
-        # Fetch or create a new cart for the user
-        cart, created = Cart.objects.get_or_create(user=request.user, paid=False)
+        # Fetch or create the cart for the authenticated user
+        try:
+            cart = Cart.objects.get(user=request.user, paid=False)
+        except Cart.DoesNotExist:
+            # If no cart exists, create a new one
+            cart = Cart.objects.create(user=request.user, paid=False)
 
         # Check or create the cart item
         cart_item, created = CartItem.objects.get_or_create(
-            cart=cart, artisan=artisan, service=service, paid=False,
+            cart=cart,
+            artisan=artisan,
+            service=service,
+            paid=False,
         )
 
         if not created:
@@ -116,8 +125,6 @@ class AddToCartView(APIView):
         return Response(
             {"message": "Item added to cart successfully."}, status=status.HTTP_201_CREATED
         )
-
-
 
 
 
