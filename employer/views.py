@@ -417,8 +417,8 @@ class PaymentInformationView(APIView):
 
 
 class PaymentConfirmationView(APIView):
-    # authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+   
+    #permission_classes = [IsAuthenticated]
 
     def get(self, request):
         # Extract access_token from query parameters
