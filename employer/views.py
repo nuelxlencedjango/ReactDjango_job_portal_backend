@@ -137,7 +137,7 @@ class AddToCartView(APIView):
 
         # Fetch the user's cart
         try:
-            cart = Cart.objects.get(user=request.user)
+            cart = Cart.objects.filter(user=request.user)
         except Cart.DoesNotExist:
             # If no cart exists, create a new one
             cart = Cart.objects.create(user=request.user, paid=False)
