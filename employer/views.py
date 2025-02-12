@@ -415,6 +415,11 @@ class PaymentInformationView(APIView):
         
         
 
+
+
+
+
+
 class PaymentConfirmationView(APIView):
     permission_classes = [AllowAny]
 
@@ -426,10 +431,10 @@ class PaymentConfirmationView(APIView):
             return Response({"detail": "Authentication credentials were not provided."}, status=401)
 
         try:
-            token = auth_header.split(" ")[1]  # Assuming Bearer token format
-            user = User.objects.get(auth_token__key=token)
-            request.user = user  # Manually authenticate the user
-        except (User.DoesNotExist, IndexError):
+            token = auth_header.split(" ")[1]  
+            user = CustomUser.objects.get(auth_token__key=token)
+            request.user = user  
+        except (CustomUser.DoesNotExist, IndexError):
             return Response({"detail": "Invalid token."}, status=401)
 
         # Proceed with payment confirmation logic
