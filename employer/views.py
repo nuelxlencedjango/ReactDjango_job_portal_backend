@@ -283,6 +283,11 @@ class PaymentInformationView(APIView):
 
 
 
+
+
+from django.shortcuts import get_object_or_404, redirect
+
+
 def payment_confirmation(request):
     # Extract payment details from query parameters
     payment_status = request.GET.get('status')
@@ -295,10 +300,6 @@ def payment_confirmation(request):
     try:
         # Find the payment by tx_ref
         payment_info = get_object_or_404(PaymentInformation, tx_ref=tx_ref)
-
-        if not payment_info:
-            return JsonResponse({"detail": "Invalid Transaction Details."}, status=status.HTTP_400_BAD_REQUEST)
-
 
         # Update payment status and transaction ID
         payment_info.status = payment_status
@@ -313,13 +314,13 @@ def payment_confirmation(request):
 
             CartItem.objects.filter(cart=cart).update(paid=True)
 
-            # Redirect to the frontend success page
-            frontend_url = "https://react-frontend.vercel.app/payment-confirmation"
+            # Redirect to the frontend success page with query parameters
+            frontend_url = f"https://react-frontend.vercel.app/payment-confirmation?status=success&tx_ref={tx_ref}&transaction_id={transaction_id}"
             return redirect(frontend_url)
 
         else:
-            # Redirect to the frontend failure page
-            frontend_url = "https://react-frontend.vercel.app/payment-confirmation"
+            # Redirect to the frontend failure page with query parameters
+            frontend_url = f"https://react-frontend.vercel.app/payment-confirmation?status=failed&tx_ref={tx_ref}&transaction_id={transaction_id}"
             return redirect(frontend_url)
 
     except PaymentInformation.DoesNotExist:
@@ -328,3 +329,4 @@ def payment_confirmation(request):
         return JsonResponse({"detail": "Cart not found or already paid."}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return JsonResponse({"detail": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
