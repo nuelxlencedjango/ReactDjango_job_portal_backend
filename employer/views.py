@@ -109,61 +109,61 @@ class JobDetailsView(APIView):
 
 
 
-
 class AddToCartView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # Check if the user is an employer
+        # Ensure the user is an employer
         if not request.user.is_employer:
-            return Response({"error": "Only employers can add items to the cart."},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {"error": "Only employers can add items to the cart."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         artisan_email = request.data.get("artisan_email")
 
         if not artisan_email:
-            return Response({"error": "Artisan email is required."}, 
-                             status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Artisan email is required."}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             artisan = ArtisanProfile.objects.get(user__email=artisan_email)
             service = artisan.service
         except ArtisanProfile.DoesNotExist:
             return Response(
-                {"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND)
+                {"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND
+            )
 
-        # Fetch the user's cart, ensuring we don't use a paid one
+        # Fetch the user's unpaid cart
         cart = Cart.objects.filter(user=request.user, paid=False).first()
 
-        if cart:
-            # If there is an unpaid cart, proceed
-            cart_item, created = CartItem.objects.get_or_create(
-                cart=cart, artisan=artisan, service=service, paid=False,
-            )
+        if not cart:
+            # If no unpaid cart exists, check if the user has a paid cart
+            paid_cart_exists = Cart.objects.filter(user=request.user, paid=True).exists()
+            if paid_cart_exists:
+                # If a paid cart exists, create a new unpaid cart
+                cart = Cart.objects.create(user=request.user, paid=False)
+            else:
+                # If no cart exists at all, create a new one
+                cart = Cart.objects.create(user=request.user, paid=False)
 
-            if not created:
-                # If the item already exists, just increment the quantity
-                cart_item.quantity += 1
-                cart_item.save()
+        # Check or create the cart item
+        cart_item, created = CartItem.objects.get_or_create(
+            cart=cart,
+            artisan=artisan,
+            service=service,
+            paid=False,
+        )
 
-            return Response(
-                {"message": "Item added to cart successfully."}, status=status.HTTP_201_CREATED
-            )
-        else:
-            # If the user does not have an unpaid cart, we need to handle this
-            # Optionally, create a new unpaid cart for them
-            cart = Cart.objects.create(user=request.user, paid=False)
+        if not created:
+            # If the item already exists, just increment the quantity
+            cart_item.quantity += 1
+            cart_item.save()
 
-            # Add the cart item to the new cart
-            cart_item = CartItem.objects.create(
-                cart=cart, artisan=artisan, service=service, paid=False
-            )
-
-            return Response(
-                {"message": "New cart created, and item added to cart successfully."},
-                status=status.HTTP_201_CREATED
-            )
-
+        return Response(
+            {"message": "Item added to cart successfully."}, status=status.HTTP_201_CREATED
+        )
 
 
 
