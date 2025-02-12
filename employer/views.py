@@ -419,6 +419,7 @@ class PaymentInformationView(APIView):
 
 
 class PaymentConfirmationView(APIView):
+    permission_classes = [AllowAny]
     def get(self, request):
         # Extract the access_token from query parameters
         access_token = request.query_params.get('access_token')
