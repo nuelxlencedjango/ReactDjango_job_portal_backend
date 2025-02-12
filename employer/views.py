@@ -414,59 +414,64 @@ class PaymentInformationView(APIView):
             )
         
         
-
-
-
-
+from django.contrib.auth import authenticate, login
 
 
 class PaymentConfirmationView(APIView):
     permission_classes = [AllowAny]
 
-    def post(self, request):
-        # Extract token from Authorization header
+    def get(self, request):
+        #  token from Authorization header
         auth_header = request.headers.get('Authorization')
-
+        
         if not auth_header or not auth_header.startswith('Bearer '):
-            return Response({"detail": "Authentication credentials were not provided."}, status=401)
+            return Response({"detail": "Authentication credentials were not provided."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        token = auth_header.split(" ")[1]  # Bearer token format
+
+        # authenticate the user
+        user = authenticate(request, token=token)
+        if user is not None:
+            login(request, user)
+        else:
+            return Response({"detail": "Invalid token."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # Extract payment details from query parameters
+        payment_status = request.query_params.get('status')
+        tx_ref = request.query_params.get('tx_ref')
+        transaction_id = request.query_params.get('transaction_id')
 
         try:
-            token = auth_header.split(" ")[1]  
-            user = CustomUser.objects.get(auth_token__key=token)
-            request.user = user  
-        except (CustomUser.DoesNotExist, IndexError):
-            return Response({"detail": "Invalid token."}, status=401)
-
-        # Proceed with payment confirmation logic
-        payment_status = request.data.get('status')
-        tx_ref = request.data.get('tx_ref')
-        transaction_id = request.data.get('transaction_id')
-
-        try:
+            # Find the payment by tx_ref and user
             payment_info = PaymentInformation.objects.get(tx_ref=tx_ref, user=request.user)
+
+            # Update payment status and transaction ID
             payment_info.status = payment_status
             payment_info.transaction_id = transaction_id
             payment_info.save()
 
             if payment_status == "successful":
+                # Mark the cart and items as paid
                 cart = Cart.objects.get(user=request.user, paid=False)
                 cart.paid = True
                 cart.save()
+
                 CartItem.objects.filter(cart=cart).update(paid=True)
 
                 return Response({
                     "detail": "Payment confirmed successfully.",
                     "redirect_url": "https://react-frontend.vercel.app/payment-confirmation",
-                }, status=200)
+                }, status=status.HTTP_200_OK)
+
             else:
                 return Response({
                     "detail": "Payment was not successful.",
                     "redirect_url": "https://react-frontend.vercel.app/payment-confirmation",
-                }, status=400)
+                }, status=status.HTTP_400_BAD_REQUEST)
 
         except PaymentInformation.DoesNotExist:
-            return Response({"detail": "Payment not found."}, status=404)
+            return Response({"detail": "Payment not found."}, status=status.HTTP_404_NOT_FOUND)
         except Cart.DoesNotExist:
-            return Response({"detail": "Cart not found or already paid."}, status=404)
+            return Response({"detail": "Cart not found or already paid."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return Response({"detail": f"An error occurred: {str(e)}"}, status=500)
+            return Response({"detail": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
