@@ -415,33 +415,32 @@ class PaymentInformationView(APIView):
         
         
 
-
-
+User = get_user_model()
 
 class PaymentConfirmationView(APIView):
-    permission_classes = [AllowAny]
-    def get(self, request):
-        # Extract the access_token from query parameters
-        access_token = request.query_params.get('access_token')
+    permission_classes = [IsAuthenticated]  
 
-        if not access_token:
+    def get(self, request):
+        # Extract token from Authorization header
+        auth_header = request.headers.get('Authorization')
+        
+        if not auth_header:
             return Response({"detail": "Authentication credentials were not provided."}, status=401)
 
         try:
-            # Verify the token manually
-            user = User.objects.get(auth_token__key=access_token)
+            token = auth_header.split(" ")[1]  # Assuming Bearer token format
+            user = CustomUser.objects.get(auth_token__key=token)
             request.user = user  # Manually authenticate the user
-
-        except User.DoesNotExist:
+        except (CustomUser.DoesNotExist, IndexError):
             return Response({"detail": "Invalid token."}, status=401)
 
-        # Continue with the existing logic for payment status processing
-        payment_status = request.query_params.get('status') 
-        tx_ref = request.query_params.get('tx_ref')  
-        transaction_id = request.query_params.get('transaction_id') 
+        # Extract payment details from query parameters
+        payment_status = request.query_params.get('status')
+        tx_ref = request.query_params.get('tx_ref')
+        transaction_id = request.query_params.get('transaction_id')
 
         try:
-            # Find the payment by tx_ref
+            # Find the payment by tx_ref and user
             payment_info = PaymentInformation.objects.get(tx_ref=tx_ref, user=request.user)
 
             # Update payment status and transaction ID
@@ -450,46 +449,27 @@ class PaymentConfirmationView(APIView):
             payment_info.save()
 
             if payment_status == "successful":
-                # Find the cart associated with the payment
+                # Mark the cart and items as paid
                 cart = Cart.objects.get(user=request.user, paid=False)
-
-                # Mark the cart and cart items as paid
                 cart.paid = True
                 cart.save()
 
-                # Mark all cart items as paid
                 CartItem.objects.filter(cart=cart).update(paid=True)
 
-                # Redirect to the React frontend homepage
-                return Response(
-                    {
-                        "detail": "Payment confirmed successfully.",
-                        "redirect_url": "https://react-django-job-portal-frontend.vercel.app/payment-confirmation", 
-                    },
-                    status=status.HTTP_200_OK,
-                )
+                return Response({
+                    "detail": "Payment confirmed successfully.",
+                    "redirect_url": "https://react-frontend.vercel.app/payment-confirmation",
+                }, status=200)
+
             else:
-                # Payment was not successful
-                return Response(
-                    {
-                        "detail": "Payment was not successful.",
-                        "redirect_url": "https://react-django-job-portal-frontend.vercel.app/payment-confirmation", 
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+                return Response({
+                    "detail": "Payment was not successful.",
+                    "redirect_url": "https://react-frontend.vercel.app/payment-confirmation",
+                }, status=400)
 
         except PaymentInformation.DoesNotExist:
-            return Response(
-                {"detail": "Payment not found."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+            return Response({"detail": "Payment not found."}, status=404)
         except Cart.DoesNotExist:
-            return Response(
-                {"detail": "Cart not found or already paid."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+            return Response({"detail": "Cart not found or already paid."}, status=404)
         except Exception as e:
-            return Response(
-                {"detail": f"An error occurred: {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            return Response({"detail": f"An error occurred: {str(e)}"}, status=500)
