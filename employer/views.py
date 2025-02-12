@@ -24,8 +24,10 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from django.contrib.auth.models import User
 
 from django.shortcuts import get_object_or_404, redirect
-from django.http import HttpResponseRedirect
-from django.urls import reverse
+
+
+from django.http import JsonResponse
+
 
 
 
@@ -417,10 +419,7 @@ class PaymentInformationView(APIView):
 
 
 
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from .models import PaymentInformation, Cart, CartItem
-from rest_framework import status
+
 
 def payment_confirmation(request):
     # Extract payment details from query parameters
@@ -435,6 +434,10 @@ def payment_confirmation(request):
         # Find the payment by tx_ref
         payment_info = get_object_or_404(PaymentInformation, tx_ref=tx_ref)
 
+        if not payment_info:
+            return JsonResponse({"detail": "Invalid Transaction Details."}, status=status.HTTP_400_BAD_REQUEST)
+
+
         # Update payment status and transaction ID
         payment_info.status = payment_status
         payment_info.transaction_id = transaction_id
@@ -448,16 +451,14 @@ def payment_confirmation(request):
 
             CartItem.objects.filter(cart=cart).update(paid=True)
 
-            return JsonResponse({
-                "detail": "Payment confirmed successfully.",
-                "redirect_url": "https://react-frontend.vercel.app/payment-confirmation",
-            }, status=status.HTTP_200_OK)
+            # Redirect to the frontend success page
+            frontend_url = "https://react-frontend.vercel.app/payment-confirmation"
+            return redirect(frontend_url)
 
         else:
-            return JsonResponse({
-                "detail": "Payment was not successful.",
-                "redirect_url": "https://react-frontend.vercel.app/payment-confirmation",
-            }, status=status.HTTP_400_BAD_REQUEST)
+            # Redirect to the frontend failure page
+            frontend_url = "https://react-frontend.vercel.app/payment-confirmation"
+            return redirect(frontend_url)
 
     except PaymentInformation.DoesNotExist:
         return JsonResponse({"detail": "Payment not found."}, status=status.HTTP_404_NOT_FOUND)
