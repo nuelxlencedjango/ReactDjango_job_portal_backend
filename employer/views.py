@@ -425,20 +425,33 @@ from rest_framework.authtoken.models import Token
 from django.http import JsonResponse
 
 
+
+
+
+from django.http import JsonResponse
+from django.contrib.auth.models import User
+from rest_framework import status
+from rest_framework_simplejwt.tokens import AccessToken
+from .models import PaymentInformation, Cart, CartItem
+
 def payment_confirmation(request):
     if request.method != 'GET':
         return JsonResponse({"detail": "Method not allowed."}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    #  token from query parameters
+    # token from query parameters
     token = request.GET.get('token')
     
     if not token:
         return JsonResponse({"detail": "Authentication credentials were not provided."}, status=status.HTTP_401_UNAUTHORIZED)
 
     try:
+        #  JWT token
+        access_token = AccessToken(token)
+        user_id = access_token['user_id']  #  user ID from the token payload
+
         # Fetch the user associated with the token
-        user = Token.objects.get(key=token).user
-    except Token.DoesNotExist:
+        user = CustomUser.objects.get(id=user_id)
+    except Exception as e:
         return JsonResponse({"detail": "Invalid token."}, status=status.HTTP_401_UNAUTHORIZED)
 
     # Extract payment details from query parameters
