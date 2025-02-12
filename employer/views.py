@@ -317,8 +317,8 @@ class CartItemView(APIView):
             # If no cart exists, return a message indicating the cart is empty
             return Response(
                 {
-                    "detail": "Your cart is empty.",
-                    "cart": None,
+                    "cart": "Your cart is empty.",
+                    #"user": None,
                     "user": {"id": user.id,"first_name": user.first_name,
                         "last_name": user.last_name,"email": user.email,
                         },
