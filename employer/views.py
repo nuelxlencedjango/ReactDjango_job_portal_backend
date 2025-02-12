@@ -376,9 +376,44 @@ class CartItemView(APIView):
 
 
 
+class PaymentInformationView(APIView):
+   #authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
+    def post(self, request):
+        tx_ref = request.data.get("tx_ref")
+        amount = request.data.get("amount")
+        #customer_name = request.data.get("customer_name")
+        #customer_email = request.data.get("customer_email")
+        #customer_phone = request.data.get("customer_phone")
+        status = request.data.get("status", "pending")
 
+        if not all([tx_ref, amount, ]):
+            return Response({"detail": "Missing required fields."}, status=400)
 
+        try:
+            # Save payment information to the database
+            payment_info = PaymentInformation.objects.create(
+                user=request.user,
+                tx_ref=tx_ref,
+                amount=amount,
+                #customer_name=customer_name,
+                #customer_email=customer_email,
+                #customer_phone=customer_phone,
+                status=status,
+            )
+
+            return Response(
+                {"detail": "Payment information saved.", "id": payment_info.id},
+                status=201,
+            )
+        except Exception as e:
+            return Response(
+                {"detail": f"An error occurred: {str(e)}"},
+                status=500,
+            )
+        
+        
 
 
 class PaymentConfirmationView(APIView):
@@ -460,12 +495,6 @@ class PaymentConfirmationView(APIView):
                 {"detail": f"An error occurred: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
-
-
-
-
-
 
 
 
