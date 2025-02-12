@@ -420,16 +420,14 @@ from django.contrib.auth import authenticate, login
 class PaymentConfirmationView(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request):
-        #  token from Authorization header
-        auth_header = request.headers.get('Authorization')
+    def post(self, request):
+        # Extract token from query parameters
+        token = request.query_params.get('token')
         
-        if not auth_header or not auth_header.startswith('Bearer '):
+        if not token:
             return Response({"detail": "Authentication credentials were not provided."}, status=status.HTTP_401_UNAUTHORIZED)
 
-        token = auth_header.split(" ")[1]  # Bearer token format
-
-        # authenticate the user
+        # Manually authenticate the user using the token
         user = authenticate(request, token=token)
         if user is not None:
             login(request, user)
