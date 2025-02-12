@@ -135,18 +135,17 @@ class AddToCartView(APIView):
                 {"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND
             )
 
-        # Fetch the user's unpaid cart
-        cart = Cart.objects.filter(user=request.user, paid=False).first()
+        # Fetch the user's cart
+        try:
+            cart = Cart.objects.get(user=request.user)
+        except Cart.DoesNotExist:
+            # If no cart exists, create a new one
+            cart = Cart.objects.create(user=request.user, paid=False)
 
-        if not cart:
-            # If no unpaid cart exists, check if the user has a paid cart
-            paid_cart_exists = Cart.objects.filter(user=request.user, paid=True).exists()
-            if paid_cart_exists:
-                # If a paid cart exists, create a new unpaid cart
-                cart = Cart.objects.create(user=request.user, paid=False)
-            else:
-                # If no cart exists at all, create a new one
-                cart = Cart.objects.create(user=request.user, paid=False)
+        # Ensure the cart is unpaid
+        if cart.paid:
+            # If the cart is paid, create a new unpaid cart
+            cart = Cart.objects.create(user=request.user, paid=False)
 
         # Check or create the cart item
         cart_item, created = CartItem.objects.get_or_create(
