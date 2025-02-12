@@ -426,33 +426,44 @@ from django.http import JsonResponse
 
 
 
+from rest_framework_simplejwt.tokens import AccessToken, TokenError
 
+import logging
 
-from django.http import JsonResponse
-from django.contrib.auth.models import User
-from rest_framework import status
-from rest_framework_simplejwt.tokens import AccessToken
-from .models import PaymentInformation, Cart, CartItem
+logger = logging.getLogger(__name__)
 
 def payment_confirmation(request):
     if request.method != 'GET':
         return JsonResponse({"detail": "Method not allowed."}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    # token from query parameters
+    # Extract token from query parameters
     token = request.GET.get('token')
     
     if not token:
         return JsonResponse({"detail": "Authentication credentials were not provided."}, status=status.HTTP_401_UNAUTHORIZED)
 
     try:
-        #  JWT token
+        # Log the token for debugging
+        logger.info(f"Received token: {token}")
+
+        # Decode the JWT token
         access_token = AccessToken(token)
-        user_id = access_token['user_id']  #  user ID from the token payload
+        user_id = access_token['user_id']  # Extract user ID from the token payload
+
+        # Log the decoded payload for debugging
+        logger.info(f"Decoded token payload: {access_token.payload}")
 
         # Fetch the user associated with the token
         user = CustomUser.objects.get(id=user_id)
-    except Exception as e:
+    except TokenError as e:
+        logger.error(f"Token error: {e}")
         return JsonResponse({"detail": "Invalid token."}, status=status.HTTP_401_UNAUTHORIZED)
+    except CustomUser.DoesNotExist:
+        logger.error(f"User not found for user_id: {user_id}")
+        return JsonResponse({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        return JsonResponse({"detail": "An error occurred while processing the token."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     # Extract payment details from query parameters
     payment_status = request.GET.get('status')
