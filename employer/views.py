@@ -417,31 +417,36 @@ class PaymentInformationView(APIView):
 from django.contrib.auth import authenticate, login
 
 
+
+
+from rest_framework.authtoken.models import Token  
+
 class PaymentConfirmationView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        # Extract token from query parameters
-        token = request.query_params.get('token')
+        # token from Authorization header
+        auth_header = request.headers.get('Authorization')
         
-        if not token:
+        if not auth_header or not auth_header.startswith('Bearer '):
             return Response({"detail": "Authentication credentials were not provided."}, status=status.HTTP_401_UNAUTHORIZED)
 
-        # Manually authenticate the user using the token
-        user = authenticate(request, token=token)
-        if user is not None:
-            login(request, user)
-        else:
+        token = auth_header.split(" ")[1]  # Extract the token from "Bearer <token>"
+
+        try:
+            # Fetch the user associated with the token
+            user = Token.objects.get(key=token).user
+        except Token.DoesNotExist:
             return Response({"detail": "Invalid token."}, status=status.HTTP_401_UNAUTHORIZED)
 
-        # Extract payment details from query parameters
-        payment_status = request.query_params.get('status')
-        tx_ref = request.query_params.get('tx_ref')
-        transaction_id = request.query_params.get('transaction_id')
+        # Extract payment details from the request payload
+        payment_status = request.data.get('status')
+        tx_ref = request.data.get('tx_ref')
+        transaction_id = request.data.get('transaction_id')
 
         try:
             # Find the payment by tx_ref and user
-            payment_info = PaymentInformation.objects.get(tx_ref=tx_ref, user=request.user)
+            payment_info = PaymentInformation.objects.get(tx_ref=tx_ref, user=user)
 
             # Update payment status and transaction ID
             payment_info.status = payment_status
@@ -450,7 +455,7 @@ class PaymentConfirmationView(APIView):
 
             if payment_status == "successful":
                 # Mark the cart and items as paid
-                cart = Cart.objects.get(user=request.user, paid=False)
+                cart = Cart.objects.get(user=user, paid=False)
                 cart.paid = True
                 cart.save()
 
