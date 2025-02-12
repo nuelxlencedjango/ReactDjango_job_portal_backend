@@ -415,12 +415,10 @@ class PaymentInformationView(APIView):
         
         
 
-
-
 class PaymentConfirmationView(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request):
+    def post(self, request):
         # Extract token from Authorization header
         auth_header = request.headers.get('Authorization')
 
@@ -429,15 +427,15 @@ class PaymentConfirmationView(APIView):
 
         try:
             token = auth_header.split(" ")[1]  # Assuming Bearer token format
-            user = CustomUser.objects.get(auth_token__key=token)
+            user = User.objects.get(auth_token__key=token)
             request.user = user  # Manually authenticate the user
-        except (CustomUser.DoesNotExist, IndexError):
+        except (User.DoesNotExist, IndexError):
             return Response({"detail": "Invalid token."}, status=401)
 
-        # Proceed with the payment confirmation logic as before
-        payment_status = request.query_params.get('status')
-        tx_ref = request.query_params.get('tx_ref')
-        transaction_id = request.query_params.get('transaction_id')
+        # Proceed with payment confirmation logic
+        payment_status = request.data.get('status')
+        tx_ref = request.data.get('tx_ref')
+        transaction_id = request.data.get('transaction_id')
 
         try:
             payment_info = PaymentInformation.objects.get(tx_ref=tx_ref, user=request.user)
