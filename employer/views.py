@@ -416,63 +416,24 @@ class PaymentInformationView(APIView):
 
 
 
-from rest_framework.authtoken.models import Token  
-
 
 from django.http import JsonResponse
-
-
-
-from django.http import JsonResponse
-
-from rest_framework_simplejwt.tokens import AccessToken, TokenError
-
-import logging
-
-logger = logging.getLogger(__name__)
-CustomUser = get_user_model()
+from django.shortcuts import get_object_or_404
+from .models import PaymentInformation, Cart, CartItem
+from rest_framework import status
 
 def payment_confirmation(request):
-    if request.method != 'GET':
-        return JsonResponse({"detail": "Method not allowed."}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    # Extract token from query parameters
-    token = request.GET.get('token')
-    
-    if not token:
-        return JsonResponse({"detail": "Authentication credentials were not provided."}, status=status.HTTP_401_UNAUTHORIZED)
-
-    try:
-        # Log the token for debugging
-        logger.info(f"Received token: {token}")
-
-        # Decode the JWT token
-        access_token = AccessToken(token)
-        user_id = access_token['user_id']  
-
-        # Log the decoded payload for debugging
-        logger.info(f"Decoded token payload: {access_token.payload}")
-
-        # Fetch the user associated with the token
-        user = CustomUser.objects.get(id=user_id)
-    except TokenError as e:
-        logger.error(f"Token error: {e}")
-        return JsonResponse({"detail": "Invalid token."}, status=status.HTTP_401_UNAUTHORIZED)
-    except CustomUser.DoesNotExist:
-        logger.error(f"User not found for user_id: {user_id}")
-        return JsonResponse({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        logger.error(f"Unexpected error: {e}")
-        return JsonResponse({"detail": "An error occurred while processing the token."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
     # Extract payment details from query parameters
     payment_status = request.GET.get('status')
     tx_ref = request.GET.get('tx_ref')
     transaction_id = request.GET.get('transaction_id')
 
+    if not all([payment_status, tx_ref, transaction_id]):
+        return JsonResponse({"detail": "Missing required parameters."}, status=status.HTTP_400_BAD_REQUEST)
+
     try:
-        # Find the payment by tx_ref and user
-        payment_info = PaymentInformation.objects.get(tx_ref=tx_ref, user=user)
+        # Find the payment by tx_ref
+        payment_info = get_object_or_404(PaymentInformation, tx_ref=tx_ref)
 
         # Update payment status and transaction ID
         payment_info.status = payment_status
@@ -481,7 +442,7 @@ def payment_confirmation(request):
 
         if payment_status == "successful":
             # Mark the cart and items as paid
-            cart = Cart.objects.get(user=user, paid=False)
+            cart = get_object_or_404(Cart, user=payment_info.user, paid=False)
             cart.paid = True
             cart.save()
 
