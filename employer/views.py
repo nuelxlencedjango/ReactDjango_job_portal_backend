@@ -224,37 +224,6 @@ class CheckoutView(APIView):
 
 
 
-class CheckoutViewT(APIView): 
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        employer = EmployerProfile.objects.filter(user=request.user).first()
-        if not employer:
-            return Response({"detail": "Employer profile not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        cart_items = CartItem.objects.filter(employer=employer)
-        if not cart_items.exists():
-            return Response({"detail": "Cart is empty."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Calculate total
-        total_amount = sum(item.artisan.pay for item in cart_items)
-
-        # Create an order
-        order = Order.objects.create(
-            employer=employer,
-            total_amount=total_amount,
-            purchase_date=now().date(),
-        )
-
-        # Optionally, clear cart items after checkout
-        cart_items.delete()
-
-        return Response(
-            {"order_id": order.id, "total_amount": total_amount},
-            status=status.HTTP_201_CREATED,
-        )
-
-
 
 
 from rest_framework import status
@@ -376,6 +345,66 @@ class CartItemView(APIView):
 
 
 
+class CartItemView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        if user.user_type != 'employer':
+            return Response({"detail": "User is not an employer."}, status=403)
+
+        try:
+            # Fetch the user's cart
+            cart = Cart.objects.get(user=user, paid=False)
+        except Cart.DoesNotExist:
+            # If no cart exists, return a message indicating the cart is empty
+            return Response(
+                {
+                    "detail": "Your cart is empty.",
+                    "cart": None,
+                    "user": {"id": user.id,"first_name": user.first_name,
+                        "last_name": user.last_name,"email": user.email,
+                        },
+                },status=200,
+            )
+
+        # Serialize the cart and return the response
+        serializer = CartSerializer(cart)
+        return Response(
+            {
+                "cart": serializer.data,
+                "user": {
+                    "id": user.id,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "email": user.email,
+                },
+            },
+            status=200,
+        )
+
+    def delete(self, request, pk):
+        """
+        Remove a specific item from the cart.
+        """
+        try:
+            # Fetch the cart of the logged-in user
+            cart = Cart.objects.get(user=request.user, paid=False)
+            
+            # Ensure the cart item exists in the user's cart
+            cart_item = CartItem.objects.get(pk=pk, cart=cart,paid =False)
+            cart_item.delete()  # Remove the cart item
+            
+            return Response({"detail": "Cart item removed successfully."}, status=status.HTTP_204_NO_CONTENT)
+        
+        except Cart.DoesNotExist:
+            return Response({"error": "Cart not found."}, status=status.HTTP_404_NOT_FOUND)
+        except CartItem.DoesNotExist:
+            return Response({"error": "Cart item not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 
 
 class PaymentInformationView(APIView):
@@ -385,9 +414,7 @@ class PaymentInformationView(APIView):
     def post(self, request):
         tx_ref = request.data.get("tx_ref")
         amount = request.data.get("amount")
-        #customer_name = request.data.get("customer_name")
-        #customer_email = request.data.get("customer_email")
-        #customer_phone = request.data.get("customer_phone")
+       
         status = request.data.get("status", "pending")
 
         if not all([tx_ref, amount, ]):
@@ -399,9 +426,6 @@ class PaymentInformationView(APIView):
                 user=request.user,
                 tx_ref=tx_ref,
                 amount=amount,
-                #customer_name=customer_name,
-                #customer_email=customer_email,
-                #customer_phone=customer_phone,
                 status=status,
             )
 

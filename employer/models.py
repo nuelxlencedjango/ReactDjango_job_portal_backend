@@ -10,7 +10,7 @@ import uuid
 
 
 class Cart(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='cart')
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='cart')
     cart_code = models.CharField(max_length=11, unique=True, editable=False)
     paid = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
