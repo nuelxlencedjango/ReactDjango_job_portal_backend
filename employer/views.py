@@ -374,15 +374,6 @@ class CartItemView(APIView):
 
 
 
-def payment_success_view(request, cart_id):
-    cart = get_object_or_404(Cart, id=cart_id)
-    
-    # Mark the cart and its items as paid
-    cart.mark_as_paid()
-    
-    # Redirect to the frontend homepage
-    return HttpResponseRedirect(reverse('frontend_homepage'))
-
 
 
 
@@ -435,66 +426,155 @@ class PaymentInformationView(APIView):
 
 
 class PaymentConfirmationView(APIView):
-    authentication_classes = [TokenAuthentication]
+    #authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # Extract query parameters
+        # query parameters from Flutterwave redirect
+        payment_status = request.query_params.get('status') 
+        tx_ref = request.query_params.get('tx_ref')  
+        transaction_id = request.query_params.get('transaction_id') 
+
+        try:
+            # Find the payment by tx_ref
+            payment_info = PaymentInformation.objects.get(tx_ref=tx_ref, user=request.user)
+
+            # Update payment status and transaction ID
+            payment_info.status = payment_status
+            payment_info.transaction_id = transaction_id
+            payment_info.save()
+
+            if payment_status == "successful":
+                # Find the cart associated with the payment
+                cart = Cart.objects.get(user=request.user, paid=False)
+
+                # Mark the cart and cart items as paid
+                cart.paid = True
+                cart.save()
+
+                # Mark all cart items as paid
+                CartItem.objects.filter(cart=cart).update(paid=True)
+
+                # Redirect to the React frontend homepage
+                return Response(
+                    {
+                        "detail": "Payment confirmed successfully.",
+                        "redirect_url": "https://react-django-job-portal-frontend.vercel.app/payment-confirmation", 
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                # Payment was not successful
+                return Response(
+                    {
+                        "detail": "Payment was not successful.",
+                        "redirect_url": "https://react-django-job-portal-frontend.vercel.app/payment-confirmation", 
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        except PaymentInformation.DoesNotExist:
+            # Payment not found
+            return Response(
+                {"detail": "Payment not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Cart.DoesNotExist:
+            # Cart not found or already paid
+            return Response(
+                {"detail": "Cart not found or already paid."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as e:
+            # Handle unexpected errors
+            return Response(
+                {"detail": f"An error occurred: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+
+
+
+
+
+
+class PaymentConfirmationView10(APIView):
+    #authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Extract query parameters from the Flutterwave callback
         status = request.query_params.get('status')
         tx_ref = request.query_params.get('tx_ref')
         transaction_id = request.query_params.get('transaction_id')
 
-        if status != 'successful':
-            return Response({'detail': 'Payment was not successful.'}, status=400)
+        # Check if status is 'successful'
+        if status == 'successful':
+            try:
+                # Check if a PaymentInformation object exists with the given tx_ref
+                payment_info = PaymentInformation.objects.get(tx_ref=tx_ref)
+                
+                # Step 1: Compare tx_ref
+                if payment_info.tx_ref == tx_ref:
+                    # Step 2: Update status with the status coming from Flutterwave
+                    payment_info.status = status
 
-        try:
-            # Find the cart associated with the authenticated user and transaction reference
-            cart = Cart.objects.get(user=request.user, cart_code=tx_ref, paid=False)
+                    # Step 3: Update the transaction_id
+                    payment_info.transaction_id = transaction_id
+                    payment_info.save()
 
-            # Mark the cart as paid
-            cart.mark_as_paid()
+                    # Step 4: Get cart and update the paid attribute
+                    cart = Cart.objects.get(cart_code=tx_ref, paid=False, user=request.user)
 
-            return Response({
-                'detail': 'Payment confirmed successfully.',
-                'tx_ref': tx_ref,
-                'transaction_id': transaction_id,
-            }, status=200)
+                    # Mark the cart as paid
+                    cart.mark_as_paid()
 
-        except Cart.DoesNotExist:
-            return Response({'detail': 'Cart not found or already paid.'}, status=404)
-        except Exception as e:
-            return Response({'detail': f'An error occurred: {str(e)}'}, status=500)
+                    # Step 5: Redirect to the front page (handle this on the frontend)
+                    return Response({
+                        'detail': 'Payment confirmed successfully.',
+                        'tx_ref': tx_ref,
+                        'transaction_id': transaction_id,
+                    }, status=200)
+                else:
+                    # Step 6: Handle case when tx_ref is not the same
+                    payment_info.status = status
+                    payment_info.save()
 
+                    # Return to cart page with a failure message
+                    return Response({
+                        'detail': 'Payment not successful. Please try again.',
+                    }, status=400)
 
-class MarkPaymentAsSuccessfulView(APIView):
-    permission_classes = [IsAuthenticated]
+            except PaymentInformation.DoesNotExist:
+                # Handle case if no payment information is found for the tx_ref
+                return Response({
+                    'detail': 'Payment information not found.',
+                }, status=404)
 
-    def post(self, request):
-        tx_ref = request.data.get("tx_ref")
+            except Cart.DoesNotExist:
+                # Handle case if the cart is not found or already paid
+                return Response({
+                    'detail': 'Cart not found or already paid.',
+                }, status=404)
 
-        if not tx_ref:
-            return Response(
-                {"detail": "Transaction reference (tx_ref) is required."},
-                status=400,
-            )
-
-        try:
-            # Find the payment by tx_ref and update its status
-            payment_info = PaymentInformation.objects.get(tx_ref=tx_ref, user=request.user)
-            payment_info.status = "successful"
-            payment_info.save()
-
-            return Response(
-                {"detail": "Payment marked as successful.", "tx_ref": tx_ref},
-                status=200,
-            )
-        except PaymentInformation.DoesNotExist:
-            return Response(
-                {"detail": "Payment not found."},
-                status=404,
-            )
-        except Exception as e:
-            return Response(
-                {"detail": f"An error occurred: {str(e)}"},
-                status=500,
-            )
+            except Exception as e:
+                return Response({
+                    'detail': f'An error occurred: {str(e)}',
+                }, status=500)
+        
+        else:
+            # If status is not successful, update the payment status and return error
+            try:
+                payment_info = PaymentInformation.objects.get(tx_ref=tx_ref)
+                payment_info.status = status
+                payment_info.save()
+                
+                # Return to cart page with a failure message
+                return Response({
+                    'detail': 'Payment was not successful.',
+                }, status=400)
+            except PaymentInformation.DoesNotExist:
+                return Response({
+                    'detail': 'Payment information not found.',
+                }, status=404)
