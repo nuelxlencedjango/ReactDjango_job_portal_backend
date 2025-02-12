@@ -102,12 +102,19 @@ class AddToCartView(APIView):
                 {"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND
             )
 
-        # Fetch or create the cart for the authenticated user
+        # Fetch the user's unpaid cart or create a new one
         try:
+            # fetch an unpaid cart
             cart = Cart.objects.get(user=request.user, paid=False)
         except Cart.DoesNotExist:
-            # If no cart exists, create a new one
-            cart = Cart.objects.create(user=request.user, paid=False)
+            # If no unpaid cart exists, check if there's a paid cart
+            paid_cart_exists = Cart.objects.filter(user=request.user, paid=True).exists()
+            if paid_cart_exists:
+                # If a paid cart exists, create a new unpaid cart
+                cart = Cart.objects.create(user=request.user, paid=False)
+            else:
+                # If no cart exists at all, create a new one
+                cart = Cart.objects.create(user=request.user, paid=False)
 
         # Check or create the cart item
         cart_item, created = CartItem.objects.get_or_create(
@@ -125,8 +132,8 @@ class AddToCartView(APIView):
         return Response(
             {"message": "Item added to cart successfully."}, status=status.HTTP_201_CREATED
         )
-
-
+    
+    
 
 class JobDetailsView(APIView):
     permission_classes = [IsAuthenticated]
