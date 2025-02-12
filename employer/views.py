@@ -408,13 +408,10 @@ class PaymentInformationView(APIView):
                 status=201,
             )
         except Exception as e:
-            return Response(
-                {"detail": f"An error occurred: {str(e)}"},
-                status=500,
-            )
+            return Response( {"detail": f"An error occurred: {str(e)}"},
+                status=500, )
         
-        
-from django.contrib.auth import authenticate, login
+
 
 
 
@@ -423,10 +420,6 @@ from rest_framework.authtoken.models import Token
 
 
 from django.http import JsonResponse
-
-
-
-from rest_framework_simplejwt.tokens import AccessToken, TokenError
 
 
 
