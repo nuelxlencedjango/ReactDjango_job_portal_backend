@@ -58,7 +58,8 @@ class CheckArtisanInCartView(APIView):
                 cart = Cart.objects.get(user=user)
 
                 # Check if the artisan is in the user's cart by checking CartItem
-                artisan_in_cart = CartItem.objects.filter(cart=cart, artisan__user__email=artisan_email).exists()
+                artisan_in_cart = CartItem.objects.filter(cart=cart, artisan__user__email=artisan_email, 
+                                                          paid = False).exists()
 
                 # Return the response based on whether the artisan is in the cart or not
                 if artisan_in_cart:
@@ -342,10 +343,9 @@ class CartItemView(APIView):
             serializer = CartSerializer(cart)
             return Response( 
                 { "cart": serializer.data, "user": { "id": user.id,
-                        "first_name": user.first_name,
-                        "last_name": user.last_name, 
+                        "first_name": user.first_name,"last_name": user.last_name, 
                         "email": user.email, },
-                },status=200,
+                        },status=200,
                         )
         except Cart.DoesNotExist:
             return Response({"detail": "Cart not found."}, status=404)
