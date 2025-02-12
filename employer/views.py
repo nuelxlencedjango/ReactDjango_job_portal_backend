@@ -428,9 +428,16 @@ from django.http import JsonResponse
 
 from rest_framework_simplejwt.tokens import AccessToken, TokenError
 
+
+
+from django.http import JsonResponse
+
+from rest_framework_simplejwt.tokens import AccessToken, TokenError
+
 import logging
 
 logger = logging.getLogger(__name__)
+CustomUser = get_user_model()
 
 def payment_confirmation(request):
     if request.method != 'GET':
@@ -448,7 +455,7 @@ def payment_confirmation(request):
 
         # Decode the JWT token
         access_token = AccessToken(token)
-        user_id = access_token['user_id']  # Extract user ID from the token payload
+        user_id = access_token['user_id']  
 
         # Log the decoded payload for debugging
         logger.info(f"Decoded token payload: {access_token.payload}")
