@@ -418,20 +418,20 @@ class PaymentInformationView(APIView):
 User = get_user_model()
 
 class PaymentConfirmationView(APIView):
-    permission_classes = [IsAuthenticated]  
+    permission_classes = [AllowAny]  #
 
     def get(self, request):
         # Extract token from Authorization header
         auth_header = request.headers.get('Authorization')
         
-        if not auth_header:
+        if not auth_header or not auth_header.startswith('Bearer '):
             return Response({"detail": "Authentication credentials were not provided."}, status=401)
 
         try:
             token = auth_header.split(" ")[1]  # Assuming Bearer token format
-            user = CustomUser.objects.get(auth_token__key=token)
+            user = User.objects.get(auth_token__key=token)
             request.user = user  # Manually authenticate the user
-        except (CustomUser.DoesNotExist, IndexError):
+        except (User.DoesNotExist, IndexError):
             return Response({"detail": "Invalid token."}, status=401)
 
         # Extract payment details from query parameters
