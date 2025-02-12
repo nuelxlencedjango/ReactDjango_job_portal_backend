@@ -416,23 +416,20 @@ class PaymentInformationView(APIView):
         
 
 
-class PaymentConfirmationView(APIView):
-   
-    #permission_classes = [IsAuthenticated]
 
+
+class PaymentConfirmationView(APIView):
     def get(self, request):
-        # Extract access_token from query parameters
+        # Extract the access_token from query parameters
         access_token = request.query_params.get('access_token')
 
         if not access_token:
             return Response({"detail": "Authentication credentials were not provided."}, status=401)
 
         try:
-            # Find the user associated with the access_token
+            # Verify the token manually
             user = User.objects.get(auth_token__key=access_token)
-
-            # Manually authenticate the user
-            request.user = user
+            request.user = user  # Manually authenticate the user
 
         except User.DoesNotExist:
             return Response({"detail": "Invalid token."}, status=401)
@@ -495,9 +492,3 @@ class PaymentConfirmationView(APIView):
                 {"detail": f"An error occurred: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
-
-
-
-
-
