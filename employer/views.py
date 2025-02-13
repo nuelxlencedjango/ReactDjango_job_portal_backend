@@ -304,7 +304,7 @@ from .models import PaymentInformation, Cart, CartItem
 
 logger = logging.getLogger(__name__)
 
-class PaymentConfirmation(APIView):
+class PaymentConfirmationView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
