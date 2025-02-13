@@ -196,7 +196,7 @@ class CartItemView(APIView):
 
         try:
             # Fetch the user's cart
-            cart = Cart.objects.get(user=user, paid=False)
+            cart = Cart.objects.filter(user=user, paid=False)
         except Cart.DoesNotExist:
             # If no cart exists, return a message indicating the cart is empty
             return Response(
