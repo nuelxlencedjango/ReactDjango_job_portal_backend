@@ -60,8 +60,7 @@ class CheckArtisanInCartView(APIView):
 
                 # Check if the artisan is in the user's cart by checking CartItem
                
-                artisan_in_cart = CartItem.objects.filter(cart=cart, artisan__user__email=artisan_email,
-                                                          paid =False).first()
+                artisan_in_cart = CartItem.objects.filter(cart=cart, artisan__user__email=artisan_email,paid =False).first()
 
                 # Return the response based on whether the artisan is in the cart or not
                 if artisan_in_cart:
