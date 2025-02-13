@@ -324,3 +324,5 @@ def payment_confirmation(request):
     except Exception as e:
         return JsonResponse({"detail": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+
