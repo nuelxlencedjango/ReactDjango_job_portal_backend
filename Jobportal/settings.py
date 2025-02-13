@@ -90,6 +90,12 @@ SESSION_COOKIE_SECURE = True  # Ensure session cookie is only sent over HTTPS in
 
 
 
+
+# settings.py
+
+FRONTEND_URL = 'https://react-frontend.vercel.app' 
+
+
 #CORS_ALLOW_ALL_ORIGINS = True
 
 INSTALLED_APPS = [
