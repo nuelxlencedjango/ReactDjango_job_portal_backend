@@ -185,7 +185,6 @@ class CheckoutView(APIView):
 
 
 
-
 class CartItemView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -193,37 +192,33 @@ class CartItemView(APIView):
         user = request.user
         if user.user_type != 'employer':
             return Response({"detail": "User is not an employer."}, status=403)
-
+        
         try:
-            # Fetch the user's cart
-            cart = Cart.objects.filter(user=user, paid=False)
+            cart = Cart.objects.get(user=user, paid=False)
+            serializer = CartSerializer(cart)
+            return Response(
+                {"cart": serializer.data,
+                "user": {
+                "id": user.id,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email,},
+                },status=200,
+                )
         except Cart.DoesNotExist:
-            # If no cart exists, return a message indicating the cart is empty
             return Response(
                 {
-                    "cart": "Your cart is empty.",
-                    #"user": None,
-                    "user": {"id": user.id,"first_name": user.first_name,
-                        "last_name": user.last_name,"email": user.email,
-                        },
-                },status=200,
-            )
-
-        # Serialize the cart and return the response
-        serializer = CartSerializer(cart)
-        return Response(
-            {
-                "cart": serializer.data,
-                "user": {
-                    "id": user.id,
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                    "email": user.email,
-                },
+            "cart": "Your cart is empty.",
+            "user": {
+                "id": user.id,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email,
             },
-            status=200,
-        )
-
+        },
+        status=200,
+    )
+       
     def delete(self, request, pk):
         """
         Remove a specific item from the cart.
