@@ -181,10 +181,6 @@ class CheckoutView(APIView):
 
 
 
-
-
-
-
 class CartItemView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -194,8 +190,8 @@ class CartItemView(APIView):
             return Response({"detail": "User is not an employer."}, status=403)
         
         try:
-            cart = Cart.objects.get(user=user, paid=False)
-            serializer = CartSerializer(cart)
+            carts = Cart.objects.filter(user=user, paid=False)
+            serializer = CartSerializer(carts, many =True)
             return Response(
                 {"cart": serializer.data,
                 "user": {
@@ -207,7 +203,7 @@ class CartItemView(APIView):
                 )
         except Cart.DoesNotExist:
             return Response(
-                {
+        {
             "cart": "Your cart is empty.",
             "user": {
                 "id": user.id,
