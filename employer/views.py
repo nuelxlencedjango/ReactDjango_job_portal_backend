@@ -284,6 +284,13 @@ from django.shortcuts import get_object_or_404, redirect
 
 
 
+import logging
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect
+from rest_framework import status
+
+logger = logging.getLogger(__name__)
+
 def payment_confirmation(request):
     # Extract payment details from query parameters
     payment_status = request.GET.get('status')
@@ -291,6 +298,7 @@ def payment_confirmation(request):
     transaction_id = request.GET.get('transaction_id')
 
     if not all([payment_status, tx_ref, transaction_id]):
+        logger.error(f"Missing required parameters: status={payment_status}, tx_ref={tx_ref}, transaction_id={transaction_id}")
         return JsonResponse({"detail": "Missing required parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
@@ -307,6 +315,7 @@ def payment_confirmation(request):
             cart = Cart.objects.filter(user=payment_info.user, paid=False).first()
 
             if not cart:
+                logger.error(f"Cart not found or already paid for user: {payment_info.user}")
                 return JsonResponse({"detail": "Cart not found or already paid."}, status=status.HTTP_404_NOT_FOUND)
 
             # Mark the cart and items as paid
@@ -317,17 +326,20 @@ def payment_confirmation(request):
             CartItem.objects.filter(cart=cart).update(paid=True)
 
             # Redirect to the frontend success page with query parameters
-            frontend_url = f"https://react-frontend.vercel.app/payment-confirmation?status=success&tx_ref={tx_ref}&transaction_id={transaction_id}"
+            frontend_url = f"{settings.FRONTEND_URL}/payment-confirmation?status=success&tx_ref={tx_ref}&transaction_id={transaction_id}"
             return redirect(frontend_url)
 
         else:
             # Redirect to the frontend failure page with query parameters
-            frontend_url = f"https://react-frontend.vercel.app/payment-confirmation?status=failed&tx_ref={tx_ref}&transaction_id={transaction_id}"
+            frontend_url = f"{settings.FRONTEND_URL}/payment-confirmation?status=failed&tx_ref={tx_ref}&transaction_id={transaction_id}"
             return redirect(frontend_url)
 
     except PaymentInformation.DoesNotExist:
+        logger.error(f"PaymentInformation not found for tx_ref: {tx_ref}")
         return JsonResponse({"detail": "Payment not found."}, status=status.HTTP_404_NOT_FOUND)
     except Cart.DoesNotExist:
+        logger.error(f"Cart not found for user or cart already paid for tx_ref: {tx_ref}")
         return JsonResponse({"detail": "Cart not found or already paid."}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
+        logger.exception(f"An error occurred during payment confirmation: {str(e)}")
         return JsonResponse({"detail": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
