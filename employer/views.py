@@ -282,6 +282,8 @@ class PaymentInformationView(APIView):
 from django.shortcuts import get_object_or_404, redirect
 
 
+
+
 def payment_confirmation(request):
     # Extract payment details from query parameters
     payment_status = request.GET.get('status')
@@ -301,11 +303,17 @@ def payment_confirmation(request):
         payment_info.save()
 
         if payment_status == "successful":
+            # Get the unpaid cart for the user (if more than one, choose the first one)
+            cart = Cart.objects.filter(user=payment_info.user, paid=False).first()
+
+            if not cart:
+                return JsonResponse({"detail": "Cart not found or already paid."}, status=status.HTTP_404_NOT_FOUND)
+
             # Mark the cart and items as paid
-            cart = get_object_or_404(Cart, user=payment_info.user, paid=False)
             cart.paid = True
             cart.save()
 
+            # Update items in the cart to paid status
             CartItem.objects.filter(cart=cart).update(paid=True)
 
             # Redirect to the frontend success page with query parameters
@@ -323,6 +331,3 @@ def payment_confirmation(request):
         return JsonResponse({"detail": "Cart not found or already paid."}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return JsonResponse({"detail": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-
