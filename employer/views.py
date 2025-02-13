@@ -291,55 +291,71 @@ from rest_framework import status
 
 logger = logging.getLogger(__name__)
 
-def payment_confirmation(request):
-    # Extract payment details from query parameters
-    payment_status = request.GET.get('status')
-    tx_ref = request.GET.get('tx_ref')
-    transaction_id = request.GET.get('transaction_id')
 
-    if not all([payment_status, tx_ref, transaction_id]):
-        logger.error(f"Missing required parameters: status={payment_status}, tx_ref={tx_ref}, transaction_id={transaction_id}")
-        return JsonResponse({"detail": "Missing required parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-    try:
-        # Find the payment by tx_ref
-        payment_info = get_object_or_404(PaymentInformation, tx_ref=tx_ref)
+from django.shortcuts import get_object_or_404, redirect
+from django.http import JsonResponse
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework import status
+from django.conf import settings
+import logging
+from .models import PaymentInformation, Cart, CartItem
 
-        # Update payment status and transaction ID
-        payment_info.status = payment_status
-        payment_info.transaction_id = transaction_id
-        payment_info.save()
+logger = logging.getLogger(__name__)
 
-        if payment_status == "successful":
-            # Get the unpaid cart for the user (if more than one, choose the first one)
-            cart = Cart.objects.filter(user=payment_info.user, paid=False).first()
+class PaymentConfirmation(APIView):
+    permission_classes = [AllowAny]
 
-            if not cart:
-                logger.error(f"Cart not found or already paid for user: {payment_info.user}")
-                return JsonResponse({"detail": "Cart not found or already paid."}, status=status.HTTP_404_NOT_FOUND)
+    def post(self, request, *args, **kwargs):
+        # Extract payment details from query parameters (or request data)
+        payment_status = request.GET.get('status')  # Use request.data for POST data
+        tx_ref = request.GET.get('tx_ref')
+        transaction_id = request.GET.get('transaction_id')
 
-            # Mark the cart and items as paid
-            cart.paid = True
-            cart.save()
+        if not all([payment_status, tx_ref, transaction_id]):
+            logger.error(f"Missing required parameters: status={payment_status}, tx_ref={tx_ref}, transaction_id={transaction_id}")
+            return JsonResponse({"detail": "Missing required parameters."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Update items in the cart to paid status
-            CartItem.objects.filter(cart=cart).update(paid=True)
+        try:
+            # Find the payment by tx_ref
+            payment_info = get_object_or_404(PaymentInformation, tx_ref=tx_ref)
 
-            # Redirect to the frontend success page with query parameters
-            frontend_url = f"{settings.FRONTEND_URL}/payment-confirmation?status=success&tx_ref={tx_ref}&transaction_id={transaction_id}"
-            return redirect(frontend_url)
+            # Update payment status and transaction ID
+            payment_info.status = payment_status
+            payment_info.transaction_id = transaction_id
+            payment_info.save()
 
-        else:
-            # Redirect to the frontend failure page with query parameters
-            frontend_url = f"{settings.FRONTEND_URL}/payment-confirmation?status=failed&tx_ref={tx_ref}&transaction_id={transaction_id}"
-            return redirect(frontend_url)
+            if payment_status == "successful":
+                # Get the unpaid cart for the user (if more than one, choose the first one)
+                cart = Cart.objects.filter(user=payment_info.user, paid=False).first()
 
-    except PaymentInformation.DoesNotExist:
-        logger.error(f"PaymentInformation not found for tx_ref: {tx_ref}")
-        return JsonResponse({"detail": "Payment not found."}, status=status.HTTP_404_NOT_FOUND)
-    except Cart.DoesNotExist:
-        logger.error(f"Cart not found for user or cart already paid for tx_ref: {tx_ref}")
-        return JsonResponse({"detail": "Cart not found or already paid."}, status=status.HTTP_404_NOT_FOUND)
-    except Exception as e:
-        logger.exception(f"An error occurred during payment confirmation: {str(e)}")
-        return JsonResponse({"detail": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                if not cart:
+                    logger.error(f"Cart not found or already paid for user: {payment_info.user}")
+                    return JsonResponse({"detail": "Cart not found or already paid."}, status=status.HTTP_404_NOT_FOUND)
+
+                # Mark the cart and items as paid
+                cart.paid = True
+                cart.save()
+
+                # Update items in the cart to paid status
+                CartItem.objects.filter(cart=cart).update(paid=True)
+
+                # Redirect to the frontend success page with query parameters
+                frontend_url = f"{settings.FRONTEND_URL}/payment-confirmation?status=success&tx_ref={tx_ref}&transaction_id={transaction_id}"
+                return redirect(frontend_url)
+
+            else:
+                # Redirect to the frontend failure page with query parameters
+                frontend_url = f"{settings.FRONTEND_URL}/payment-confirmation?status=failed&tx_ref={tx_ref}&transaction_id={transaction_id}"
+                return redirect(frontend_url)
+
+        except PaymentInformation.DoesNotExist:
+            logger.error(f"PaymentInformation not found for tx_ref: {tx_ref}")
+            return JsonResponse({"detail": "Payment not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Cart.DoesNotExist:
+            logger.error(f"Cart not found for user or cart already paid for tx_ref: {tx_ref}")
+            return JsonResponse({"detail": "Cart not found or already paid."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.exception(f"An error occurred during payment confirmation: {str(e)}")
+            return JsonResponse({"detail": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
