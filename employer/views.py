@@ -146,7 +146,7 @@ class AddToCartView(APIView):
             cart = Cart.objects.create(user=request.user, paid=False)
 
         # Ensure the cart is unpaid
-        if cart.paid:
+        if cart:
             # If the cart is paid, create a new unpaid cart
             cart = Cart.objects.create(user=request.user, paid=False)
 
