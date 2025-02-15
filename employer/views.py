@@ -359,3 +359,46 @@ class PaymentConfirmationView(APIView):
         except Exception as e:
             logger.exception(f"An error occurred during payment confirmation: {str(e)}")
             return JsonResponse({"detail": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
+# views.py
+from .serializers import TransactionSerializer
+
+class PaymentDetailsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        data = request.data
+
+        # Save payment details to the Transaction model
+        transaction = Transaction.objects.create(
+            user=user,
+            tx_ref=data.get("tx_ref"),
+            amount=data.get("amount"),
+            status=data.get("status", "Pending"),
+            transaction_id=data.get('transaction_id')
+        )
+
+        # If payment is successful, update the cart and cart items
+        if data.get("status") == "Successful":
+            cart = Cart.objects.filter(user=user, paid=False).first()
+            if cart:
+                cart.paid = True
+                cart.save()
+                cart.items.update(paid=True)  # Mark all cart items as paid
+
+        # Return both a success message and the transaction data
+        serializer = TransactionSerializer(transaction)
+        return Response(
+            {
+                "message": "Payment details saved successfully.",
+                "transaction": serializer.data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+
+
+

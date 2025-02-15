@@ -152,3 +152,8 @@ class CartSerializer(serializers.ModelSerializer):
 
 
 
+class TransactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Transaction
+        fields = ["id", "user", "tx_ref", "amount", "status", "created_at"]
+
