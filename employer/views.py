@@ -398,52 +398,41 @@ class PaymentDetailsView(APIView):
 
 
 
-from django.shortcuts import redirect
-from django.http import JsonResponse
-from rest_framework.response import Response
-from rest_framework.views import APIView
-import requests
-from .models import Transaction
 
-# Payment Callback View
-def payment_callback(request):
-    tx_ref = request.GET.get('tx_ref')
-    status = request.GET.get('status')
+        
 
-    # Verify payment with Flutterwave
-    flutterwave_secret_key = "FLWPUBK_TEST-6941e4117be9902646d54ec0509e804c-X"
-    verify_url = f"https://api.flutterwave.com/v3/transactions/{tx_ref}/verify"
-    headers = { "Authorization": f"Bearer {flutterwave_secret_key}" }
-    response = requests.get(verify_url, headers=headers)
 
-    if response.status_code == 200:
-        payment_data = response.json()
-        if payment_data['data']['status'] == "successful":
-            # Update transaction status in the database
-            transaction = Transaction.objects.get(tx_ref=tx_ref)
-            transaction.status = "Successful"
-            transaction.save()
-            return redirect(f"https://react-django-job-portal-frontend.vercel.app/payment-confirmation?status=success&tx_ref={tx_ref}")
-        else:
-            transaction = Transaction.objects.get(tx_ref=tx_ref)
-            transaction.status = "Failed"
-            transaction.save()
-            return redirect(f"https://react-django-job-portal-frontend.vercel.app/payment-confirmation?status=failed&tx_ref={tx_ref}")
-    else:
-        return JsonResponse({"error": "Payment verification failed"}, status=400)
-
-# Payment Details View
 class PaymentDetailsView(APIView):
-    def get(self, request):
-        tx_ref = request.query_params.get('tx_ref')
-        try:
-            transaction = Transaction.objects.get(tx_ref=tx_ref)
-            data = {
-                "tx_ref": transaction.tx_ref,
-                "amount": transaction.amount,
-                "status": transaction.status,
-                "created_at": transaction.created_at,
-            }
-            return Response(data)
-        except Transaction.DoesNotExist:
-            return Response({"error": "Transaction not found"}, status=404)
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        data = request.data
+
+        # Save payment details to the Transaction model
+        transaction = Transaction.objects.create(
+            user=user,
+            tx_ref=data.get("tx_ref"),
+            amount=data.get("amount"),
+            status=data.get("status", "Pending"),
+            transaction_id=data.get('id')
+        )
+
+        # If payment is successful, update the cart and cart items
+        if data.get("status") == "Successful":
+            cart = Cart.objects.filter(user=user, paid=False).first()
+            if cart:
+                cart.paid = True
+                cart.save()
+                cart.items.update(paid=True)  # Mark all cart items as paid
+
+        # Return both a success message and the transaction data
+        serializer = TransactionSerializer(transaction)
+        return Response(
+            {
+                "message": "Payment details saved successfully.",
+                "transaction": serializer.data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
