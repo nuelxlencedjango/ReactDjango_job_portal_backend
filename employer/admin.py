@@ -9,6 +9,7 @@ admin.site.register(CartItem)
 admin.site.register(Checkout)
 admin.site.register(JobDetails)
 admin.site.register(PaymentInformation)
+admin.site.register(Transaction)
 
 
 
