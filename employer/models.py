@@ -131,7 +131,7 @@ class PaymentInformation(models.Model):
 
 class Transaction(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="transactions")
-    tx_ref = models.CharField(max_length=100, unique=True)  # Unique transaction reference
+    tx_ref = models.CharField(max_length=100, null=True, blank=True)  # Unique transaction reference
     amount = models.DecimalField(max_digits=10, decimal_places=2)  # Payment amount
     transaction_id = models.CharField(max_length=100, unique=True)
     status = models.CharField(max_length=20, default="Pending")  # Payment status
