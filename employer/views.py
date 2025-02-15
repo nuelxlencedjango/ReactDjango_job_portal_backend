@@ -279,10 +279,6 @@ class PaymentInformationView(APIView):
 
 
 
-from django.shortcuts import get_object_or_404, redirect
-
-
-
 
 import logging
 from django.http import JsonResponse
