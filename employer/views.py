@@ -29,9 +29,13 @@ from django.shortcuts import get_object_or_404, redirect
 from django.http import JsonResponse
 
 from django.conf import settings
+import uuid
+import requests
 
 
 
+
+BASE_URL = settings.FRONTEND_URL
 
 
 class VerifyTokenView(APIView):
@@ -239,6 +243,7 @@ class CartItemView(APIView):
 
 
 
+
 class PaymentInformationView(APIView):
    #authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -280,161 +285,88 @@ class PaymentInformationView(APIView):
 
 
 
-import logging
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect
-from rest_framework import status
-
-logger = logging.getLogger(__name__)
+import requests
 
 
 
-from django.shortcuts import get_object_or_404, redirect
-from django.http import JsonResponse
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from rest_framework import status
-from django.conf import settings
-import logging
-from .models import PaymentInformation, Cart, CartItem
-
-logger = logging.getLogger(__name__)
-
-class PaymentConfirmationView(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request, *args, **kwargs):
-        # Extract payment details from query parameters (or request data)
-        payment_status = request.GET.get('status')  # Use request.data for POST data
-        tx_ref = request.GET.get('tx_ref')
-        transaction_id = request.GET.get('transaction_id')
-
-        if not all([payment_status, tx_ref, transaction_id]):
-            logger.error(f"Missing required parameters: status={payment_status}, tx_ref={tx_ref}, transaction_id={transaction_id}")
-            return JsonResponse({"detail": "Missing required parameters."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            # Find the payment by tx_ref
-            payment_info = get_object_or_404(PaymentInformation, tx_ref=tx_ref)
-
-            # Update payment status and transaction ID
-            payment_info.status = payment_status
-            payment_info.transaction_id = transaction_id
-            payment_info.save()
-
-            if payment_status == "successful":
-                # Get the unpaid cart for the user (if more than one, choose the first one)
-                cart = Cart.objects.filter(user=payment_info.user, paid=False).first()
-
-                if not cart:
-                    logger.error(f"Cart not found or already paid for user: {payment_info.user}")
-                    return JsonResponse({"detail": "Cart not found or already paid."}, status=status.HTTP_404_NOT_FOUND)
-
-                # Mark the cart and items as paid
-                cart.paid = True
-                cart.save()
-
-                # Update items in the cart to paid status
-                CartItem.objects.filter(cart=cart).update(paid=True)
-
-                # Redirect to the frontend success page with query parameters
-                frontend_url = f"{settings.FRONTEND_URL}/payment-confirmation?status=success&tx_ref={tx_ref}&transaction_id={transaction_id}"
-                return redirect(frontend_url)
-
-            else:
-                # Redirect to the frontend failure page with query parameters
-                frontend_url = f"{settings.FRONTEND_URL}/payment-confirmation?status=failed&tx_ref={tx_ref}&transaction_id={transaction_id}"
-                return redirect(frontend_url)
-
-        except PaymentInformation.DoesNotExist:
-            logger.error(f"PaymentInformation not found for tx_ref: {tx_ref}")
-            return JsonResponse({"detail": "Payment not found."}, status=status.HTTP_404_NOT_FOUND)
-        except Cart.DoesNotExist:
-            logger.error(f"Cart not found for user or cart already paid for tx_ref: {tx_ref}")
-            return JsonResponse({"detail": "Cart not found or already paid."}, status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            logger.exception(f"An error occurred during payment confirmation: {str(e)}")
-            return JsonResponse({"detail": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
 
 
-# views.py
-from .serializers import TransactionSerializer
 
-class PaymentDetailsView(APIView):
+class InitiatePayment(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        user = request.user
-        data = request.data
+        if request.user.is_anonymous:
+            return Response({'error': 'User is not authenticated'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Assuming the user has either an EmployerProfile or ArtisanProfile
+            user = request.user
+            phone_number = None
+           
+            
+            # Check if the user is an employer and get phone number from EmployerProfile
+            if hasattr(user, 'employerprofile'):  # EmployerProfile
+                phone_number = user.employerprofile.phone_number
 
-        # Save payment details to the Transaction model
-        transaction = Transaction.objects.create(
-            user=user,
-            tx_ref=data.get("tx_ref"),
-            amount=data.get("amount"),
-            status=data.get("status", "Pending"),
-            transaction_id=data.get('id')
-        )
+            # If no phone number found, return an error
+            if not phone_number:
+                return Response({'error': 'Phone number not found for this user'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # If payment is successful, update the cart and cart items
-        if data.get("status") == "Successful":
-            cart = Cart.objects.filter(user=user, paid=False).first()
-            if cart:
-                cart.paid = True
-                cart.save()
-                cart.items.update(paid=True)  # Mark all cart items as paid
+            # Proceed with your payment logic here
+            reference = str(uuid.uuid4())
+            cart_code = request.data.get('cart_code')
+            cart = Cart.objects.get(cart_code=cart_code)
+            total_amount = request.data.get('total_amount')
+            currency = "NGN"
+            redirect_url = f"{BASE_URL}/payment-confirmation/"
 
-        # Return both a success message and the transaction data
-        serializer = TransactionSerializer(transaction)
-        return Response(
-            {
-                "message": "Payment details saved successfully.",
-                "transaction": serializer.data,
-            },
-            status=status.HTTP_201_CREATED,
-        )
+            # Create transaction details
+            transaction = TransactionDetails.objects.create(
+                tx_ref=reference,
+                cart=cart,
+                total_amount=total_amount,
+                currency=currency,
+                user=user,
+                status="Pending",
+            )
 
+            flutterwave_payload = {
+                'tx_ref': reference,
+                'amount': str(total_amount),
+                "currency": currency,
+                "redirect_url": redirect_url,
+                "customer": {
+                    'email': user.email,
+                    "name": f"{user.first_name} {user.last_name}",
+                    "phone_number": phone_number  # Using the phone number retrieved from profile
+                },
+                "customizations": {
+                    "title": "Payment for I-wan-wok Services",
+                }
+            }
 
+            headers = {
+                "Authorization": f"Bearer {settings.FLUTTERWAVE_SECRET_KEY}",
+                "Content-Type": "application/json"
+            }
 
+            flutterwave_url = "https://api.flutterwave.com/v3/payments"
+            response = requests.post(flutterwave_url, json=flutterwave_payload, headers=headers)
 
+            if response.status_code == 200:
+                return Response(response.json(), status=status.HTTP_200_OK)
+            else:
+                return Response(response.json(), status=response.status_code)
+
+        except requests.exceptions.RequestException as e:
+            # Handle request exceptions
+            return JsonResponse({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            # Catch any other exceptions that might occur
+            return JsonResponse({'error': 'An unexpected error occurred', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         
-
-
-class PaymentDetailsViewpa(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        user = request.user
-        data = request.data
-
-        # Save payment details to the Transaction model
-        transaction = Transaction.objects.create(
-            user=user,
-            tx_ref=data.get("tx_ref"),
-            amount=data.get("amount"),
-            status=data.get("status", "Pending"),
-            transaction_id=data.get('transaction_id')
-        )
-
-        # If payment is successful, update the cart and cart items
-        if data.get("status") == "Successful":
-            cart = Cart.objects.filter(user=user, paid=False).first()
-            if cart:
-                cart.paid = True
-                cart.save()
-                cart.items.update(paid=True)  # Mark all cart items as paid
-
-        # Return both a success message and the transaction data
-        serializer = TransactionSerializer(transaction)
-        return Response(
-            {
-                "message": "Payment details saved successfully.",
-                "transaction": serializer.data,
-            },
-            status=status.HTTP_201_CREATED,
-        )
 
 
 

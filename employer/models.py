@@ -10,7 +10,7 @@ import uuid
 
 
 class Cart(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='cart')
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='cart')
     cart_code = models.CharField(max_length=11, unique=True, editable=False)
     paid = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -104,24 +104,6 @@ class JobDetails(models.Model):
 
     
 
-class PaymentInformation(models.Model):
-    STATUS_CHOICES = [
-        ("pending", "Pending"),
-        ("successful", "Successful"),
-        ("failed", "Failed"),
-        ("cancelled", "Cancelled"),
-    ]
-
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="payments")
-    tx_ref = models.CharField(max_length=100, unique=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    transaction_id = models.CharField(max_length=100, unique=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"Payment {self.tx_ref} ({self.status})"
     
 
 
@@ -129,13 +111,17 @@ class PaymentInformation(models.Model):
 
 
 
-class Transaction(models.Model):
+class TransactionDetails(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="transactions")
-    tx_ref = models.CharField(max_length=100, null=True, blank=True)  # Unique transaction reference
-    amount = models.DecimalField(max_digits=10, decimal_places=2)  # Payment amount
+    tx_ref = models.CharField(max_length=100, null=True, blank=True)  
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="cart_transaction")
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)  
     transaction_id = models.CharField(max_length=100, unique=True, null =True, blank=True)
-    status = models.CharField(max_length=20, default="Pending")  # Payment status
+    status = models.CharField(max_length=20, default="Pending") 
+    currency = models.CharField(max_length=20, default="NGN") 
     created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
+
         return f"{self.tx_ref} - {self.status}"
