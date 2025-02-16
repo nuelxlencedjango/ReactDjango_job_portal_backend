@@ -415,7 +415,7 @@ class PaymentDetailsView(APIView):
             tx_ref=data.get("tx_ref"),
             amount=data.get("amount"),
             status=data.get("status", "Pending"),
-            transaction_id=data.get('id')
+            transaction_id=data.get('transaction_id')
         )
 
         # If payment is successful, update the cart and cart items
