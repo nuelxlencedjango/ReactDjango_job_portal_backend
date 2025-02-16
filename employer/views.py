@@ -437,43 +437,56 @@ class PaymentDetailsView(APIView):
         )
 
 
-# Example backend code (Python/Django) to handle Flutterwave redirect
+
+
 import requests
-from django.http import JsonResponse
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.conf import settings
 
-def handle_flutterwave_payment(request):
-    # Get payment response parameters from the Flutterwave redirect
-    transaction_id = request.GET.get("transaction_id")
-    tx_ref = request.GET.get("tx_ref")
-    status = request.GET.get("status")
-    amount = request.GET.get("amount")  # Ensure the amount is retrieved
-    
-    # Verify payment status via Flutterwave API (optional but recommended)
-    flutterwave_api_key = "FLWPUBK_TEST-6941e4117be9902646d54ec0509e804c-X"
-    url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"
-    headers = {
-        "Authorization": f"Bearer {flutterwave_api_key}"
-    }
-    
-    response = requests.get(url, headers=headers)
-    data = response.json()
+class PaymentConfirmation(APIView):
+    def post(self, request):
+        # Extract data from the request body
+        tx_ref = request.data.get("tx_ref")
+        status = request.data.get("status")
+        transaction_id = request.data.get("transaction_id")
+        amount = request.data.get("amount")
 
-    # Process the payment status and return a response with the amount
-    if data["status"] == "success":
-        # Include the amount in the confirmation response
-        return JsonResponse({
-            "status": "success", 
-            "message": "Payment successful", 
-            "amount": amount,  # Include the amount in the response
-            "transaction_id": transaction_id
-        })
-    else:
-        # If payment failed, also return the amount
-        return JsonResponse({
-            "status": "failed", 
-            "message": "Payment failed", 
-            "amount": amount,  # Include the amount in the response
-            "transaction_id": transaction_id
-        })
+        if status != "successful":
+            return Response({"message": "Payment failed"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Verify the payment with Flutterwave API using the transaction_id
+        try:
+            # Use the actual secret key for the authorization header
+            url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"
+            headers = {"Authorization": f"Bearer {settings.FLUTTERWAVE_SECRET_KEY}"}
+            
+            # Send GET request to verify the transaction
+            response = requests.get(url, headers=headers)
+            data = response.json()
+
+            # Check if the payment verification is successful
+            if data.get("status") == "success":
+                # The payment is verified, process the payment further
+                # For example, save transaction details to the database or update the order status
+                return Response(
+                    {
+                        "message": "Payment successful",
+                        "transaction_id": transaction_id,
+                        "amount": amount,
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {"message": "Payment verification failed"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        except requests.exceptions.RequestException as e:
+            return Response(
+                {"message": "Error verifying payment", "error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
