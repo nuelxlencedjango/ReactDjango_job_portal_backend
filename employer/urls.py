@@ -14,9 +14,9 @@ urlpatterns = [
    path('job-details/', JobDetailsView.as_view(), name='job-details'),
    
    #path('payment-details/', PaymentInformationView.as_view(), name='payment-details'),
-   path('payment_confirmation/', PaymentConfirmationView.as_view(), name='payment_confirmation'),
-   path("payment-details/", PaymentDetailsView.as_view(), name="payment-details"),
-  path('payment_confirmation/', views.handle_flutterwave_payment, name='payment_confirmation'),
+   path('payment_confirmation/', PaymentConfirmation.as_view(), name='payment_confirmation'),
+   #path("payment-details/", PaymentDetailsView.as_view(), name="payment-details"),
+  #path('payment_confirmation/', views.handle_flutterwave_payment, name='payment_confirmation'),
    #path('employer-details/', EmployersDetailsView.as_view(), name='employer-details'),
    
     path('auth/verify-token/', VerifyTokenView.as_view(), name='verify-token'),
