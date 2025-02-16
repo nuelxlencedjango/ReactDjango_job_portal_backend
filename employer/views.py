@@ -116,6 +116,8 @@ class JobDetailsView(APIView):
 
 
 
+
+
 class AddToCartView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -142,16 +144,10 @@ class AddToCartView(APIView):
                 {"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND
             )
 
-        # Fetch the user's cart
+        # Fetch the user's unpaid cart or create a new one
         try:
-            cart = Cart.objects.filter(user=request.user)
+            cart = Cart.objects.get(user=request.user, paid=False)
         except Cart.DoesNotExist:
-            # If no cart exists, create a new one
-            cart = Cart.objects.create(user=request.user, paid=False)
-
-        # Ensure the cart is unpaid
-        if cart:
-            # If the cart is paid, create a new unpaid cart
             cart = Cart.objects.create(user=request.user, paid=False)
 
         # Check or create the cart item
@@ -160,10 +156,11 @@ class AddToCartView(APIView):
             artisan=artisan,
             service=service,
             paid=False,
+            defaults={'quantity': 1}  # Default values for creation
         )
 
         if not created:
-            # If the item already exists, just increment the quantity
+            # If the item already exists, increment the quantity
             cart_item.quantity += 1
             cart_item.save()
 
@@ -243,37 +240,6 @@ class CartItemView(APIView):
 
 
 
-
-class PaymentInformationView(APIView):
-   #authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        tx_ref = request.data.get("tx_ref")
-        amount = request.data.get("amount")
-       
-        status = request.data.get("status", "pending")
-
-        if not all([tx_ref, amount, ]):
-            return Response({"detail": "Missing required fields."}, status=400)
-
-        try:
-            # Save payment information to the database
-            payment_info = PaymentInformation.objects.create(
-                user=request.user,
-                tx_ref=tx_ref,
-                amount=amount,
-                status=status,
-            )
-
-            return Response(
-                {"detail": "Payment information saved.", "id": payment_info.id},
-                status=201,
-            )
-        except Exception as e:
-            return Response( {"detail": f"An error occurred: {str(e)}"},
-                status=500, )
-        
 
 
 
