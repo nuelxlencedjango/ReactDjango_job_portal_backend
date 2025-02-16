@@ -402,7 +402,7 @@ class PaymentDetailsView(APIView):
         
 
 
-class PaymentDetailsView(APIView):
+class PaymentDetailsViewpa(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
