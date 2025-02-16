@@ -361,7 +361,7 @@ class PaymentConfirmationView(APIView):
 # views.py
 from .serializers import TransactionSerializer
 
-class PaymentDetailsView1(APIView):
+class PaymentDetailsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -402,7 +402,7 @@ class PaymentDetailsView1(APIView):
         
 
 
-class PaymentDetailsView11(APIView):
+class PaymentDetailsView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -437,57 +437,5 @@ class PaymentDetailsView11(APIView):
         )
 
 
-
-
-import requests
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from django.conf import settings
-
-class PaymentConfirmation(APIView):
-    permission_classes = [AllowAny]
-    def post(self, request):
-        # Extract data from the request body
-        tx_ref = request.data.get("tx_ref")
-        status = request.data.get("status")
-        transaction_id = request.data.get("transaction_id")
-        amount = request.data.get("amount")
-
-        if status != "successful":
-            return Response({"message": "Payment failed"}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Verify the payment with Flutterwave API using the transaction_id
-        try:
-            # Use the actual secret key for the authorization header
-            url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"
-            headers = {"Authorization": f"Bearer {settings.FLUTTERWAVE_SECRET_KEY}"}
-            
-            # Send GET request to verify the transaction
-            response = requests.get(url, headers=headers)
-            data = response.json()
-
-            # Check if the payment verification is successful
-            if data.get("status") == "success":
-                # The payment is verified, process the payment further
-                # For example, save transaction details to the database or update the order status
-                return Response(
-                    {
-                        "message": "Payment successful",
-                        "transaction_id": transaction_id,
-                        "amount": amount,
-                    },
-                    status=status.HTTP_200_OK,
-                )
-            else:
-                return Response(
-                    {"message": "Payment verification failed"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-        except requests.exceptions.RequestException as e:
-            return Response(
-                {"message": "Error verifying payment", "error": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
 
 
