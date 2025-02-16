@@ -402,7 +402,7 @@ class PaymentDetailsView1(APIView):
         
 
 
-class PaymentDetailsView(APIView):
+class PaymentDetailsView11(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -446,6 +446,7 @@ from rest_framework import status
 from django.conf import settings
 
 class PaymentConfirmation(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         # Extract data from the request body
         tx_ref = request.data.get("tx_ref")
