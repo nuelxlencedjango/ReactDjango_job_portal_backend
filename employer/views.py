@@ -361,7 +361,7 @@ class PaymentConfirmationView(APIView):
 # views.py
 from .serializers import TransactionSerializer
 
-class PaymentDetailsView(APIView):
+class PaymentDetailsView1(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -403,7 +403,7 @@ class PaymentDetailsView(APIView):
 
 
 class PaymentDetailsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def post(self, request):
         user = request.user
