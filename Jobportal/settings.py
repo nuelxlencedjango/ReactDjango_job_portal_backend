@@ -289,3 +289,4 @@ if not CSRF_TRUSTED_ORIGINS:
 
 # Example of trusted origins configuration:
 # CSRF_TRUSTED_ORIGINS = ['https://react-django-job-portal-frontend.vercel.app', 'http://localhost:5173']
+FLUTTERWAVE_SECRET_KEY='FLWPUBK_TEST-6941e4117be9902646d54ec0509e804c-X'
