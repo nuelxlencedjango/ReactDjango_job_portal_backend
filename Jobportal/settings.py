@@ -93,7 +93,8 @@ SESSION_COOKIE_SECURE = True  # Ensure session cookie is only sent over HTTPS in
 
 # settings.py
 
-FRONTEND_URL = 'https://react-frontend.vercel.app' 
+FRONTEND_URL = 'https://react-django-job-portal-frontend.vercel.app' 
+
 
 
 #CORS_ALLOW_ALL_ORIGINS = True
@@ -289,4 +290,4 @@ if not CSRF_TRUSTED_ORIGINS:
 
 # Example of trusted origins configuration:
 # CSRF_TRUSTED_ORIGINS = ['https://react-django-job-portal-frontend.vercel.app', 'http://localhost:5173']
-FLUTTERWAVE_SECRET_KEY='FLWPUBK_TEST-6941e4117be9902646d54ec0509e804c-X'
+FLUTTERWAVE_SECRET_KEY=os.getenv('FLUTTERWAVE_SECRET_KEY', '')
