@@ -437,5 +437,43 @@ class PaymentDetailsView(APIView):
         )
 
 
+# Example backend code (Python/Django) to handle Flutterwave redirect
+import requests
+from django.http import JsonResponse
+
+def handle_flutterwave_payment(request):
+    # Get payment response parameters from the Flutterwave redirect
+    transaction_id = request.GET.get("transaction_id")
+    tx_ref = request.GET.get("tx_ref")
+    status = request.GET.get("status")
+    amount = request.GET.get("amount")  # Ensure the amount is retrieved
+    
+    # Verify payment status via Flutterwave API (optional but recommended)
+    flutterwave_api_key = "FLWPUBK_TEST-6941e4117be9902646d54ec0509e804c-X"
+    url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"
+    headers = {
+        "Authorization": f"Bearer {flutterwave_api_key}"
+    }
+    
+    response = requests.get(url, headers=headers)
+    data = response.json()
+
+    # Process the payment status and return a response with the amount
+    if data["status"] == "success":
+        # Include the amount in the confirmation response
+        return JsonResponse({
+            "status": "success", 
+            "message": "Payment successful", 
+            "amount": amount,  # Include the amount in the response
+            "transaction_id": transaction_id
+        })
+    else:
+        # If payment failed, also return the amount
+        return JsonResponse({
+            "status": "failed", 
+            "message": "Payment failed", 
+            "amount": amount,  # Include the amount in the response
+            "transaction_id": transaction_id
+        })
 
 
