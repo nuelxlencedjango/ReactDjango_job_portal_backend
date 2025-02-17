@@ -469,7 +469,7 @@ class InitiatePayment(APIView):
         }
 
         headers = {
-            "Authorization": f"Bearer {secret_key}",  # Use Flutterwave Secret Key here
+            "Authorization": "Bearer FLWSECK_TEST-3cf8370b8bcc81c440454bb8184a0fdf-X",  # Use Flutterwave Secret Key here
             "Content-Type": "application/json"
         }
 
