@@ -32,9 +32,7 @@ from django.conf import settings
 import uuid
 import requests
 
-from dotenv import load_dotenv
-import os
-load_dotenv()  # environment variables
+
 
 
  
@@ -331,7 +329,7 @@ class InitiatePayment(APIView):
             
 
             headers = {
-                "Authorization": f"Bearer {os.getenv('FLUTTERWAVE_SECRET_KEY')}",
+                "Authorization": f"Bearer {settings.FLUTTERWAVE_SECRET_KEY}",
                 "Content-Type": "application/json"
             }
 
@@ -356,3 +354,6 @@ class InitiatePayment(APIView):
         except Exception as e:
             logger.error(f"Unexpected Error: {str(e)}")
             return Response({'error': 'An unexpected error occurred', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
