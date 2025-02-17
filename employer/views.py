@@ -324,10 +324,12 @@ class InitiatePayment(APIView):
                 }
             }
 
+          
             headers = {
-                "Authorization": f"Bearer {settings.FLUTTERWAVE_SECRET_KEY}",
-                "Content-Type": "application/json"
-            }
+                   "Authorization": f"Bearer {settings.FLUTTERWAVE_SECRET_KEY}",
+                    "Content-Type": "application/json"
+                }
+
 
             flutterwave_url = "https://api.flutterwave.com/v3/payments"
             response = requests.post(flutterwave_url, json=flutterwave_payload, headers=headers)
