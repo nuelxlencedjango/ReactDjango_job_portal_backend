@@ -258,13 +258,8 @@ import requests
 
 
 import logging
-import uuid
-import requests
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from django.conf import settings
-from .models import Cart, TransactionDetails
+
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -333,7 +328,7 @@ class InitiatePayment(APIView):
                 "Authorization": "Bearer FLWSECK_TEST-3cf8370b8bcc81c440454bb8184a0fdf-X",
                 "Content-Type": "application/json"
             }
-            logger.info(f"Flutterwave Secret Key: {settings.FLUTTERWAVE_SECRET_KEY}")
+            logger.info(f"Flutterwave Secret Key: {os.getenv('FLUTTERWAVE_PUBLIC_KEY')}")
 
             flutterwave_url = "https://api.flutterwave.com/v3/payments"
             response = requests.post(flutterwave_url, json=flutterwave_payload, headers=headers)
@@ -359,3 +354,70 @@ class InitiatePayment(APIView):
         
 
 
+
+
+
+
+class ConfirmPayment(APIView):
+    def post(self, request):
+        # Get query parameters from the request
+        payment_status = request.GET.get('status')  # Renamed to avoid conflict with `status` module
+        tx_ref = request.GET.get('tx_ref')
+        transaction_id = request.GET.get('transaction_id')
+
+        user = request.user
+
+        if payment_status == "successful":
+            # Use the secret key from settings
+            headers = {
+                "Authorization": f"Bearer {settings.FLUTTERWAVE_SECRET_KEY}",
+            }
+
+            # Verify the transaction with Flutterwave
+            verify_url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"
+            response = requests.get(verify_url, headers=headers)
+            response_data = response.json()
+
+            if response_data['status'] == 'success':
+                # Retrieve the transaction from the database
+                transaction = TransactionDetails.objects.get(tx_ref=tx_ref)
+
+                # Verify the payment details
+                if (
+                    response_data['data']['status'] == "successful"
+                    and float(response_data['data']['amount']) == float(transaction.total_amount)
+                    and response_data['data']['currency'] == transaction.currency
+                ):
+                    # Update the transaction status
+                    transaction.status = "Payment Completed"
+                    transaction.transaction_id = transaction_id
+                    transaction.save()
+
+                    # Mark the cart as paid
+                    cart = transaction.cart
+                    cart.paid = True  # Corrected this line
+                    cart.user = user
+                    cart.save()
+
+                    return Response(
+                        {'message': 'Payment Successful', 'subMessage': 'You have successfully made payment'},
+                        status=status.HTTP_200_OK
+                    )
+
+                # Payment verification failed
+                return Response(
+                    {'message': 'Payment Verification Failed', 'subMessage': 'Your payment verification was NOT successful.'},
+                    status=status.HTTP_400_BAD_REQUEST  # Corrected this line
+                )
+
+            # Flutterwave API error
+            return Response(
+                {'error': 'An error occurred while communicating with Flutterwave'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        # Payment status is not "successful"
+        return Response(
+            {'error': 'Payment was not successful'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
