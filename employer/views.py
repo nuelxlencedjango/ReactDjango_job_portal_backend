@@ -441,6 +441,10 @@ class InitiatePayment(APIView):
     def post(self, request):
         total_amount = request.data.get('totalAmount')
         email = request.data.get('email')
+
+        cart_code = request.data.get('cart_code')
+        cart = Cart.objects.get(cart_code=cart_code)
+        currency = "NGN"
         reference = str(uuid.uuid4())  # Generate a unique reference for the transaction
 
         user = request.user
@@ -471,7 +475,7 @@ class InitiatePayment(APIView):
 
         try:
             # Save payment details to your database
-            payment = TransactionDetails(user=user, total_amount=total_amount, tx_ref=reference, status="pending")
+            payment = TransactionDetails(user=user,cart=cart,currency=currency, total_amount=total_amount, tx_ref=reference, status="pending")
             payment.save()
 
             # Send the request to Flutterwave API
