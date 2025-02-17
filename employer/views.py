@@ -294,7 +294,7 @@ class InitiatePayment(APIView):
             reference = str(uuid.uuid4())
             cart_code = request.data.get('cart_code')
             cart = Cart.objects.get(cart_code=cart_code)
-            total_amount = request.data.get('total_amount')
+            total_amount = request.data.get('totalAmount')
             currency = "NGN"
             redirect_url = f"{settings.FRONTEND_URL}/payment-confirmation/" 
 
