@@ -463,7 +463,7 @@ class InitiatePayment(APIView):
                 'tx_ref': reference,
                 'amount': str(total_amount),
                 "currency": currency,
-                "redirect_url": f"{settings.FRONTEND_URL}/payment-confirmation/" ,
+                "redirect_url": "https://react-django-job-portal-frontend.vercel.app/payment-confirmation/" ,
                 "customer": {
                     'email': user.email,
                     "name": f"{user.first_name} {user.last_name}",
@@ -501,3 +501,42 @@ class InitiatePayment(APIView):
         except ValueError as err:
             # Handle JSON decoding errors
             return JsonResponse({'error': 'Payment initiation failed due to an unexpected error'}, status=500)
+
+
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import TransactionDetails, CartItem, Cart
+
+class PaymentCallback(APIView):
+    def get(self, request):
+        # Get query parameters from the request
+        payment_status = request.GET.get('status')  # Renamed to avoid conflict with `status` module
+        tx_ref = request.GET.get('tx_ref')
+        transaction_id = request.GET.get('transaction_id')
+
+        if payment_status == 'successful':
+            try:
+                # Get the payment details using the tx_ref
+                payment = TransactionDetails.objects.get(tx_ref=tx_ref)
+                payment.status = "successful"
+                payment.transaction_id = transaction_id
+                payment.save()
+
+                # Update the associated cart
+                cart = payment.cart
+                cart.paid = True  
+                cart.save()
+
+                # Now, update each CartItem's paid status to True
+                cart_items = CartItem.objects.filter(cart=cart)
+                cart_items.update(paid=True)
+
+                return Response({'message': 'Payment was successful'}, status=status.HTTP_200_OK)
+
+            except TransactionDetails.DoesNotExist:
+                return Response({'error': 'Payment not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response({'error': 'Payment failed'}, status=status.HTTP_400_BAD_REQUEST)
