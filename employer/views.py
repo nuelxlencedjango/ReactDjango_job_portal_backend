@@ -267,7 +267,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class InitiatePayment(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def post(self, request):
         if request.user.is_anonymous:
