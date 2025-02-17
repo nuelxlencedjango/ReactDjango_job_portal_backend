@@ -35,8 +35,8 @@ import requests
 
 
 
-BASE_URL = settings.FRONTEND_URL
-
+#BASE_URL = settings.FRONTEND_URL  
+ 
 
 class VerifyTokenView(APIView):
     def post(self, request):
@@ -258,94 +258,11 @@ import requests
 
 
 
-class InitiatePayment(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        if request.user.is_anonymous:
-            return Response({'error': 'User is not authenticated'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        try:
-            # Assuming the user has either an EmployerProfile or ArtisanProfile
-            user = request.user
-            phone_number = None
-           
-            
-            # Check if the user is an employer and get phone number from EmployerProfile
-            if hasattr(user, 'employerprofile'):  # EmployerProfile
-                phone_number = user.employerprofile.phone_number
-
-            # If no phone number found, return an error
-            if not phone_number:
-                return Response({'error': 'Phone number not found for this user'}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Proceed with your payment logic here
-            reference = str(uuid.uuid4())
-            cart_code = request.data.get('cart_code')
-            cart = Cart.objects.get(cart_code=cart_code)
-            total_amount = request.data.get('total_amount')
-            currency = "NGN"
-            redirect_url = f"{BASE_URL}/payment-confirmation/"
-
-            # Create transaction details
-            transaction = TransactionDetails.objects.create(
-                tx_ref=reference,
-                cart=cart,
-                total_amount=total_amount,
-                currency=currency,
-                user=user,
-                status="Pending",
-            )
-
-            flutterwave_payload = {
-                'tx_ref': reference,
-                'amount': str(total_amount),
-                "currency": currency,
-                "redirect_url": redirect_url,
-                "customer": {
-                    'email': user.email,
-                    "name": f"{user.first_name} {user.last_name}",
-                    "phone_number": phone_number  # Using the phone number retrieved from profile
-                },
-                "customizations": {
-                    "title": "Payment for I-wan-wok Services",
-                }
-            }
-
-            headers = {
-                "Authorization": f"Bearer {settings.FLUTTERWAVE_SECRET_KEY}",
-                "Content-Type": "application/json"
-            }
-
-            flutterwave_url = "https://api.flutterwave.com/v3/payments"
-            response = requests.post(flutterwave_url, json=flutterwave_payload, headers=headers)
-
-            if response.status_code == 200:
-                return Response(response.json(), status=status.HTTP_200_OK)
-            else:
-                return Response(response.json(), status=response.status_code)
-
-        except requests.exceptions.RequestException as e:
-            # Handle request exceptions
-            return JsonResponse({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        except Exception as e:
-            # Catch any other exceptions that might occur
-            return JsonResponse({'error': 'An unexpected error occurred', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        
-
 
 
 
 import logging
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from django.http import JsonResponse
-import requests
-import uuid
-from .models import Cart, TransactionDetails
-from django.conf import settings
+
 
 logger = logging.getLogger(__name__)
 
@@ -359,8 +276,7 @@ class InitiatePayment(APIView):
         try:
             # Log the incoming request data
             logger.info(f"Request Data: {request.data}")
-            logger.info(f"Request received at /employer/payment-details/ with data: {request.data}")
-
+            
 
             # the user has either an EmployerProfile or ArtisanProfile
             user = request.user
@@ -380,7 +296,7 @@ class InitiatePayment(APIView):
             cart = Cart.objects.get(cart_code=cart_code)
             total_amount = request.data.get('total_amount')
             currency = "NGN"
-            redirect_url = f"{settings.BASE_URL}/payment-confirmation/"
+            redirect_url = f"{settings.FRONTEND_URL}/payment-confirmation/" 
 
             # Create transaction details
             transaction = TransactionDetails.objects.create(
