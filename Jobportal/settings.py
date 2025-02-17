@@ -291,3 +291,29 @@ if not CSRF_TRUSTED_ORIGINS:
 # Example of trusted origins configuration:
 # CSRF_TRUSTED_ORIGINS = ['https://react-django-job-portal-frontend.vercel.app', 'http://localhost:5173']
 FLUTTERWAVE_SECRET_KEY=os.getenv('FLUTTERWAVE_SECRET_KEY', '')
+
+
+# settings.py
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'INFO',  # Log INFO level and above
+            'class': 'logging.FileHandler',
+            'filename': 'debug.log',  # Log file path
+        },
+        'console': {
+            'level': 'INFO',  # Log INFO level and above
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        '': {  # Root logger
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
