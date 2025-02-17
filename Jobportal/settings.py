@@ -87,7 +87,7 @@ SESSION_COOKIE_SAMESITE = 'None'  # Allows session cookie to be sent with cross-
 
 CSRF_COOKIE_SECURE = True  # Ensure CSRF cookie is only sent over HTTPS in production
 SESSION_COOKIE_SECURE = True  # Ensure session cookie is only sent over HTTPS in production
-
+SameSite=None
 
 
 
