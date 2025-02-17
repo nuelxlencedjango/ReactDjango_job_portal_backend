@@ -279,7 +279,7 @@ class InitiatePayment(APIView):
             # Log the incoming request data and headers
             logger.info(f"Request Data: {request.data}")
             logger.info(f"Request Headers: {request.headers}")
-            logger.info(f"Flutterwave Secret Key: {settings.FLUTTERWAVE_SECRET_KEY}")
+           
 
             # The user has either an EmployerProfile or ArtisanProfile
             user = request.user
@@ -327,12 +327,13 @@ class InitiatePayment(APIView):
                 }
             }
 
-            
+            FLUTTERWAVE_SECRET_KEY = settings.FLUTTERWAVE_SECRET_KEY
 
             headers = {
-                "Authorization": f"Bearer {settings.FLUTTERWAVE_SECRET_KEY}",
+                "Authorization": f"Bearer {FLUTTERWAVE_SECRET_KEY}",
                 "Content-Type": "application/json"
             }
+            logger.info(f"Flutterwave Secret Key: {settings.FLUTTERWAVE_SECRET_KEY}")
 
             flutterwave_url = "https://api.flutterwave.com/v3/payments"
             response = requests.post(flutterwave_url, json=flutterwave_payload, headers=headers)
