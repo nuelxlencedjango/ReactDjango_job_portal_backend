@@ -328,7 +328,7 @@ class InitiatePayment(APIView):
             }
 
             headers = {
-                "Authorization": f"Bearer {settings.FLUTTERWAVE_SECRET_KEY}",
+                "Authorization": "Bearer FLWSECK_TEST-3cf8370b8bcc81c440454bb8184a0fdf-X",
                 "Content-Type": "application/json"
             }
 
