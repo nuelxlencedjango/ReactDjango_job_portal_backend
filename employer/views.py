@@ -359,6 +359,8 @@ class InitiatePayment(APIView):
         try:
             # Log the incoming request data
             logger.info(f"Request Data: {request.data}")
+            logger.info(f"Request received at /employer/payment-details/ with data: {request.data}")
+
 
             # the user has either an EmployerProfile or ArtisanProfile
             user = request.user
