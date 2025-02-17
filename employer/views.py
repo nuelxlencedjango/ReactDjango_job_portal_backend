@@ -269,7 +269,7 @@ from .models import Cart, TransactionDetails
 
 logger = logging.getLogger(__name__)
 
-class InitiatePayment11(APIView):
+class InitiatePayment(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
