@@ -327,11 +327,11 @@ class InitiatePayment(APIView):
                     "title": "Payment for I-wan-wok Services",
                 }
             }
+
             
-            FLWSECK_TEST = os.getenv('FLWSECK_TEST')
 
             headers = {
-                "Authorization": f"Bearer {FLWSECK_TEST}",
+                "Authorization": f"Bearer {os.getenv('FLUTTERWAVE_SECRET_KEY')}",
                 "Content-Type": "application/json"
             }
 
