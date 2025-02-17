@@ -263,7 +263,7 @@ import os
 
 logger = logging.getLogger(__name__)
 
-class InitiatePayment(APIView):
+class InitiatePayment2(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -421,3 +421,73 @@ class ConfirmPayment(APIView):
             {'error': 'Payment was not successful'},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+
+
+
+
+import uuid
+import requests
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from django.http import JsonResponse
+from rest_framework import status
+
+
+class InitiatePayment(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        total_amount = request.data.get('totalAmount')
+        email = request.data.get('email')
+        reference = str(uuid.uuid4())  # Generate a unique reference for the transaction
+
+        user = request.user
+
+        # Check if user is authenticated
+        if user.is_anonymous:
+            return Response({'error': 'User is not authenticated'}, status=400)
+
+        #  Flutterwave details
+        flutterwave_url = "https://api.flutterwave.com/v3/payments"
+        secret_key = os.getenv('FLUTTERWAVE_PUBLIC_KEY')
+
+        payload = {
+            "tx_ref": reference,
+            "amount": total_amount,
+            "currency": "NGN",
+            "redirect_url": f"{settings.FRONTEND_URL}/payment-confirmation/" , 
+           # "payment_type": "card",
+            "customer": {
+                "email": email
+            }
+        }
+
+        headers = {
+            "Authorization": f"Bearer {secret_key}",  # Use Flutterwave Secret Key here
+            "Content-Type": "application/json"
+        }
+
+        try:
+            # Save payment details to your database
+            payment = TransactionDetails(user=user, amount=total_amount, tx_ref=reference, status="pending")
+            payment.save()
+
+            # Send the request to Flutterwave API
+            response = requests.post(flutterwave_url, json=payload, headers=headers)
+            response_data = response.json()
+
+            if response.status_code == 200:
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                # If Flutterwave returns an error
+                return JsonResponse({'error': response_data.get("message", "Payment initiation failed")}, status=response.status_code)
+
+        except requests.exceptions.RequestException as err:
+            # Handle network-related errors
+            return JsonResponse({'error': 'Payment initiation failed due to network error'}, status=500)
+
+        except ValueError as err:
+            # Handle JSON decoding errors
+            return JsonResponse({'error': 'Payment initiation failed due to an unexpected error'}, status=500)
