@@ -366,7 +366,7 @@ import requests
 logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])  # Ensure that the user is authenticated
+#@permission_classes([IsAuthenticated])  # Ensure that the user is authenticated
 def initiate_payment(request):
     try:
         # Log the incoming request data and headers
