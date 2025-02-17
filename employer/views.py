@@ -327,10 +327,10 @@ class InitiatePayment(APIView):
                 }
             }
 
-            FLUTTERWAVE_SECRET_KEY = settings.FLUTTERWAVE_SECRET_KEY
+            #FLUTTERWAVE_SECRET_KEY = settings.FLUTTERWAVE_SECRET_KEY
 
             headers = {
-                "Authorization": f"Bearer {FLUTTERWAVE_SECRET_KEY}",
+                "Authorization": "Bearer FLWSECK_TEST-3cf8370b8bcc81c440454bb8184a0fdf-X",
                 "Content-Type": "application/json"
             }
             logger.info(f"Flutterwave Secret Key: {settings.FLUTTERWAVE_SECRET_KEY}")
