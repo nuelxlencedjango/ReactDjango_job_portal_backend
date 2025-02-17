@@ -440,7 +440,7 @@ class InitiatePayment(APIView):
 
     def post(self, request):
         total_amount = request.data.get('totalAmount')
-        email = request.data.get('email')
+        #email = request.data.get('email')
 
         cart_code = request.data.get('cart_code')
         cart = Cart.objects.get(cart_code=cart_code)
@@ -457,16 +457,22 @@ class InitiatePayment(APIView):
         flutterwave_url = "https://api.flutterwave.com/v3/payments"
         secret_key = os.getenv('FLUTTERWAVE_PUBLIC_KEY')
 
+       
+
         payload = {
-            "tx_ref": reference,
-            "amount": total_amount,
-            "currency": "NGN",
-            "redirect_url": f"{settings.FRONTEND_URL}/payment-confirmation/" , 
-           # "payment_type": "card",
-            "customer": {
-                "email": email
+                'tx_ref': reference,
+                'amount': str(total_amount),
+                "currency": currency,
+                "redirect_url": f"{settings.FRONTEND_URL}/payment-confirmation/" ,
+                "customer": {
+                    'email': user.email,
+                    "name": f"{user.first_name} {user.last_name}",
+                    "phone_number": user.employerprofile.phone_number 
+                },
+                "customizations": {
+                    "title": "Payment for I-wan-wok Services",
+                }
             }
-        }
 
         headers = {
             "Authorization": "Bearer FLWSECK_TEST-3cf8370b8bcc81c440454bb8184a0fdf-X",  # Use Flutterwave Secret Key here
