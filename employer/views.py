@@ -32,10 +32,11 @@ from django.conf import settings
 import uuid
 import requests
 
+from dotenv import load_dotenv
+import os
+load_dotenv()  # environment variables
 
 
-
-#BASE_URL = settings.FRONTEND_URL  
  
 
 class VerifyTokenView(APIView):
@@ -326,9 +327,11 @@ class InitiatePayment(APIView):
                     "title": "Payment for I-wan-wok Services",
                 }
             }
+            
+            FLWSECK_TEST = os.getenv('FLWSECK_TEST')
 
             headers = {
-                "Authorization": "Bearer FLWSECK_TEST-3cf8370b8bcc81c440454bb8184a0fdf-X",
+                "Authorization": f"Bearer {FLWSECK_TEST}",
                 "Content-Type": "application/json"
             }
 
