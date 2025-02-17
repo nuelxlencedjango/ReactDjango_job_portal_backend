@@ -279,6 +279,7 @@ class InitiatePayment(APIView):
             # Log the incoming request data and headers
             logger.info(f"Request Data: {request.data}")
             logger.info(f"Request Headers: {request.headers}")
+            logger.info(f"Flutterwave Secret Key: {settings.FLUTTERWAVE_SECRET_KEY}")
 
             # The user has either an EmployerProfile or ArtisanProfile
             user = request.user
