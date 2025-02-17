@@ -471,7 +471,7 @@ class InitiatePayment(APIView):
 
         try:
             # Save payment details to your database
-            payment = TransactionDetails(user=user, amount=total_amount, tx_ref=reference, status="pending")
+            payment = TransactionDetails(user=user, total_amount=total_amount, tx_ref=reference, status="pending")
             payment.save()
 
             # Send the request to Flutterwave API
