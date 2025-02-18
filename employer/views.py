@@ -117,7 +117,7 @@ class JobDetailsView(APIView):
 
 
 
-class AddToCartView1(APIView):
+class AddToCartView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -166,57 +166,6 @@ class AddToCartView1(APIView):
         return Response(
             {"message": "Item added to cart successfully."}, status=status.HTTP_201_CREATED
         )
-
-
-
-class AddToCartView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        # Ensure the user is an employer
-        if not request.user.is_employer:
-            return Response(
-                {"error": "Only employers can add to the cart."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        artisan_email = request.data.get("artisan_email")
-
-        if not artisan_email:
-            return Response(
-                {"error": "Artisan email is required."}, status=status.HTTP_400_BAD_REQUEST
-            )
-
-        try:
-            artisan = ArtisanProfile.objects.get(user__email=artisan_email)
-            service = artisan.service
-        except ArtisanProfile.DoesNotExist:
-            return Response(
-                {"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND
-            )
-
-        # Fetch the user's unpaid cart or create a new one
-        cart, created = Cart.objects.get_or_create(user=request.user, paid=False)
-
-        # Check or create the cart item
-        cart_item, created = CartItem.objects.get_or_create(
-            cart=cart,
-            artisan=artisan,
-            service=service,
-            paid=False,
-            defaults={'quantity': 1}  # Default values for creation
-        )
-
-        if not created:
-            # If the item already exists, increment the quantity
-            cart_item.quantity += 1
-            cart_item.save()
-
-        return Response(
-            {"message": "Item added to cart successfully."}, status=status.HTTP_201_CREATED
-        )
-
-
 
 
 
