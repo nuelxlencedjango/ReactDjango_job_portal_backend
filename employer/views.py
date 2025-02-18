@@ -361,6 +361,9 @@ class ConfirmPayment(APIView):
         tx_ref = request.data.get('tx_ref')
         transaction_id = request.data.get('transaction_id')
 
+        logger.info(f"Incoming request data: {request.data}")
+        logger.info(f"Incoming query params: {request.GET}")
+
         user = request.user
 
         if payment_status == "successful":
