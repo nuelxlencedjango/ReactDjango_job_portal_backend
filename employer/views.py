@@ -572,7 +572,7 @@ class ConfirmPayment(APIView):
                             artisan=cart_item.artisan,
                             service=cart_item.service,
                             quantity=cart_item.quantity,
-                            price=cart_item.service.price,
+                            price=cart_item.artisan.pay,
                             total=transaction.total_amount,
                         )
                         logger.info(f"OrderItem created for cart item: {cart_item}")
