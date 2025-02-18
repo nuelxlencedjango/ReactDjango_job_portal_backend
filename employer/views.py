@@ -388,7 +388,7 @@ class InitiatePayment(APIView):
 
 
 
-class ConfirmPayment(APIView):
+class ConfirmPayment2(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
