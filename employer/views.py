@@ -357,9 +357,9 @@ class ConfirmPayment(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
         
-        payment_status = request.data.get('status')  
-        tx_ref = request.data.get('tx_ref')
-        transaction_id = request.data.get('transaction_id')
+        payment_status = request.GET.get('status')  
+        tx_ref = request.GET.get('tx_ref')
+        transaction_id = request.GET.get('transaction_id')
 
         logger.info(f"Incoming request data: {request.data}")
         logger.info(f"Incoming query params: {request.GET}")
