@@ -516,7 +516,8 @@ class ConfirmPayment(APIView):
             )
 
         # Verifying the transaction with Flutterwave
-        headers = {"Authorization": f"Bearer {settings.FLUTTERWAVE_SECRET_KEY}"}
+        headers= {"Authorization": "Bearer FLWSECK_TEST-3cf8370b8bcc81c440454bb8184a0fdf-X"},
+        #headers = {"Authorization": f"Bearer {settings.FLUTTERWAVE_SECRET_KEY}"}
         verify_url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"
         try:
             response = requests.get(verify_url, headers=headers)
