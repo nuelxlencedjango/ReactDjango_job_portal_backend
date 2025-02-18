@@ -388,7 +388,7 @@ class InitiatePayment(APIView):
 
 
 
-class ConfirmPayment(APIView):
+class ConfirmPayment2(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -453,6 +453,93 @@ class ConfirmPayment(APIView):
 
         except Exception as e:
             logger.error(f"Error verifying payment with Flutterwave: {str(e)}")
+            return Response(
+                {'error': 'An error occurred while communicating with Flutterwave'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+
+
+class ConfirmPayment(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        payment_status = request.GET.get('status')
+        tx_ref = request.GET.get('tx_ref')
+        transaction_id = request.GET.get('transaction_id')
+
+        if not payment_status or not tx_ref or not transaction_id:
+            return Response(
+                {'error': 'Missing required query parameters.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if payment_status != "successful":
+            return Response(
+                {'error': 'Payment was not successful'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        headers = {"Authorization": "Bearer FLWSECK_TEST-3cf8370b8bcc81c440454bb8184a0fdf-X"}
+        verify_url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"
+        try:
+            response = requests.get(verify_url, headers=headers)
+            response_data = response.json()
+
+            if response_data['status'] == 'success':
+                transaction = TransactionDetails.objects.get(tx_ref=tx_ref)
+
+                # Verify payment details
+                if (
+                    response_data['data']['status'] == "successful"
+                    and float(response_data['data']['amount']) == float(transaction.total_amount)
+                    and response_data['data']['currency'] == transaction.currency
+                ):
+                    transaction.status = "Payment Completed"
+                    transaction.transaction_id = transaction_id
+                    transaction.save()
+
+                    # Get the cart associated with the transaction
+                    cart = transaction.cart
+                    cart.paid = True
+                    cart.save()
+
+                    # Create Order and OrderItems
+                    order = Order.objects.create(
+                        user=cart.user,
+                        order_code=''.join(random.choices(string.ascii_uppercase + string.digits, k=8)),
+                        total_price=transaction.total_amount, 
+                        cart_code=cart.cart_code,
+                        status='pending',
+                        paid=True,
+                        paid_at=timezone.now(),
+                    )
+
+                    for cart_item in cart.items.all():
+                        OrderItem.objects.create(
+                            order=order,
+                            artisan=cart_item.artisan,
+                            service=cart_item.service,
+                            quantity=cart_item.quantity,
+                            price=cart_item.service.price,  
+                            total=transaction.total_amount,
+                        )
+
+                    # delete or archive cart
+                    cart.delete() 
+
+                    return Response(
+                        {'message': 'Payment Successful, Order Created', 'subMessage': 'You have successfully made payment'},
+                        status=status.HTTP_200_OK
+                    )
+            else:
+                return Response(
+                    {'message': 'Payment Verification Failed', 'subMessage': 'Your payment verification was NOT successful.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        except Exception as e:
             return Response(
                 {'error': 'An error occurred while communicating with Flutterwave'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
