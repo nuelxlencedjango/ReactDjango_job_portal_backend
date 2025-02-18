@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from rest_framework.views import APIView
-#from .serializers import CartSerializer, CartItemSerializer,CheckoutSerializer
+#from .serializers import CartSerializer, CheckoutSerializer 
 from django.utils.crypto import get_random_string
 from rest_framework.permissions import AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
@@ -124,7 +124,7 @@ class AddToCartView(APIView):
         # Ensure the user is an employer
         if not request.user.is_employer:
             return Response(
-                {"error": "Only employers can add items to the cart."},
+                {"error": "Only employers can add artisans to the cart."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -353,138 +353,7 @@ class InitiatePayment2(APIView):
             return Response({'error': 'An unexpected error occurred', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
-class ConfirmPayment1(APIView):
-    permission_classes = [IsAuthenticated]
-    def post(self, request):
-        
-        payment_status = request.GET.get('status')  
-        tx_ref = request.GET.get('tx_ref')
-        transaction_id = request.GET.get('transaction_id')
 
-        logger.info(f"Incoming request data: {request.data}")
-        logger.info(f"Incoming query params: {request.GET}")
-
-        user = request.user
-
-        if payment_status == "successful":
-            # Use the secret key from settings
-            headers = {
-                "Authorization": f"Bearer {settings.FLUTTERWAVE_SECRET_KEY}",
-            }
-
-            # Verify the transaction with Flutterwave
-            verify_url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"
-            response = requests.get(verify_url, headers=headers)
-            response_data = response.json()
-
-            if response_data['status'] == 'success':
-                # Retrieve the transaction from the database
-                transaction = TransactionDetails.objects.get(tx_ref=tx_ref)
-
-                # Verify the payment details
-                if (
-                    response_data['data']['status'] == "successful"
-                    and float(response_data['data']['amount']) == float(transaction.total_amount)
-                    and response_data['data']['currency'] == transaction.currency
-                ):
-                    # Update the transaction status
-                    transaction.status = "Payment Completed"
-                    transaction.transaction_id = transaction_id
-                    transaction.save()
-
-                    # Mark the cart as paid
-                    cart = transaction.cart
-                    cart.paid = True
-                    cart.user = user
-                    cart.save()
-
-                    return Response(
-                        {'message': 'Payment Successful', 'subMessage': 'You have successfully made payment'},
-                        status=status.HTTP_200_OK
-                    )
-
-                # Payment verification failed
-                return Response(
-                    {'message': 'Payment Verification Failed', 'subMessage': 'Your payment verification was NOT successful.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            # Flutterwave API error
-            return Response(
-                {'error': 'An error occurred while communicating with Flutterwave'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-        # Payment status is not "successful"
-        return Response(
-            {'error': 'Payment was not successful'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-
-
-
-class ConfirmPayment2(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        payment_status = request.GET.get('status')
-        tx_ref = request.GET.get('tx_ref')
-        transaction_id = request.GET.get('transaction_id')
-
-        logger.info(f"Incoming request data: {request.data}")
-        logger.info(f"Incoming query params: {request.GET}")
-
-        # Verifying the payment status
-        if payment_status != "successful":
-            logger.warning(f"Payment status is not successful: {payment_status}")
-            return Response(
-                {'error': 'Payment was not successful'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Verifying the transaction with Flutterwave
-        headers = {"Authorization": f"Bearer {settings.FLUTTERWAVE_SECRET_KEY}"}
-        verify_url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"
-        try:
-            response = requests.get(verify_url, headers=headers)
-            response_data = response.json()
-            logger.info(f"Flutterwave response: {response_data}")
-
-            if response_data['status'] == 'success':
-                transaction = TransactionDetails.objects.get(tx_ref=tx_ref)
-                if (
-                    response_data['data']['status'] == "successful"
-                    and float(response_data['data']['amount']) == float(transaction.total_amount)
-                    and response_data['data']['currency'] == transaction.currency
-                ):
-                    transaction.status = "Payment Completed"
-                    transaction.transaction_id = transaction_id
-                    transaction.save()
-
-                    cart = transaction.cart
-                    cart.paid = True
-                    cart.user = request.user
-                    cart.save()
-
-                    logger.info(f"Transaction {tx_ref} successfully updated.")
-                    return Response(
-                        {'message': 'Payment Successful', 'subMessage': 'You have successfully made payment'},
-                        status=status.HTTP_200_OK
-                    )
-            else:
-                logger.error(f"Flutterwave payment verification failed: {response_data}")
-                return Response(
-                    {'message': 'Payment Verification Failed', 'subMessage': 'Your payment verification was NOT successful.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-        except Exception as e:
-            logger.error(f"Error verifying payment with Flutterwave: {str(e)}")
-            return Response(
-                {'error': 'An error occurred while communicating with Flutterwave'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
 
 
 
@@ -640,43 +509,6 @@ class InitiatePayment(APIView):
             return JsonResponse({'error': 'Payment initiation failed due to an unexpected error'}, status=500)
 
 
-
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import TransactionDetails, CartItem, Cart
-
-class PaymentCallback(APIView):
-    def get(self, request):
-        # Get query parameters from the request
-        payment_status = request.GET.get('status')  # Renamed to avoid conflict with `status` module
-        tx_ref = request.GET.get('tx_ref')
-        transaction_id = request.GET.get('transaction_id')
-
-        if payment_status == 'successful':
-            try:
-                # Get the payment details using the tx_ref
-                payment = TransactionDetails.objects.get(tx_ref=tx_ref)
-                payment.status = "successful"
-                payment.transaction_id = transaction_id
-                payment.save()
-
-                # Update the associated cart
-                cart = payment.cart
-                cart.paid = True  
-                cart.save()
-
-                # Now, update each CartItem's paid status to True
-                cart_items = CartItem.objects.filter(cart=cart)
-                cart_items.update(paid=True)
-
-                return Response({'message': 'Payment was successful'}, status=status.HTTP_200_OK)
-
-            except TransactionDetails.DoesNotExist:
-                return Response({'error': 'Payment not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        return Response({'error': 'Payment failed'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
