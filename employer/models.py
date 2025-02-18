@@ -142,4 +142,4 @@ class OrderItem(models.Model):
     total = models.DecimalField(max_digits=10, decimal_places=2)  # quantity * price
 
     def __str__(self):
-        return f"{self.quantity} x {self.service.title} (Artisan: {self.artisan.user.username})"
+        return f"{self.user.first_name} x {self.service.title} (Artisan: {self.artisan.user.username})"
