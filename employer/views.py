@@ -353,17 +353,13 @@ class InitiatePayment2(APIView):
             return Response({'error': 'An unexpected error occurred', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
-
-
-
-
-
 class ConfirmPayment(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
-        # Get query parameters from the request
-        payment_status = request.GET.get('status')  # Renamed to avoid conflict with `status` module
-        tx_ref = request.GET.get('tx_ref')
-        transaction_id = request.GET.get('transaction_id')
+        
+        payment_status = request.data.get('status')  
+        tx_ref = request.data.get('tx_ref')
+        transaction_id = request.data.get('transaction_id')
 
         user = request.user
 
@@ -395,7 +391,7 @@ class ConfirmPayment(APIView):
 
                     # Mark the cart as paid
                     cart = transaction.cart
-                    cart.paid = True  # Corrected this line
+                    cart.paid = True
                     cart.user = user
                     cart.save()
 
@@ -407,7 +403,7 @@ class ConfirmPayment(APIView):
                 # Payment verification failed
                 return Response(
                     {'message': 'Payment Verification Failed', 'subMessage': 'Your payment verification was NOT successful.'},
-                    status=status.HTTP_400_BAD_REQUEST  # Corrected this line
+                    status=status.HTTP_400_BAD_REQUEST
                 )
 
             # Flutterwave API error
@@ -421,6 +417,8 @@ class ConfirmPayment(APIView):
             {'error': 'Payment was not successful'},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+
 
 
 
