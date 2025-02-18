@@ -353,7 +353,7 @@ class InitiatePayment2(APIView):
             return Response({'error': 'An unexpected error occurred', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
-class ConfirmPayment(APIView):
+class ConfirmPayment1(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
         
@@ -422,6 +422,69 @@ class ConfirmPayment(APIView):
         )
 
 
+
+
+class ConfirmPayment(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        payment_status = request.GET.get('status')
+        tx_ref = request.GET.get('tx_ref')
+        transaction_id = request.GET.get('transaction_id')
+
+        logger.info(f"Incoming request data: {request.data}")
+        logger.info(f"Incoming query params: {request.GET}")
+
+        # Verifying the payment status
+        if payment_status != "successful":
+            logger.warning(f"Payment status is not successful: {payment_status}")
+            return Response(
+                {'error': 'Payment was not successful'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Verifying the transaction with Flutterwave
+        headers = {"Authorization": f"Bearer {settings.FLUTTERWAVE_SECRET_KEY}"}
+        verify_url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"
+        try:
+            response = requests.get(verify_url, headers=headers)
+            response_data = response.json()
+            logger.info(f"Flutterwave response: {response_data}")
+
+            if response_data['status'] == 'success':
+                transaction = TransactionDetails.objects.get(tx_ref=tx_ref)
+                if (
+                    response_data['data']['status'] == "successful"
+                    and float(response_data['data']['amount']) == float(transaction.total_amount)
+                    and response_data['data']['currency'] == transaction.currency
+                ):
+                    transaction.status = "Payment Completed"
+                    transaction.transaction_id = transaction_id
+                    transaction.save()
+
+                    cart = transaction.cart
+                    cart.paid = True
+                    cart.user = request.user
+                    cart.save()
+
+                    logger.info(f"Transaction {tx_ref} successfully updated.")
+                    return Response(
+                        {'message': 'Payment Successful', 'subMessage': 'You have successfully made payment'},
+                        status=status.HTTP_200_OK
+                    )
+            else:
+                logger.error(f"Flutterwave payment verification failed: {response_data}")
+                return Response(
+                    {'message': 'Payment Verification Failed', 'subMessage': 'Your payment verification was NOT successful.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        except Exception as e:
+            logger.error(f"Error verifying payment with Flutterwave: {str(e)}")
+            return Response(
+                {'error': 'An error occurred while communicating with Flutterwave'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 
