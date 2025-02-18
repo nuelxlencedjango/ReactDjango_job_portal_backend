@@ -263,96 +263,6 @@ import os
 
 logger = logging.getLogger(__name__)
 
-class InitiatePayment2(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        if request.user.is_anonymous:
-            return Response({'error': 'User is not authenticated'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        try:
-            # Log the incoming request data and headers
-            logger.info(f"Request Data: {request.data}")
-            logger.info(f"Request Headers: {request.headers}")
-           
-
-            # The user has either an EmployerProfile or ArtisanProfile
-            user = request.user
-            phone_number = None
-            
-            # Check if the user is an employer and get phone number from EmployerProfile
-            if hasattr(user, 'employerprofile'):  # EmployerProfile
-                phone_number = user.employerprofile.phone_number
-
-            # If no phone number found, return an error
-            if not phone_number:
-                logger.error("Phone number not found for this user")
-                return Response({'error': 'Phone number not found for this user'}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Proceed with payment logic
-            reference = str(uuid.uuid4())
-            cart_code = request.data.get('cart_code')
-            cart = Cart.objects.get(cart_code=cart_code)
-            total_amount = request.data.get('totalAmount')
-            currency = "NGN"
-            redirect_url = f"{settings.FRONTEND_URL}/payment-confirmation/" 
-
-            # Create transaction details
-            transaction = TransactionDetails.objects.create(
-                tx_ref=reference,
-                cart=cart,
-                total_amount=total_amount,
-                currency=currency,
-                user=user,
-                status="Pending",
-            )
-
-            flutterwave_payload = {
-                'tx_ref': reference,
-                'amount': str(total_amount),
-                "currency": currency,
-                "redirect_url": redirect_url,
-                "customer": {
-                    'email': user.email,
-                    "name": f"{user.first_name} {user.last_name}",
-                    "phone_number": phone_number  
-                },
-                "customizations": {
-                    "title": "Payment for I-wan-wok Services",
-                }
-            }
-
-            #FLUTTERWAVE_SECRET_KEY = settings.FLUTTERWAVE_SECRET_KEY
-
-            headers = {
-                "Authorization": "Bearer FLWSECK_TEST-3cf8370b8bcc81c440454bb8184a0fdf-X",
-                "Content-Type": "application/json"
-            }
-            logger.info(f"Flutterwave Secret Key: {os.getenv('FLUTTERWAVE_PUBLIC_KEY')}")
-
-            flutterwave_url = "https://api.flutterwave.com/v3/payments"
-            response = requests.post(flutterwave_url, json=flutterwave_payload, headers=headers)
-
-            # Log the Flutterwave API response
-            logger.info(f"Flutterwave API Response: {response.status_code}, {response.text}")
-
-            if response.status_code == 200:
-                return Response(response.json(), status=status.HTTP_200_OK)
-            else:
-                logger.error(f"Flutterwave API Error: {response.status_code}, {response.text}")
-                return Response(response.json(), status=response.status_code)
-
-        except Cart.DoesNotExist:
-            logger.error("Cart not found for the provided cart_code")
-            return Response({'error': 'Cart not found'}, status=status.HTTP_404_NOT_FOUND)
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Request Exception: {str(e)}")
-            return Response({'error': 'An error occurred while communicating with Flutterwave'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        except Exception as e:
-            logger.error(f"Unexpected Error: {str(e)}")
-            return Response({'error': 'An unexpected error occurred', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-
 
 
 
@@ -385,7 +295,7 @@ class ConfirmPayment(APIView):
             )
 
         # Verifying the transaction with Flutterwave
-        headers= {"Authorization": "Bearer FLWSECK_TEST-3cf8370b8bcc81c440454bb8184a0fdf-X"},
+        headers= {"Authorization": "Bearer FLWSECK_TEST-3cf8370b8bcc81c440454bb8184a0fdf-X"}
         #headers = {"Authorization": f"Bearer {settings.FLUTTERWAVE_SECRET_KEY}"}
         verify_url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"
         try:
