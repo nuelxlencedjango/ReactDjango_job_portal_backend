@@ -465,7 +465,7 @@ class ConfirmPayment(APIView):
                         paid_at=timezone.now(),
                     )
 
-                    for cart_item in cart.items.all():
+                    for cart_item in cart.item_items.all():
                         OrderItem.objects.create(
                             order=order,
                             artisan=cart_item.artisan,
