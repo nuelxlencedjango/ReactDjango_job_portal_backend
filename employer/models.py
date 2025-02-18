@@ -24,7 +24,7 @@ class Cart(models.Model):
     def generate_cart_code(self):
         """Generates a unique 11-character alphanumeric cart code."""
         while True:
-            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=11))
+            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
             if not Cart.objects.filter(cart_code=code).exists():
                 return code
 
@@ -102,14 +102,6 @@ class JobDetails(models.Model):
 
 
 
-    
-
-    
-
-
-
-
-
 
 class TransactionDetails(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="transactions")
@@ -125,3 +117,29 @@ class TransactionDetails(models.Model):
     def __str__(self):
 
         return f"{self.tx_ref} - {self.status}"
+
+
+
+
+class Order(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    order_code = models.CharField(max_length=11, unique=True, editable=False)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    cart_code = models.TextField()
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('completed', 'Completed')])
+    paid_at = models.DateTimeField(auto_now_add=True)
+    paid = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Order {self.order_code} for {self.user}"
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
+    artisan = models.ForeignKey('acct.ArtisanProfile', on_delete=models.CASCADE)
+    service = models.ForeignKey('api.Service', on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    total = models.DecimalField(max_digits=10, decimal_places=2)  # quantity * price
+
+    def __str__(self):
+        return f"{self.quantity} x {self.service.title} (Artisan: {self.artisan.user.username})"
