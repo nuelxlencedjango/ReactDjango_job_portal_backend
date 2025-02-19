@@ -14,7 +14,7 @@ class IndustrySerializer(serializers.ModelSerializer):
 
 
 class ServiceSerializer(serializers.ModelSerializer):
- 
+    img = serializers.SerializerMethodField()
     class Meta:
         model = Service
        
