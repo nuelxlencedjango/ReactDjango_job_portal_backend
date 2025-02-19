@@ -20,7 +20,8 @@ class ServiceSerializer(serializers.ModelSerializer):
        
         fields = ['id', 'title', 'icon', 'time', 'location', 'description', 'company', 'img']
 
-
+    def get_img(self, obj):
+        return obj.img.url if obj.img else None
 
 
 class AreaSerializer(serializers.ModelSerializer):
