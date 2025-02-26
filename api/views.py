@@ -16,11 +16,13 @@ from .serializers import ServiceSerializer,IndustrySerializer,AreaSerializer,Pro
 
 
 
-class ServiceListView(generics.ListAPIView):
+class ServiceListView(generics.ListAPIView): 
     queryset = Service.objects.all()
     serializer_class = ServiceSerializer
     permission_classes = [AllowAny]
    
+
+
 
 
 class IndustryListView(generics.ListAPIView):
@@ -46,12 +48,6 @@ class ProfessionListView(generics.ListAPIView):
 
 
 
-
-#list Profession objects
-class ServiceListView(generics.ListAPIView):  
-    queryset = Service.objects.all()
-    serializer_class = ServiceSerializer
-    permission_classes = [AllowAny]
 
 
 
