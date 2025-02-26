@@ -37,3 +37,7 @@ class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
         fields = ['id', 'company_name', 'industry', 'company_image', 'description', 'address', 'date_joined', 'contact', 'website']
+    
+
+    def get_company_image(self, obj):
+        return obj.company_image.url if obj.company_image else None
