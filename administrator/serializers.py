@@ -1,6 +1,7 @@
 # serializers.py
 from rest_framework import serializers
 from acct.models import ArtisanProfile
+from .models import Company
 
 class ArtisanProfileSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='user.username')  # Access the username from the related CustomUser
@@ -31,3 +32,8 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
 
 
 
+class CompanySerializer(serializers.ModelSerializer):
+    company_image = serializers.SerializerMethodField()
+    class Meta:
+        model = Company
+        fields = ['id', 'company_name', 'industry', 'company_image', 'description', 'address', 'date_joined', 'contact', 'website']

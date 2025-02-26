@@ -58,32 +58,6 @@ class ServiceListView(generics.ListAPIView):
 
 
 
-'''
-
-#list Artisans objects
-class ArtisansListView(generics.ListAPIView):
-   # queryset = Artisan.objects.all()
-    serializer_class = ArtisanSerializer
-    permission_classes = [AllowAny]
-
-
-#create/add location/areas
-class AreaCreateView(generics.CreateAPIView):
-    queryset = Area.objects.all()
-    serializer_class = AreaSerializer
-    permission_classes = [AllowAny]
-
-
-
-#create /add profess
-class ProfessionCreateView(generics.CreateAPIView):
-    queryset = Profession.objects.all()
-    serializer_class = ProfessionSerializer
-    permission_classes = [AllowAny]
-
-'''
-
-
 
 
 # api/views.py

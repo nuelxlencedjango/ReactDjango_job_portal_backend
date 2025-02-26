@@ -57,8 +57,4 @@ class ArtisanSearchListSerializer(serializers.ModelSerializer):
     def get_profile_image(self, obj):
         return obj.profile_image.url if obj.profile_image else None
 
-    #def get_in_cart(self, obj):
-        # Check if the artisan is in the user's cart
-     #   cart_items = self.context.get('cart_items', [])
-      #  return obj.id in cart_items
 
