@@ -7,9 +7,12 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views import View
 from acct.models import ArtisanProfile
-from .serializers import ArtisanProfileSerializer
+from .serializers import ArtisanProfileSerializer, CompanySerializer
 from rest_framework.permissions import IsAuthenticated
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .models import Company
 
 
 
@@ -52,3 +55,9 @@ class ArtisanSearchView(View):
 
 
 
+
+class CompanyListView(APIView):
+    def get(self, request):
+        companies = Company.objects.all()
+        serializer = CompanySerializer(companies, many=True)
+        return Response(serializer.data)
