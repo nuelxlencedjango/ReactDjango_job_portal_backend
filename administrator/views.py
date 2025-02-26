@@ -54,12 +54,16 @@ class ArtisanSearchView(View):
 
         return JsonResponse(results, safe=False)
 
-
-
+    
 
 class CompanyListView(APIView):
     permission_classes = [AllowAny]
+
     def get(self, request):
         companies = Company.objects.all()
         serializer = CompanySerializer(companies, many=True)
-        return Response(serializer.data)
+
+        # Return the companies as an object with a 'companies' key
+        return Response({
+            'companies': serializer.data  
+        })
