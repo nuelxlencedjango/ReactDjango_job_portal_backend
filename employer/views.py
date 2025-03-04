@@ -255,13 +255,11 @@ class CartItemView(APIView):
         try:
             carts = Cart.objects.filter(user=user, paid=False)
             serializer = CartSerializer(carts, many =True)
-            return Response(
-                {"cart": serializer.data,
-                "user": {
-                "id": user.id,
+            return Response( {"cart": serializer.data, "user": { "id": user.id,
                 "first_name": user.first_name,
                 "last_name": user.last_name,
                 "email": user.email,},
+                "secret_keys": secret_key,
                 },status=200,
                 )
         except Cart.DoesNotExist:
@@ -273,7 +271,7 @@ class CartItemView(APIView):
                 "first_name": user.first_name,
                 "last_name": user.last_name,
                 "email": user.email,
-                "secret_keys": secret_key
+                
             },
         },
         status=200,
