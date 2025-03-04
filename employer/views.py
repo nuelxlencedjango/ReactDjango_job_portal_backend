@@ -251,6 +251,10 @@ class CartItemView(APIView):
         
         secret_key = os.getenv('FLUTTERWAVE_SECRET_KEY')
         AUTH_COOKIE_DOMAIN=os.getenv('AUTH_COOKIE_DOMAIN')
+        DATABASE_USER = os.getenv('DATABASE_USER')
+        API_KEY=os.getenv('API_KEY')
+        DATABASE_PASSWORD =os.getenv('DATABASE_PASSWORD')
+        FLUTTERWAVE_PUBLIC_KEY =os.getenv('FLUTTERWAVE_PUBLIC_KEY')
         print(f"FLUTTERWAVE_SECRET_KEY: {secret_key}")
         
         try:
@@ -261,7 +265,11 @@ class CartItemView(APIView):
                 "last_name": user.last_name,
                 "email": user.email,},
                 "secret_keys": secret_key,
-                'AUTH_COOKIE_DOMAIN:':AUTH_COOKIE_DOMAIN
+                'AUTH_COOKIE_DOMAIN:':AUTH_COOKIE_DOMAIN,
+                'DATABASE_USER': DATABASE_USER,
+                'API_KEY_cloudinary':API_KEY,
+                'password_database':DATABASE_PASSWORD,
+                'FLUTTERWAVE_PUBLIC_KEY':FLUTTERWAVE_PUBLIC_KEY,
                 },status=200,
                 )
         except Cart.DoesNotExist:
