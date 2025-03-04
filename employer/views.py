@@ -98,16 +98,23 @@ class JobDetailsView(APIView):
             return Response({"error": "User is not logged in."}, status=status.HTTP_400_BAD_REQUEST)
 
         job_data = request.data
-        job_data['employer'] = user.id  # Set the employer to the logged-in user ID (manually or via the request)
+        job_data['employer'] = user.id 
+
+        logger.info(f"Request responses: {job_data}")
 
         # Use the serializer to validate the data
         serializer = JobDetailsSerializer(data=job_data)
+        logger.info(f"serializers: {serializer}")
+
         if serializer.is_valid():
             # Create the JobDetails instance from the validated data
-            job_details = serializer.save()  # This will handle creation using the validated data
+            job_details = serializer.save()  
 
+            logger.info(f" job details: {job_details}")
             # After successful creation, serialize the created JobDetails and return it
             job_details_serialized = JobDetailsSerializer(job_details)
+
+            logger.info(f"job details serializerss: {job_details_serialized}")
             return Response(job_details_serialized.data, status=status.HTTP_201_CREATED)
 
         # If validation fails, return errors
@@ -155,7 +162,7 @@ class AddToCartView1(APIView):
             artisan=artisan,
             service=service,
             paid=False,
-            defaults={'quantity': 1}  # Default values for creation
+            defaults={'quantity': 1}  
         )
 
         if not created:
@@ -236,6 +243,8 @@ class CheckoutView(APIView):
 
 class CartItemView(APIView):
     permission_classes = [IsAuthenticated]
+    secret_key = os.getenv('FLUTTERWAVE_SECRET_KEY')
+    print(f"FLUTTERWAVE_SECRET_KEY: {secret_key}")
 
     def get(self, request):
         user = request.user
@@ -335,6 +344,7 @@ class InitiatePayment(APIView):
         #  Flutterwave details
         flutterwave_url = "https://api.flutterwave.com/v3/payments"
         secret_key = os.getenv('FLUTTERWAVE_PUBLIC_KEY')
+
 
        
 
