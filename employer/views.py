@@ -250,6 +250,7 @@ class CartItemView(APIView):
             return Response({"detail": "User is not an employer."}, status=403)
         
         secret_key = os.getenv('FLUTTERWAVE_SECRET_KEY')
+        AUTH_COOKIE_DOMAIN=os.getenv('AUTH_COOKIE_DOMAIN')
         print(f"FLUTTERWAVE_SECRET_KEY: {secret_key}")
         
         try:
@@ -260,6 +261,7 @@ class CartItemView(APIView):
                 "last_name": user.last_name,
                 "email": user.email,},
                 "secret_keys": secret_key,
+                'AUTH_COOKIE_DOMAIN:':AUTH_COOKIE_DOMAIN
                 },status=200,
                 )
         except Cart.DoesNotExist:
