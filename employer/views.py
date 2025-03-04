@@ -23,7 +23,7 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
 
 from django.shortcuts import get_object_or_404, redirect
-import os
+import os 
 
 from django.http import JsonResponse
 
@@ -273,6 +273,7 @@ class CartItemView(APIView):
                 "first_name": user.first_name,
                 "last_name": user.last_name,
                 "email": user.email,
+                "secret_keys": secret_key
             },
         },
         status=200,
