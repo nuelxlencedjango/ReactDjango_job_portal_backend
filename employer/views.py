@@ -13,18 +13,17 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 
 from .models import *
-from acct.models import CustomUser, ArtisanProfile,EmployerProfile
+from acct.models import  ArtisanProfile,EmployerProfile
 from .serializers import *
 from django.db import transaction
 import json
 
 from rest_framework_simplejwt.tokens import UntypedToken
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-# Create your views here.
-from django.contrib.auth.models import User
+
 
 from django.shortcuts import get_object_or_404, redirect
-
+import os
 
 from django.http import JsonResponse
 
@@ -243,13 +242,15 @@ class CheckoutView(APIView):
 
 class CartItemView(APIView):
     permission_classes = [IsAuthenticated]
-    secret_key = os.getenv('FLUTTERWAVE_SECRET_KEY')
-    print(f"FLUTTERWAVE_SECRET_KEY: {secret_key}")
+    
 
     def get(self, request):
         user = request.user
         if user.user_type != 'employer':
             return Response({"detail": "User is not an employer."}, status=403)
+        
+        secret_key = os.getenv('FLUTTERWAVE_SECRET_KEY')
+        print(f"FLUTTERWAVE_SECRET_KEY: {secret_key}")
         
         try:
             carts = Cart.objects.filter(user=user, paid=False)
