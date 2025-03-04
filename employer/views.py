@@ -410,7 +410,9 @@ class ConfirmPayment(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        headers = {"Authorization": "Bearer FLWSECK_TEST-3cf8370b8bcc81c440454bb8184a0fdf-X"}
+       # headers = {"Authorization": "Bearer FLWSECK_TEST-3cf8370b8bcc81c440454bb8184a0fdf-X"}
+        headers = {"Authorization": f"Bearer {os.getenv('FLUTTERWAVE_SECRET_KEY')}" }
+
         verify_url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"
         try:
             logger.info(f"Verifying transaction with Flutterwave: {verify_url}")
