@@ -357,7 +357,7 @@ class InitiatePayment(APIView):
 
         # Flutterwave details
         flutterwave_url = "https://api.flutterwave.com/v3/payments"
-        secret_key = os.getenv('FLUTTERWAVE_SECRET_KEY')  # Use secret key, not public key
+        secret_key = os.getenv('FLUTTERWAVE_SECRET_KEY')  
 
         payload = {
             'tx_ref': reference,
@@ -375,7 +375,7 @@ class InitiatePayment(APIView):
         }
 
         headers = {
-            "Authorization": f"Bearer {secret_key}",
+            "Authorization": f"Bearer FLWSECK_TEST-3cf8370b8bcc81c440454bb8184a0fdf-X",
             "Content-Type": "application/json"
         }
 
