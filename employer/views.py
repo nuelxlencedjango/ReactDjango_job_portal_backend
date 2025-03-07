@@ -375,7 +375,7 @@ class InitiatePayment(APIView):
         }
 
         headers = {
-            "Authorization": f"Bearer FLWSECK_TEST-3cf8370b8bcc81c440454bb8184a0fdf-X",
+            "Authorization": f"Bearer {secret_key}",
             "Content-Type": "application/json"
         }
 
