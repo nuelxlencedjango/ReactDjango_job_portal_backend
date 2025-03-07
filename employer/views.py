@@ -249,12 +249,14 @@ class CartItemView(APIView):
         if user.user_type != 'employer':
             return Response({"detail": "User is not an employer."}, status=403)
         
-        secret_key = os.getenv('FLUTTERWAVE_SECRET_KEY')
+        secret_key = os.getenv('FLUTTERWAVE_PUBLIC_KEY')
+
         AUTH_COOKIE_DOMAIN=os.getenv('AUTH_COOKIE_DOMAIN')
         DATABASE_USER = os.getenv('DATABASE_USER')
         API_KEY=os.getenv('API_KEY')
         DATABASE_PASSWORD =os.getenv('DATABASE_PASSWORD')
         FLUTTERWAVE_PUBLIC_KEY =os.getenv('FLUTTERWAVE_PUBLIC_KEY')
+
         print(f"FLUTTERWAVE_SECRET_KEY: {secret_key}")
         
         try:
@@ -431,7 +433,7 @@ class ConfirmPayment(APIView):
             )
 
        # headers = {"Authorization": "Bearer FLWSECK_TEST-3cf8370b8bcc81c440454bb8184a0fdf-X"}
-        headers = {"Authorization": f"Bearer {os.getenv('FLUTTERWAVE_SECRET_KEY')}" }
+        headers = {"Authorization": f"Bearer {os.getenv('FLUTTERWAVE_PUBLIC_KEY')}" }
 
         verify_url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"
         try:
