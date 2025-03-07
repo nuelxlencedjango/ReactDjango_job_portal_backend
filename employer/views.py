@@ -318,7 +318,100 @@ class CartItemView(APIView):
 
 
 
+import os
+import uuid
+import requests
+import logging
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from django.core.exceptions import ObjectDoesNotExist
+from .models import Cart, TransactionDetails
 
+logger = logging.getLogger(__name__)
+
+class InitiatePayment(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        total_amount = request.data.get('totalAmount')
+        cart_code = request.data.get('cart_code')
+        currency = "NGN"
+        reference = str(uuid.uuid4())  # Generate a unique reference for the transaction
+        user = request.user
+
+        # Check if user is authenticated
+        if user.is_anonymous:
+            return Response({'error': 'User is not authenticated'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Fetch the cart
+            cart = Cart.objects.get(cart_code=cart_code)
+        except ObjectDoesNotExist:
+            return Response({'error': 'Cart not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Validate user profile and phone number
+        if not hasattr(user, 'employerprofile') or not user.employerprofile.phone_number:
+            return Response({'error': 'User profile or phone number is missing'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Flutterwave details
+        flutterwave_url = "https://api.flutterwave.com/v3/payments"
+        secret_key = os.getenv('FLUTTERWAVE_SECRET_KEY')  # Use secret key, not public key
+
+        payload = {
+            'tx_ref': reference,
+            'amount': str(total_amount),
+            "currency": currency,
+            "redirect_url": "https://your-frontend-app.com/payment-confirmation/",  # Update with your frontend URL
+            "customer": {
+                'email': user.email,
+                "name": f"{user.first_name} {user.last_name}",
+                "phone_number": user.employerprofile.phone_number
+            },
+            "customizations": {
+                "title": "Payment for I-wan-wok Services",
+            }
+        }
+
+        headers = {
+            "Authorization": f"Bearer {secret_key}",
+            "Content-Type": "application/json"
+        }
+
+        try:
+            # Save payment details to your database
+            payment = TransactionDetails(
+                user=user,
+                cart=cart,
+                currency=currency,
+                total_amount=total_amount,
+                tx_ref=reference,
+                status="pending"
+            )
+            payment.save()
+
+            # Send the request to Flutterwave API
+            response = requests.post(flutterwave_url, json=payload, headers=headers)
+            response_data = response.json()
+            logger.info(f"Flutterwave API Response: {response_data}")
+
+            if response.status_code == 200:
+                return Response(response_data, status=status.HTTP_200_OK)
+            else:
+                # If Flutterwave returns an error
+                logger.error(f"Flutterwave API Error: {response_data}")
+                return Response({'error': response_data.get("message", "Payment initiation failed")}, status=response.status_code)
+
+        except requests.exceptions.RequestException as err:
+            # Handle network-related errors
+            logger.error(f"Network Error: {err}")
+            return Response({'error': 'Payment initiation failed due to network error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        except Exception as err:
+            # Handle other unexpected errors
+            logger.error(f"Unexpected Error: {err}")
+            return Response({'error': 'Payment initiation failed due to an unexpected error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
@@ -335,7 +428,7 @@ logger = logging.getLogger(__name__)
 
 
 
-class InitiatePayment(APIView):
+class InitiatePaymentttttt(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
