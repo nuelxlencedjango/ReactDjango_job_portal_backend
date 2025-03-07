@@ -374,10 +374,13 @@ class InitiatePayment(APIView):
             }
         }
 
+        #headers = {
+         #   "Authorization": f"Bearer {secret_key}",
+          #  "Content-Type": "application/json"}
         headers = {
-            "Authorization": f"Bearer {secret_key}",
-            "Content-Type": "application/json"
-        }
+    "Authorization": f"Bearer {os.getenv('FLUTTERWAVE_SECRET_KEY').strip()}",
+    "Content-Type": "application/json"
+      }
 
         try:
             # Save payment details to your database
