@@ -351,7 +351,7 @@ class InitiatePayment(APIView):
             'tx_ref': reference,
             'amount': str(total_amount),
             "currency": currency,
-            "redirect_url": F"{os.getenv('FLUTTERWAVE_REDIRECT_URL')}", 
+            "redirect_url": "https://react-django-job-portal-frontend.vercel.app/payment-confirmation/", 
             "customer": {
                 'email': user.email,
                 "name": f"{user.first_name} {user.last_name}",
