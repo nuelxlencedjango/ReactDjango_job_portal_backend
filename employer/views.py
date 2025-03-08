@@ -20,7 +20,7 @@ import json
 
 from rest_framework_simplejwt.tokens import UntypedToken
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-
+from decouple import config
 
 from django.shortcuts import get_object_or_404, redirect
 import os 
@@ -375,7 +375,7 @@ class InitiatePayment(APIView):
         }
 
         headers = {
-            "Authorization": f"Bearer {os.getenv('FLUTTERWAVE_SECRET_KEY').strip()}",
+            "Authorization": f"Bearer {config('FLUTTERWAVE_SECRET_KEY')}",
             "Content-Type": "application/json"
         }
         
