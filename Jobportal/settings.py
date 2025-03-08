@@ -292,8 +292,8 @@ if not CSRF_TRUSTED_ORIGINS:
 # CSRF_TRUSTED_ORIGINS = ['https://react-django-job-portal-frontend.vercel.app', 'http://localhost:5173']
 
 
-FLUTTERWAVE_PUBLIC_KEY = os.getenv('FLUTTERWAVE_PUBLIC_KEY').strip()
-FLUTTERWAVE_SECRET_KEY = os.getenv('FLUTTERWAVE_SECRET_KEY').strip()
+FLUTTERWAVE_PUBLIC_KEY = os.getenv('FLUTTERWAVE_PUBLIC_KEY')
+FLUTTERWAVE_SECRET_KEY = os.getenv('FLUTTERWAVE_SECRET_KEY')
 
 # settings.py
 
