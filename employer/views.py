@@ -396,7 +396,7 @@ class InitiatePayment(APIView):
             # Send the request to Flutterwave API
             response = requests.post(flutterwave_url, json=payload, headers=headers)
             response_data = response.json()
-            logger.info(f"Flutterwave API Response:{secret_key}, {response_data}")
+            logger.info(f"Flutterwave secret key:{secret_key}, flutterwave API Response {response_data}")
 
             if response.status_code == 200:
                 return Response(response_data, status=status.HTTP_200_OK)
