@@ -1,12 +1,11 @@
 
 from django.shortcuts import render
 from rest_framework import generics, serializers, status,permissions
-#from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from rest_framework.views import APIView
-#from .serializers import CartSerializer, CartItemSerializer,CheckoutSerializer 
+
 from django.utils.crypto import get_random_string
 from rest_framework.permissions import AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
@@ -15,16 +14,13 @@ from rest_framework.filters import SearchFilter
 from .models import *
 from acct.models import  ArtisanProfile,EmployerProfile
 from .serializers import *
-from django.db import transaction
-import json
+#from django.db import transaction
 
 from rest_framework_simplejwt.tokens import UntypedToken
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from decouple import config
-
 from django.shortcuts import get_object_or_404, redirect
 import os 
-
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 
 from django.conf import settings
@@ -317,17 +313,8 @@ class CartItemView(APIView):
 
 
 
-
-import os
-import uuid
-import requests
 import logging
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-from django.core.exceptions import ObjectDoesNotExist
-from .models import Cart, TransactionDetails
+
 
 logger = logging.getLogger(__name__)
 
@@ -359,6 +346,7 @@ class InitiatePayment(APIView):
         flutterwave_url = "https://api.flutterwave.com/v3/payments"
         #secret_key = os.getenv('FLUTTERWAVE_SECRET_KEY')  
         secret_key = str(os.environ.get('FLUTTERWAVE_SECRET_KEY'))
+        
 
         payload = {
             'tx_ref': reference,
@@ -376,7 +364,7 @@ class InitiatePayment(APIView):
         }
 
         headers = {
-            "Authorization": f"Bearer {secret_key}",
+            "Authorization": f"Bearer {os.getenv('FLUTTERWAVE_SECRET_KEY')}",
             "Content-Type": "application/json"
         }
         
@@ -419,90 +407,6 @@ class InitiatePayment(APIView):
 
 
 
-import requests
-
-
-import logging
-
-import os
-
-logger = logging.getLogger(__name__)
-
-
-
-class InitiatePaymentttttt(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        total_amount = request.data.get('totalAmount')
-        #email = request.data.get('email')
-
-        cart_code = request.data.get('cart_code')
-        cart = Cart.objects.get(cart_code=cart_code)
-        currency = "NGN"
-        reference = str(uuid.uuid4())  # Generate a unique reference for the transaction
-
-        user = request.user
-
-        # Check if user is authenticated
-        if user.is_anonymous:
-            return Response({'error': 'User is not authenticated'}, status=400)
-
-        #  Flutterwave details
-        flutterwave_url = "https://api.flutterwave.com/v3/payments"
-        secret_key = os.getenv('FLUTTERWAVE_SECRET_KEY')
-
-
-       
-
-        payload = {
-                'tx_ref': reference,
-                'amount': str(total_amount),
-                "currency": currency,
-                "redirect_url": "https://react-django-job-portal-frontend.vercel.app/payment-confirmation/" ,
-                "customer": {
-                    'email': user.email,
-                    "name": f"{user.first_name} {user.last_name}",
-                    "phone_number": user.employerprofile.phone_number 
-                },
-                "customizations": {
-                    "title": "Payment for I-wan-wok Services",
-                }
-            }
-
-        headers = {
-            "Authorization": f"Bearer {os.getenv('FLUTTERWAVE_SECRET_KEY')}", 
-            "Content-Type": "application/json"
-        }
-
-        try:
-            # Save payment details to your database
-            payment = TransactionDetails(user=user,cart=cart,currency=currency, total_amount=total_amount, tx_ref=reference, status="pending")
-            payment.save()
-
-            # Send the request to Flutterwave API
-            response = requests.post(flutterwave_url, json=payload, headers=headers)
-            response_data = response.json()
-            logger.info(f"Request responses: {response_data}")
-
-            if response.status_code == 200:
-                return Response(response_data, status=status.HTTP_200_OK)
-            else:
-                # If Flutterwave returns an error
-                return JsonResponse({'error': response_data.get("message", "Payment initiation failed")}, status=response.status_code)
-
-        except requests.exceptions.RequestException as err:
-            # Handle network-related errors
-            return JsonResponse({'error': 'Payment initiation failed due to network error'}, status=500)
-
-        except ValueError as err:
-            # Handle JSON decoding errors
-            return JsonResponse({'error': 'Payment initiation failed due to an unexpected error'}, status=500)
-
-
-
-
-
 class ConfirmPayment(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -528,7 +432,7 @@ class ConfirmPayment(APIView):
             )
 
        # headers = {"Authorization": "Bearer FLWSECK_TEST-3cf8370b8bcc81c440454bb8184a0fdf-X"}
-        headers = {"Authorization": f"Bearer {os.getenv('FLUTTERWAVE_PUBLIC_KEY')}" }
+        headers = {"Authorization": f"Bearer {os.getenv('FLUTTERWAVE_SECRET_KEY')}" }
 
         verify_url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"
         try:
