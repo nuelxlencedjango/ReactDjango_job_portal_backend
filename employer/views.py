@@ -346,13 +346,12 @@ class InitiatePayment(APIView):
         flutterwave_url = "https://api.flutterwave.com/v3/payments"
         #secret_key = os.getenv('FLUTTERWAVE_SECRET_KEY')  
         secret_key = str(os.environ.get('FLUTTERWAVE_SECRET_KEY'))
-        
 
         payload = {
             'tx_ref': reference,
             'amount': str(total_amount),
             "currency": currency,
-            "redirect_url": "https://your-frontend-app.com/payment-confirmation/",  # Update with your frontend URL
+            "redirect_url": F"{os.getenv('FLUTTERWAVE_REDIRECT_URL')}", 
             "customer": {
                 'email': user.email,
                 "name": f"{user.first_name} {user.last_name}",
@@ -364,7 +363,7 @@ class InitiatePayment(APIView):
         }
 
         headers = {
-            "Authorization": f"Bearer {os.getenv('FLUTTERWAVE_SECRET_KEY')}",
+            "Authorization": f"Bearer {secret_key}",
             "Content-Type": "application/json"
         }
         
@@ -407,6 +406,13 @@ class InitiatePayment(APIView):
 
 
 
+
+logger = logging.getLogger(__name__)
+
+
+
+
+
 class ConfirmPayment(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -432,7 +438,7 @@ class ConfirmPayment(APIView):
             )
 
        # headers = {"Authorization": "Bearer FLWSECK_TEST-3cf8370b8bcc81c440454bb8184a0fdf-X"}
-        headers = {"Authorization": f"Bearer {os.getenv('FLUTTERWAVE_SECRET_KEY')}" }
+        headers = {"Authorization": f"Bearer {os.getenv('FLUTTERWAVE_PUBLIC_KEY')}" }
 
         verify_url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"
         try:
