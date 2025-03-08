@@ -325,7 +325,7 @@ class InitiatePayment(APIView):
         total_amount = request.data.get('totalAmount')
         cart_code = request.data.get('cart_code')
         currency = "NGN"
-        reference = str(uuid.uuid4())  # Generate a unique reference for the transaction
+        reference = str(uuid.uuid4())  
         user = request.user
 
         # Check if user is authenticated
@@ -437,7 +437,7 @@ class ConfirmPayment(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-       # headers = {"Authorization": "Bearer FLWSECK_TEST-3cf8370b8bcc81c440454bb8184a0fdf-X"}
+       
         headers = {"Authorization": f"Bearer {os.getenv('FLUTTERWAVE_PUBLIC_KEY')}" }
 
         verify_url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"
