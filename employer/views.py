@@ -438,7 +438,7 @@ class ConfirmPayment(APIView):
             )
 
        
-        headers = {"Authorization": f"Bearer {os.getenv('FLUTTERWAVE_PUBLIC_KEY')}" }
+        headers = {"Authorization": f"Bearer {os.getenv('FLUTTERWAVE_SECRET_KEY')}" }
 
         verify_url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"
         try:
