@@ -16,7 +16,7 @@ import os
 import dj_database_url
 from datetime import timedelta
 from dotenv import load_dotenv
-from decouple import config
+#from decouple import config
 #cloudnary lib
 import cloudinary
 import cloudinary.uploader
@@ -295,7 +295,7 @@ if not CSRF_TRUSTED_ORIGINS:
 
 #FLUTTERWAVE_PUBLIC_KEY = os.getenv('FLUTTERWAVE_PUBLIC_KEY').strip()
 #FLUTTERWAVE_SECRET_KEY = os.getenv('FLUTTERWAVE_SECRET_KEY').strip()
-FLUTTERWAVE_SECRET_KEY=config('FLUTTERWAVE_SECRET_KEY')
+#config('FLUTTERWAVE_SECRET_KEY')
 # settings.py
 
 LOGGING = {
