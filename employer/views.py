@@ -358,7 +358,7 @@ class InitiatePayment(APIView):
         # Flutterwave details
         flutterwave_url = "https://api.flutterwave.com/v3/payments"
         #secret_key = os.getenv('FLUTTERWAVE_SECRET_KEY')  
-        secret_key = os.environ.get('FLUTTERWAVE_SECRET_KEY')
+        secret_key = str(os.environ.get('FLUTTERWAVE_SECRET_KEY'))
 
         payload = {
             'tx_ref': reference,
