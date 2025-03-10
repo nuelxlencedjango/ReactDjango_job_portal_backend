@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import (CustomUser, ArtisanProfile, EmployerProfile, 
+from .models import (CustomUser, ArtisanProfile, EmployerProfile, MarketerProfile,
                     Fingerprint, ManagerProfile)
 from django.contrib.auth.admin import UserAdmin
 
@@ -30,6 +30,6 @@ admin.site.register(ArtisanProfile)
 admin.site.register(EmployerProfile)
 admin.site.register(ManagerProfile)
 admin.site.register(Fingerprint)
-admin.site.register(ManagerProfile)
+admin.site.register(MarketerProfile)
 
 
