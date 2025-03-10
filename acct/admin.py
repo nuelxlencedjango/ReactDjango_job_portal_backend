@@ -30,5 +30,6 @@ admin.site.register(ArtisanProfile)
 admin.site.register(EmployerProfile)
 admin.site.register(ManagerProfile)
 admin.site.register(Fingerprint)
+admin.site.register(ManagerProfile)
 
 

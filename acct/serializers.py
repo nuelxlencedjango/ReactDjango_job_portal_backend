@@ -1,7 +1,7 @@
 # users/serializers.py
 from rest_framework import serializers
 #from django.contrib.auth import get_user_model
-from .models import CustomUser, ArtisanProfile, EmployerProfile
+from .models import CustomUser, ArtisanProfile, EmployerProfile, MarketerProfile
 from .models import Fingerprint 
 
 
@@ -52,26 +52,33 @@ class CustomUserSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
+    
 
 
 
 class ArtisanProfileSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
-    # Custom fields to get URLs for the images
-    profile_image = serializers.SerializerMethodField() 
+    marketer = serializers.PrimaryKeyRelatedField(queryset=MarketerProfile.objects.all(), required=False, allow_null=True)
+    profile_image = serializers.SerializerMethodField()
+
     class Meta:
         model = ArtisanProfile
-        fields = ['user', 'experience','location', 'service', 'pay', 'profile_image', 'nin', 
-                  'phone_number', 'address', 'date_joined']
+        fields = [
+            'user', 'experience', 'location', 'service', 'pay', 'profile_image', 
+            'nin', 'phone_number', 'address', 'date_joined', 'marketer'
+        ]
         read_only_fields = ['date_joined']
 
-    def get_profile_image_url(self, obj):
+    def get_profile_image(self, obj):
         """Returns the URL of the profile image, if it exists."""
-        if obj.profile_image: 
-            return obj.profile_image.url 
+        if obj.profile_image:
+            return obj.profile_image.url
         return None
+
     def create(self, validated_data):
+        """Create an ArtisanProfile instance."""
         return ArtisanProfile.objects.create(**validated_data)
+
 
 
 

@@ -1,1 +1,102 @@
 Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/middleware/security.py", line 28, in process_request
+    host = self.redirect_host or request.get_host()
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+Bad Request: /
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/middleware/security.py", line 28, in process_request
+    host = self.redirect_host or request.get_host()
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+Bad Request: /favicon.ico
+/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/Jobportal/Jobportal/settings.py changed, reloading.
+Watching for file changes with StatReloader
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/middleware/security.py", line 28, in process_request
+    host = self.redirect_host or request.get_host()
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+Bad Request: /
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/middleware/security.py", line 28, in process_request
+    host = self.redirect_host or request.get_host()
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+Bad Request: /favicon.ico
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/middleware/security.py", line 28, in process_request
+    host = self.redirect_host or request.get_host()
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+Bad Request: /
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/middleware/security.py", line 28, in process_request
+    host = self.redirect_host or request.get_host()
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+Bad Request: /favicon.ico
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/middleware/security.py", line 28, in process_request
+    host = self.redirect_host or request.get_host()
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+Bad Request: /
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/middleware/security.py", line 28, in process_request
+    host = self.redirect_host or request.get_host()
+  File "/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/iwanwork/lib/python3.10/site-packages/django/http/request.py", line 151, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+Bad Request: /favicon.ico
+/Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/Jobportal/Jobportal/settings.py changed, reloading.
+Watching for file changes with StatReloader
