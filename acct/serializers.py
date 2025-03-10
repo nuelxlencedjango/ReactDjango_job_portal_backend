@@ -58,14 +58,14 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 class ArtisanProfileSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
-    marketer = serializers.PrimaryKeyRelatedField(queryset=MarketerProfile.objects.all(), required=False, allow_null=True)
+    #marketer = serializers.PrimaryKeyRelatedField(queryset=MarketerProfile.objects.all(), required=False, allow_null=True)
     profile_image = serializers.SerializerMethodField()
 
     class Meta:
         model = ArtisanProfile
         fields = [
             'user', 'experience', 'location', 'service', 'pay', 'profile_image', 
-            'nin', 'phone_number', 'address', 'date_joined', 'marketer'
+            'nin', 'phone_number', 'address', 'date_joined', #'marketer'
         ]
         read_only_fields = ['date_joined']
 

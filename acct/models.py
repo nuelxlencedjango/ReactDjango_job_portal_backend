@@ -82,7 +82,7 @@ class ArtisanProfile(BaseProfile):
     job_type = models.CharField(max_length=50, null=True, blank=True)
     industry = models.CharField(max_length=100, null=True, blank=True)
     pay = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    marketer = models.ForeignKey(MarketerProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='registered_artisans') 
+    #marketer = models.ForeignKey(MarketerProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='registered_artisans') 
 
 
     def __str__(self):
