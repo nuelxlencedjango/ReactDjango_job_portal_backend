@@ -52,10 +52,10 @@ class UserRegistrationAndProfileCreation(APIView):
 
 
 
-import logging
+#import logging
 
 
-logger = logging.getLogger(__name__)
+#logger = logging.getLogger(__name__)
 class UserRegistrationDetailView(APIView):
     permission_classes = [AllowAny]
 
@@ -67,7 +67,7 @@ class UserRegistrationDetailView(APIView):
                 return Response({'error': 'Username is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
             # Fetch the user instance
-            logger.info(f"User details checking: {request.user}")
+            #logger.info(f"User details checking: {request.user}")
             try:
                 user = CustomUser.objects.get(username=user_id)
                 
