@@ -24,7 +24,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Passwords do not match.")
 
         # manager with user_type='manager' not allowed to register
-        if data.get('user_type') == 'manager':
+        if data.get('user_type') == 'manager' or data.get('user_type') == 'marketer':
             raise serializers.ValidationError("Managers cannot be created through this endpoint.")
         return data
 

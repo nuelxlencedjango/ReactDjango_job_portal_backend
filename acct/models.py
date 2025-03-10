@@ -11,6 +11,7 @@ class CustomUser(AbstractUser):
         ('manager', 'Manager'),
         ('employer', 'Employer'),
         ('artisan', 'Artisan'),
+        ('marketer', 'Marketer'),
     ]
     user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES)
     date_joined = models.DateField(auto_now_add=True, null=True, blank=True)
