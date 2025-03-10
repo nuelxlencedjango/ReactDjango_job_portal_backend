@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from rest_framework import status
-from .models import CustomUser, ArtisanProfile, EmployerProfile,Fingerprint
+from .models import CustomUser, ArtisanProfile, EmployerProfile,Fingerprint,MarketerProfile
 from .serializers import CustomUserSerializer,ArtisanProfileSerializer, EmployerProfileSerializer,FingerprintSerializer
 from django.core.files.storage import default_storage
 from django.conf import settings
@@ -47,12 +47,69 @@ class UserRegistrationAndProfileCreation(APIView):
         
        
 
-
-
-
-
-
 class UserRegistrationDetailView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            user_id = request.data.get('username')  
+            if not user_id:
+                return Response({'error': 'Username is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Fetch the user instance
+            try:
+                user = CustomUser.objects.get(username=user_id)
+            except CustomUser.DoesNotExist:
+                return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+           
+            if user.user_type == "artisan":
+                # Ensure the artisan profile doesn't already exist
+                artisan_profile = ArtisanProfile.objects.filter(user=user).first()
+
+               
+                if not artisan_profile:
+                    artisan_data = request.data.copy() 
+                    artisan_data['user'] = user.id 
+
+                    # Check if the artisan is being registered by a marketer (using the logged-in user)
+                    marketer = None
+                    if request.user.is_marketer:
+                        # If the logged-in user is a marketer, assign them as the marketer for this artisan
+                        marketer = MarketerProfile.objects.get(user=request.user)
+
+                    # Add the marketer to artisan data if present
+                    if marketer:
+                        artisan_data['marketer'] = marketer.id
+                    
+                    artisan_serializer = ArtisanProfileSerializer(data=artisan_data)
+                    if artisan_serializer.is_valid():
+                        artisan = artisan_serializer.save() 
+                        if 'profile_image' in request.FILES:
+                            artisan.profile_image = request.FILES['profile_image']
+                        artisan.save()    
+                        return Response({'detail': 'Artisan profile created successfully!'}, status=status.HTTP_201_CREATED)
+                    else:
+                        return Response(artisan_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    return Response({'error': 'Artisan profile already exists for this user.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            elif user.user_type == "employer":
+                # Employer registration logic here...
+                pass
+
+            else:
+                return Response({'error': 'Invalid user type.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            # Handle any unexpected errors
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+
+class UserRegistrationDetailView1(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):

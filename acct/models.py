@@ -38,6 +38,12 @@ class CustomUser(AbstractUser):
     @property
     def is_artisan(self):
         return self.user_type == 'artisan'
+    
+    @property
+    def is_marketer(self):
+        return self.user_type == 'marketer'
+    
+    
 
 
 # Abstract Base Profile
@@ -55,18 +61,27 @@ class BaseProfile(models.Model):
 
 
 
-#email unique,phone no unique
+
+# Maketer Profile
+class MarketerProfile(BaseProfile):
+    address = models.CharField(max_length=500, null=True, blank=True)
+    
+    def __str__(self):
+        return f"Marketer: {self.user.first_name} {self.user.last_name}"
+    
+
 # Artisan Profile
 class ArtisanProfile(BaseProfile):
     service = models.ForeignKey('api.Service', related_name='artisans', on_delete=models.CASCADE, null=True, blank=True)
     experience = models.PositiveIntegerField(null=True, blank=True)
-    #location = models.ForeignKey('api.Area', on_delete=models.CASCADE, null=True, blank=True)
+
     address = models.CharField(max_length=255, null=True, blank=True)
     profile_image = CloudinaryField( null=True, blank=True)
     nin = models.CharField(max_length=11, unique=True,null=True, blank=True)
     job_type = models.CharField(max_length=50, null=True, blank=True)
     industry = models.CharField(max_length=100, null=True, blank=True)
     pay = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    marketer = models.ForeignKey(MarketerProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='registered_artisans') 
 
 
     def __str__(self):
@@ -88,6 +103,8 @@ class ManagerProfile(BaseProfile):
     
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}"
+
+
 
 
 
