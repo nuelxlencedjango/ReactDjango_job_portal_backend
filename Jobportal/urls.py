@@ -49,6 +49,7 @@ urlpatterns = [
     path('acct/', include('acct.urls')),
     path('employer/', include('employer.urls')),
     path('administrator/', include('administrator.urls')),
+    path('marketers/', include('marketers.urls')),
     
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,3 +1,4 @@
+'''
 from acct.models import CustomUser,ArtisanProfile,MarketerProfile
 from rest_framework import serializers
 
@@ -23,3 +24,5 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """Create an ArtisanProfile instance."""
         return ArtisanProfile.objects.create(**validated_data)
+
+'''

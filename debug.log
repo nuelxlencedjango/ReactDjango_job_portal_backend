@@ -100,3 +100,4 @@ django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '127.0.0.1:8000
 Bad Request: /favicon.ico
 /Users/offerup/Documents/appstores/djangoReactBackends/JobPortalApp/Jobportal/Jobportal/settings.py changed, reloading.
 Watching for file changes with StatReloader
+Watching for file changes with StatReloader

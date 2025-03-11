@@ -128,6 +128,7 @@ INSTALLED_APPS = [
     'social_account',
     'employer',
     'administrator',
+    'marketers',
 
    
 ]
