@@ -592,12 +592,12 @@ class ConfirmPayment(APIView):
                         transaction.flutter_transaction_ref_id = response_data['data']['tx_ref']
                         transaction.flutter_app_fee = response_data['data']['app_fee']
                         transaction.flutter_settled_amount = Decimal(response_data['data']['amount_settled'])
-                        transaction.card_type = response_data['card']['type']
+                        transaction.card_type = response_data['data']['card']['type']
                         transaction.ip_address = response_data['data']['ip']
                         transaction.device_fingerprint = response_data['data']['device_fingerprint']
-                        transaction.flutter_card_issuer = response_data['card']['issuer']
-                        transaction.first_6digits = response_data['card']['first_6digits']
-                        transaction.last_4digits = response_data['card']['last_4digits']
+                        transaction.flutter_card_issuer = response_data['data']['card']['issuer']
+                        transaction.first_6digits = response_data['data']['card']['first_6digits']
+                        transaction.last_4digits = response_data['data']['card']['last_4digits']
                         transaction.save()
 
                         logger.info(f"Transaction status updated to '{response_data['data']['status']}'.")
