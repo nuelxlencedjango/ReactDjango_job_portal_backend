@@ -1,12 +1,12 @@
 from django.db import models
-#from django.contrib.auth.models import User
+
 from django.utils import timezone
 from acct.models import CustomUser, ArtisanProfile, EmployerProfile
 from django.conf import settings
 import random
 import string
 import uuid
-# Create your models here.
+
 
 
 class Cart(models.Model):
@@ -109,14 +109,29 @@ class TransactionDetails(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="cart_transaction")
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)  
     transaction_id = models.CharField(max_length=100, unique=True, null =True, blank=True)
+
     status = models.CharField(max_length=20, default="Pending") 
     currency = models.CharField(max_length=20, default="NGN") 
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
+    flutter_transaction_id = models.CharField(max_length=100, null =True, blank=True)
+    flutter_transaction_ref_id = models.CharField(max_length=100, unique=True, null =True, blank=True)
+    flutter_app_fee = models.CharField(max_length=100, null =True, blank=True)
+    flutter_settled_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) 
+    card_type = models.CharField(max_length=100, null =True, blank=True)
+    ip_address = models.CharField(max_length=100, null =True, blank=True)
+    device_fingerprint = models.CharField(max_length=200, null =True, blank=True)
+    flutter_card_issuer = models.CharField(max_length=200, null =True, blank=True)
+    first_6digits = models.CharField(max_length=10, null =True, blank=True)
+    last_4digits  = models.CharField(max_length=10, null =True, blank=True)
     def __str__(self):
 
-        return f"{self.tx_ref} - {self.status}"
+        return f"{self.user} - {self.tx_ref} - {self.status}"
+
+
+
+
 
 
 
@@ -132,6 +147,11 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Order {self.order_code} for {self.user}"
+    
+
+
+
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
@@ -143,3 +163,5 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.order.user.first_name} x {self.service.title} (Artisan: {self.artisan.user.last_name})"
+
+
