@@ -125,6 +125,7 @@ class TransactionDetails(models.Model):
     flutter_card_issuer = models.CharField(max_length=200, null =True, blank=True)
     first_6digits = models.CharField(max_length=10, null =True, blank=True)
     last_4digits  = models.CharField(max_length=10, null =True, blank=True)
+    
     def __str__(self):
 
         return f"{self.user} - {self.tx_ref} - {self.status}"
