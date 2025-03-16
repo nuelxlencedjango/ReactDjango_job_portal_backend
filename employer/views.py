@@ -540,7 +540,6 @@ class ConfirmPayment555(APIView):
 
 
 
-
 class ConfirmPayment(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -576,10 +575,14 @@ class ConfirmPayment(APIView):
 
             if response_data['status'] == 'success':
                 try:
+                    logger.info(f"Looking for transaction with tx_ref: {tx_ref}")
                     transaction = TransactionDetails.objects.get(tx_ref=tx_ref)
                     logger.info(f"Transaction found: {transaction}")
 
                     # Verify payment details
+                    logger.info(f"Flutterwave amount: {response_data['data']['amount']}, Transaction amount: {transaction.total_amount}")
+                    logger.info(f"Flutterwave currency: {response_data['data']['currency']}, Transaction currency: {transaction.currency}")
+
                     if (
                         response_data['data']['status'] == "successful"
                         and float(response_data['data']['amount']) == float(transaction.total_amount)
@@ -592,13 +595,31 @@ class ConfirmPayment(APIView):
                         transaction.flutter_transaction_ref_id = response_data['data']['tx_ref']
                         transaction.flutter_app_fee = response_data['data']['app_fee']
                         transaction.flutter_settled_amount = Decimal(response_data['data']['amount_settled'])
-                        transaction.card_type = response_data['data']['card']['type']
                         transaction.ip_address = response_data['data']['ip']
                         transaction.device_fingerprint = response_data['data']['device_fingerprint']
-                        transaction.flutter_card_issuer = response_data['data']['card']['issuer']
-                        transaction.first_6digits = response_data['data']['card']['first_6digits']
-                        transaction.last_4digits = response_data['data']['card']['last_4digits']
-                        transaction.save()
+
+                        # Handle card details (if present)
+                        if 'card' in response_data['data']:
+                            transaction.card_type = response_data['data']['card']['type']
+                            transaction.flutter_card_issuer = response_data['data']['card']['issuer']
+                            transaction.first_6digits = response_data['data']['card']['first_6digits']
+                            transaction.last_4digits = response_data['data']['card']['last_4digits']
+                        else:
+                            transaction.card_type = None
+                            transaction.flutter_card_issuer = None
+                            transaction.first_6digits = None
+                            transaction.last_4digits = None
+
+                        # Save the transaction
+                        try:
+                            transaction.save()
+                            logger.info("Transaction saved successfully.")
+                        except Exception as e:
+                            logger.error(f"Error saving transaction: {str(e)}")
+                            return Response(
+                                {'error': 'An error occurred while saving the transaction.'},
+                                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                            )
 
                         logger.info(f"Transaction status updated to '{response_data['data']['status']}'.")
 
@@ -664,7 +685,6 @@ class ConfirmPayment(APIView):
                 {'error': 'An error occurred while processing the payment.'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
 
 
 from rest_framework.decorators import api_view, permission_classes
