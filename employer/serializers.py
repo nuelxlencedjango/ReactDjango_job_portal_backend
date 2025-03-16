@@ -54,6 +54,8 @@ class JobDetailsSerializer(serializers.ModelSerializer):
 
 
 
+    
+
 
 class ArtisanDetailSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(source='user.first_name', read_only=True)
@@ -66,24 +68,16 @@ class ArtisanDetailSerializer(serializers.ModelSerializer):
         model = ArtisanProfile
         fields = ['id', 'first_name', 'last_name', 'location', 'pay', 'profile_image', 'experience', 'service']
 
-    #def get_profile_image(self, obj):
-     #   return obj.profile_image.url if obj.profile_image else None
-    
     def get_profile_image(self, obj):
-        if obj.profile_image:
-            # Open the image using Pillow
-            img = Image.open(obj.profile_image)
-            # Resize the image (e.g., to 200x200)
-            img.thumbnail((200, 200))
-            # Save the resized image to a BytesIO buffer
-            buffer = BytesIO()
-            img.save(buffer, format='JPEG')
-            # Save the resized image back to the profile_image field
-            obj.profile_image.save(obj.profile_image.name, ContentFile(buffer.getvalue()), save=False)
-            obj.save()
-            return obj.profile_image.url
-        return None
-    
+        # Return the URL of the resized image if it exists, otherwise return the original image URL
+        if obj.profile_image_resized:
+            return obj.profile_image_resized.url
+        return obj.profile_image.url if obj.profile_image else None
+
+
+
+
+
 
 
 class CartItemSerializer(serializers.ModelSerializer):
