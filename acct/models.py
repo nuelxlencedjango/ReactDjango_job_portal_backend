@@ -2,7 +2,13 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from cloudinary.models import CloudinaryField
+from PIL import Image
+from io import BytesIO
 
+from django.core.files.base import ContentFile
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 # Custom User Model
 class CustomUser(AbstractUser):
@@ -72,22 +78,43 @@ class MarketerProfile(BaseProfile):
     
     
 
-# Artisan Profile
+
+
 class ArtisanProfile(BaseProfile):
     service = models.ForeignKey('api.Service', related_name='artisans', on_delete=models.CASCADE, null=True, blank=True)
     experience = models.PositiveIntegerField(null=True, blank=True)
-
     address = models.CharField(max_length=255, null=True, blank=True)
-    profile_image = CloudinaryField( null=True, blank=True)
-    nin = models.CharField(max_length=11, unique=True,null=True, blank=True)
+    profile_image = CloudinaryField(null=True, blank=True)
+    profile_image_resized = models.ImageField(upload_to='profile_images/resized/', null=True, blank=True)
+    nin = models.CharField(max_length=11, unique=True, null=True, blank=True)
     job_type = models.CharField(max_length=50, null=True, blank=True)
     industry = models.CharField(max_length=100, null=True, blank=True)
     pay = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    marketer = models.ForeignKey(MarketerProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='registered_artisans') 
+    marketer = models.ForeignKey(MarketerProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='registered_artisans')
 
+    def save(self, *args, **kwargs):
+        if self.profile_image and not self.profile_image_resized:
+            # Resize the image to 200x200 using Pillow
+            img = Image.open(self.profile_image)
+            img.thumbnail((300, 300))
+
+            # Save the resized image to a BytesIO buffer
+            buffer = BytesIO()
+            img.save(buffer, format='JPEG')
+
+            # Save the resized image to the profile_image_resized field
+            self.profile_image_resized.save(f"resized_{self.profile_image.name}", ContentFile(buffer.getvalue()), save=False)
+        
+        super().save(*args, **kwargs)
+
+    @property
+    def is_verified(self):
+        """Return True if the artisan is verified (has a NIN), False otherwise."""
+        return bool(self.nin)
 
     def __str__(self):
         return f"{self.user.first_name} - ({self.service.title})"
+
 
 
 # Employer Profile
