@@ -863,10 +863,8 @@ class ConfirmPayment(APIView):
 
         if not payment_status or not tx_ref or not transaction_id:
             logger.error("Missing required query parameters.")
-            return Response(
-                {'error': 'Missing required query parameters.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({'error': 'Missing required query parameters.'},
+                status=status.HTTP_400_BAD_REQUEST )
 
         if payment_status != "successful":
             logger.warning(f"Payment status is not successful: {payment_status}")
@@ -927,7 +925,7 @@ class ConfirmPayment(APIView):
                         order = Order.objects.create(
                             user=cart.user,
                             order_code=order_code,
-                            total_price=transaction.total_amount,
+                            total_price=transaction_details.total_amount,
                             cart_code=cart.cart_code,
                             status=response_data['data']['status'], 
                             paid=True,
@@ -942,7 +940,7 @@ class ConfirmPayment(APIView):
                                 artisan=cart_item.artisan,
                                 service=cart_item.service,
                                 price=cart_item.artisan.pay,
-                                total=transaction.total_amount,
+                                total=transaction_details.total_amount,
                             )
                             logger.info(f"OrderItem created for cart item: {cart_item}")
 
