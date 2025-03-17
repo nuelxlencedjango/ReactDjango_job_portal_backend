@@ -46,7 +46,7 @@ class Cart(models.Model):
 
 class CartItem(models.Model):
     employer = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True,blank=True)
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items",null=True,blank=True)
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items", null=True,blank=True)
     artisan = models.ForeignKey('acct.ArtisanProfile', on_delete=models.CASCADE)
     service = models.ForeignKey('api.Service', on_delete=models.CASCADE)
     unique_reference = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
@@ -106,10 +106,10 @@ class JobDetails(models.Model):
 class TransactionDetails(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="transactions")
     tx_ref = models.CharField(max_length=100, null=True, blank=True)  
-    #cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="cart_transaction",null=True,blank=True)
+    cart =  models.CharField(max_length=100, null =True, blank=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)  
-    transaction_id = models.CharField(max_length=100, null =True, blank=True)
-    cart = models.CharField(max_length=100, unique=True, null =True, blank=True)
+    transaction_id = models.CharField(max_length=100, unique=True, null =True, blank=True)
+
     status = models.CharField(max_length=20, default="Pending") 
     currency = models.CharField(max_length=20, default="NGN") 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -117,14 +117,14 @@ class TransactionDetails(models.Model):
 
     flutter_transaction_id = models.CharField(max_length=100, null =True, blank=True)
     flutter_transaction_ref_id = models.CharField(max_length=100, unique=True, null =True, blank=True)
-    flutter_app_fee = models.CharField(max_length=100, null =True, blank=True)
+    flutter_app_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) 
     flutter_settled_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00) 
     card_type = models.CharField(max_length=100, null =True, blank=True)
     ip_address = models.CharField(max_length=100, null =True, blank=True)
-    device_fingerprint = models.CharField(max_length=200, null =True, blank=True)
-    flutter_card_issuer = models.CharField(max_length=200, null =True, blank=True)
-    first_6digits = models.CharField(max_length=10, null =True, blank=True)
-    last_4digits  = models.CharField(max_length=10, null =True, blank=True)
+    device_fingerprint = models.CharField(max_length=100, null =True, blank=True)
+    flutter_card_issuer = models.CharField(max_length=100, null =True, blank=True)
+    first_6digits =       models.CharField(max_length=100, null =True, blank=True)
+    last_4digits =  models.CharField(max_length=100, null =True, blank=True)
     def __str__(self):
 
         return f"{self.user} - {self.tx_ref} - {self.status}"
