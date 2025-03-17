@@ -586,7 +586,7 @@ def last_transaction(request):
 
 
 
-class ConfirmPayment(APIView):
+class ConfirmPaymentwk(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
