@@ -770,7 +770,7 @@ class ConfirmPayment(APIView):
                             logger.info(f"Transaction status updated to '{response_data['data']['status']}'.")
 
                         # Get the cart associated with the transaction
-                        cart = Cart.objects.get(cart = transaction_details.cart)
+                        cart = Cart.objects.get(cart_code = transaction_details.cart)
                         #cart = transaction_details.cart
                         
                         cart.paid = True
