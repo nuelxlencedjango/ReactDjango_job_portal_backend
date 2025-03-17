@@ -9,7 +9,6 @@ import uuid
 
 
 
-
 class Cart(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='cart')
     cart_code = models.CharField(max_length=11, unique=True, editable=False)
@@ -47,7 +46,7 @@ class Cart(models.Model):
 
 class CartItem(models.Model):
     employer = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True,blank=True)
-    cart = models.ForeignKey(Cart, on_delete=models.SET_NULL, related_name="items", null=True,blank=True)
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items",null=True,blank=True)
     artisan = models.ForeignKey('acct.ArtisanProfile', on_delete=models.CASCADE)
     service = models.ForeignKey('api.Service', on_delete=models.CASCADE)
     unique_reference = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
@@ -107,10 +106,10 @@ class JobDetails(models.Model):
 class TransactionDetails(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="transactions")
     tx_ref = models.CharField(max_length=100, null=True, blank=True)  
-    cart = models.ForeignKey(Cart, on_delete=models.SET_NULL, related_name="cart_transaction",null =True, blank=True)
+    #cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="cart_transaction",null=True,blank=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)  
-    transaction_id = models.CharField(max_length=100, unique=True, null =True, blank=True)
-
+    transaction_id = models.CharField(max_length=100, null =True, blank=True)
+    cart = models.CharField(max_length=100, unique=True, null =True, blank=True)
     status = models.CharField(max_length=20, default="Pending") 
     currency = models.CharField(max_length=20, default="NGN") 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -126,7 +125,6 @@ class TransactionDetails(models.Model):
     flutter_card_issuer = models.CharField(max_length=200, null =True, blank=True)
     first_6digits = models.CharField(max_length=10, null =True, blank=True)
     last_4digits  = models.CharField(max_length=10, null =True, blank=True)
-    
     def __str__(self):
 
         return f"{self.user} - {self.tx_ref} - {self.status}"
