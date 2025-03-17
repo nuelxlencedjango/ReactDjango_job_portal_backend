@@ -910,7 +910,7 @@ class ConfirmPayment(APIView):
 
                             # Log before saving
                             logger.info(f"Transaction details before saving: {transaction_details}")
-                            
+                            transaction_details.save()
 
                             logger.info(f"Transaction status updated to '{response_data['data']['status']}'.")
 
@@ -947,8 +947,6 @@ class ConfirmPayment(APIView):
                         # Delete or archive cart
                         cart.delete()
                         logger.info("Cart deleted.")
-
-                        transaction_details.save()
 
                         return Response(
                             {'message': 'Payment Successful, Order Created', 'subMessage': 'You have successfully made payment'},
