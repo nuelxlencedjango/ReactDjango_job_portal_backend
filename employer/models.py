@@ -107,7 +107,7 @@ class JobDetails(models.Model):
 class TransactionDetails(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="transactions")
     tx_ref = models.CharField(max_length=100, null=True, blank=True)  
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="cart_transaction")
+    cart = models.ForeignKey(Cart, on_delete=models.SET_NULL, related_name="cart_transaction",null =True, blank=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)  
     transaction_id = models.CharField(max_length=100, unique=True, null =True, blank=True)
 
