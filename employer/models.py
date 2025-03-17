@@ -9,6 +9,7 @@ import uuid
 
 
 
+
 class Cart(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='cart')
     cart_code = models.CharField(max_length=11, unique=True, editable=False)
@@ -46,7 +47,7 @@ class Cart(models.Model):
 
 class CartItem(models.Model):
     employer = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True,blank=True)
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
+    cart = models.ForeignKey(Cart, on_delete=models.SET_NULL, related_name="items", null=True,blank=True)
     artisan = models.ForeignKey('acct.ArtisanProfile', on_delete=models.CASCADE)
     service = models.ForeignKey('api.Service', on_delete=models.CASCADE)
     unique_reference = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
