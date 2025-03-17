@@ -374,14 +374,9 @@ class InitiatePayment(APIView):
 
         try:
             # Save payment details to your database
-            payment = TransactionDetails(
-                user=user,
-                cart=cart,
-                currency=currency,
-                total_amount=total_amount,
-                tx_ref=reference,
-                status="pending"
-            )
+            payment = TransactionDetails(user=user, cart=cart.cart_code,
+                currency=currency,total_amount=total_amount,tx_ref=reference,
+                status="pending" )
             payment.save()
 
             # Send the request to Flutterwave API
@@ -625,7 +620,7 @@ class ConfirmPaymentwk(APIView):
                         response_data['data']['status'] == "successful"
                         and float(response_data['data']['amount']) == float(transaction_details.total_amount)
                         and response_data['data']['currency'] == transaction_details.currency ):
-                        # Start a transaction block
+                       
                         with transaction.atomic():
                             logger.info("Updating transaction details...")
 
@@ -782,8 +777,7 @@ class ConfirmPayment(APIView):
 
                         # Create Order
                         order_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
-                        order = Order.objects.create(
-                            user=cart.user,
+                        order = Order.objects.create(user=cart.user,
                             order_code=order_code,
                             total_price=transaction_details.total_amount,
                             cart_code=cart.cart_code,
@@ -805,8 +799,8 @@ class ConfirmPayment(APIView):
                             logger.info(f"OrderItem created for cart item: {cart_item}")
 
                         # Manually delete Cart and CartItems
-                        cart_items = cart.items.all()
-                        cart_items.delete()  # Delete all CartItems associated with the Cart
+                        #cart_items = cart.items.all()
+                        #cart_items.delete()  # Delete all CartItems associated with the Cart
                         cart.delete()  
                         logger.info("Cart and CartItems deleted.")
 
