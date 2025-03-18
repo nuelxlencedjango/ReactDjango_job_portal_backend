@@ -19,6 +19,6 @@ urlpatterns = [
     path('auth/verify-token/', VerifyTokenView.as_view(), name='verify-token'),
  
     #path('employer/last-payment/', LastPaymentView.as_view(), name='last-payment'),
-    path('employer/last-payment/', LastPaymentView.as_view(), name='last-payment'),
+    path('last-payment/', LastPaymentView.as_view(), name='last-payment'),
 ]
 
