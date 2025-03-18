@@ -15,11 +15,9 @@ urlpatterns = [
    
    path('payment-details/', InitiatePayment.as_view(), name='payment-details'),
    path('payment_confirmation/', ConfirmPayment.as_view(), name='payment_confirmation'),
-  # path("payment-details/", PaymentDetailsView.as_view(), name="payment-details"),
-  #path('payment_confirmation/', views.handle_flutterwave_payment, name='payment_confirmation'),
-   #path('employer-details/', EmployersDetailsView.as_view(), name='employer-details'),
    
     path('auth/verify-token/', VerifyTokenView.as_view(), name='verify-token'),
-    #  path('order/', OrderRequestViewPage.as_view(), name='orders'),
+ 
+    path('employer/last-payment/', LastPaymentView.as_view(), name='last-payment'),
 ]
 
