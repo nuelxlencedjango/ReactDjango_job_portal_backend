@@ -1,22 +1,8 @@
 from rest_framework import serializers
 from .models import *
 from acct.models import CustomUser, ArtisanProfile
-from acct.serializers import CustomUserSerializer,EmployerProfileSerializer
+
 from api.models import Area
-
-
-from PIL import Image
-from io import BytesIO
-from django.core.files.base import ContentFile
-
-    
-
-
-
-
-
-
-
 
 
 
@@ -39,8 +25,7 @@ class JobDetailsSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'employer', 'description', 'artisan', 'address',
             'contact_person', 'contact_person_phone', 'expectedDate',
-            'location'
-        ]
+            'location']
         read_only_fields = ['date_created', 'added_at']
 
     def validate_contact_person_phone(self, value):
@@ -51,10 +36,6 @@ class JobDetailsSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Phone number must be between 11 digits.")
         return value
 
-
-
-
-    
 
 
 class ArtisanDetailSerializer(serializers.ModelSerializer):
@@ -77,9 +58,6 @@ class ArtisanDetailSerializer(serializers.ModelSerializer):
 
 
 
-
-
-
 class CartItemSerializer(serializers.ModelSerializer):
     artisan = ArtisanDetailSerializer(read_only=True)
 
@@ -96,21 +74,12 @@ class CartSerializer(serializers.ModelSerializer):
 
 
 
-
-
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        fields = [
-            'id',
-            'user',
-            'order_code',
-            'total_price',
-            'cart_code',
-            'status',
-            'paid_at',
-            'paid',
-        ]
+        fields = ['id','user','order_code','total_price','cart_code','status','paid_at',
+            'paid',]
+        
         read_only_fields = ['id', 'order_code', 'paid_at']  
 
     def to_representation(self, instance):
@@ -118,3 +87,11 @@ class OrderSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['paid_at'] = instance.paid_at.strftime("%Y-%m-%d %H:%M:%S") 
         return representation
+    
+
+
+
+class TransactionDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TransactionDetails
+        fields = ['tx_ref', 'cart', 'total_amount', 'transaction_id', 'status', 'modified_at']
