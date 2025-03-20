@@ -56,8 +56,14 @@ class CustomUserSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
-    
 
+
+
+
+from rest_framework import serializers
+from .models import ArtisanProfile
+from cloudinary.uploader import upload
+import cloudinary
 
 class ArtisanProfileSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
@@ -75,63 +81,67 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
         read_only_fields = ['date_joined']
 
     def get_profile_image_resized(self, obj):
-        """Returns the URL of the resized profile image, if it exists."""
-        if obj.profile_image_resized:
-            return obj.profile_image_resized.url
+        """Returns a resized version of the profile image using Cloudinary transformations."""
+        if obj.profile_image:
+            # Generate a resized image URL (e.g., 300x300) using Cloudinary
+            return cloudinary.utils.cloudinary_url(
+                obj.profile_image.public_id,
+                width=300,
+                height=300,
+                crop="fit",
+                quality="auto",
+                fetch_format="auto"
+            )[0]  # Returns the URL
         return None
 
     def validate_profile_image(self, value):
-        """Validate the profile image."""
+        """Validate and process the image using Cloudinary."""
         if value:
-            # Check if the file is an image
+            max_size = 5 * 1024 * 1024  # 5MB limit
             try:
-                Image.open(value).verify()
-            except Exception:
-                raise serializers.ValidationError("Invalid image file.")
+                if value.size > max_size:
+                    # Upload to Cloudinary with resizing if the image is too large
+                    uploaded_image = upload(
+                        value,
+                        transformation=[
+                            {"width": 800, "height": 800, "crop": "limit"}  # Resize to max 800x800
+                        ],
+                        quality="auto",
+                        fetch_format="auto"
+                    )
+                else:
+                    # Upload without resizing if under 5MB
+                    uploaded_image = upload(
+                        value,
+                        quality="auto",
+                        fetch_format="auto"
+                    )
+                # Return the Cloudinary public_id
+                return uploaded_image['public_id']
+            except Exception as e:
+                raise serializers.ValidationError(f"Failed to upload image to Cloudinary: {str(e)}")
         return value
 
     def create(self, validated_data):
-        """Create an ArtisanProfile instance and pass the profile image to the model for resizing."""
+        """Create an ArtisanProfile instance with the processed profile image."""
         profile_image = validated_data.pop('profile_image', None)
         artisan = ArtisanProfile.objects.create(**validated_data)
         if profile_image:
-            artisan.profile_image = profile_image
-            artisan.save()  # The model's save() method will handle resizing
+            artisan.profile_image = profile_image  # Store the Cloudinary public_id
+            artisan.save()
         return artisan
 
     def update(self, instance, validated_data):
-        """Update an ArtisanProfile instance and pass the profile image to the model for resizing."""
+        """Update an ArtisanProfile instance with the processed profile image."""
         profile_image = validated_data.pop('profile_image', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         if profile_image:
-            instance.profile_image = profile_image
-        instance.save()  # The model's save() method will handle resizing
-        return instance
-
-
-
-class ArtisanProfileSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
-    marketer = serializers.PrimaryKeyRelatedField(queryset=MarketerProfile.objects.all(), required=False, allow_null=True)
-    profile_image = serializers.ImageField(required=False, allow_null=True)
-
-    class Meta:
-        model = ArtisanProfile
-        fields = [
-            'user', 'experience', 'location', 'service', 'pay',
-            'profile_image', 'nin', 'phone_number', 'address', 'date_joined', 'marketer'
-        ]
-        read_only_fields = ['date_joined']
-
-    def create(self, validated_data):
-        return ArtisanProfile.objects.create(**validated_data)  # Simple creation
-
-    def update(self, instance, validated_data):
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+            instance.profile_image = profile_image  # Store the Cloudinary public_id
         instance.save()
         return instance
+
+
 
 
 class EmployerProfileSerializer(serializers.ModelSerializer):
