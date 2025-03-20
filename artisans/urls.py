@@ -15,10 +15,8 @@ urlpatterns = [
     path('add_location/', AreaCreateView.as_view(), name='add_location'),
     
 
-       path('artisans-by-service/<str:service_title>/', ArtisansByServiceView.as_view(), name='artisans-by-service'),
+    path('artisans-by-service/<str:service_title>/', ArtisansByServiceView.as_view(), name='artisans-by-service'),
 
-  
-    
     path('profession-list/', ServiceListView.as_view(), name='profession-list'),
     path('add_profession/', ProfessionCreateView.as_view(), name='add_profession'),
     
