@@ -9,7 +9,7 @@ from .models import Fingerprint
 
 
 
-class CustomUserSerializer56(serializers.ModelSerializer):
+class CustomUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     password2 = serializers.CharField(write_only=True)
 
