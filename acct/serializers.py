@@ -1,11 +1,7 @@
 # users/serializers.py
 from rest_framework import serializers
-#from django.contrib.auth import get_user_model
 from .models import CustomUser, ArtisanProfile, EmployerProfile, MarketerProfile
 from .models import Fingerprint 
-
-
-
 
 
 
@@ -56,7 +52,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 
 
-
 class ArtisanProfileSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
     marketer = serializers.PrimaryKeyRelatedField(queryset=MarketerProfile.objects.all(), required=False, allow_null=True)
@@ -66,10 +61,9 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = ArtisanProfile
         fields = [
-            'user', 'experience', 'location', 'service', 'pay',
-            'profile_image', 'profile_image_resized', 'nin', 'phone_number',
-            'address', 'date_joined', 'marketer'
-        ]
+            'user', 'experience', 'location', 'service', 'pay','profile_image', 
+            'profile_image_resized', 'nin', 'phone_number','address', 'date_joined', 
+            'marketer' ]
         read_only_fields = ['date_joined']
 
     def get_profile_image_resized(self, obj):
@@ -97,84 +91,6 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
         if value is not None and value < 0:
             raise serializers.ValidationError("Pay cannot be negative.")
         return value
-
-
-class ArtisanProfileSerializerkkk(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
-    marketer = serializers.PrimaryKeyRelatedField(queryset=MarketerProfile.objects.all(), required=False, allow_null=True)
-    profile_image = serializers.SerializerMethodField()
-    profile_image_resized = serializers.SerializerMethodField()
-
-    class Meta:
-        model = ArtisanProfile
-        fields = [
-            'user', 'experience', 'location', 'service', 'pay', 
-            'profile_image', 'profile_image_resized', 'nin', 'phone_number', 
-            'address', 'date_joined', 'marketer'
-        ]
-        read_only_fields = ['date_joined']
-
-    def get_profile_image(self, obj):
-        """Returns the URL of the profile image, if it exists."""
-        if obj.profile_image:
-            return obj.profile_image.url
-        return None
-
-    def get_profile_image_resized(self, obj):
-        """Returns the URL of the resized profile image, if it exists."""
-        if obj.profile_image_resized:
-            return obj.profile_image_resized.url
-        return None
-
-    def create(self, validated_data):
-        """Create an ArtisanProfile instance."""
-        return ArtisanProfile.objects.create(**validated_data)
-
-
-
-
-
-class ArtisanProfileSerializer44(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
-    marketer = serializers.PrimaryKeyRelatedField(queryset=MarketerProfile.objects.all(), required=False, allow_null=True)
-    profile_image = serializers.ImageField(required=False, allow_null=True)
-    profile_image_resized = serializers.SerializerMethodField()
-
-    class Meta:
-        model = ArtisanProfile
-        fields = [
-            'user', 'experience', 'location', 'service', 'pay',
-            'profile_image', 'profile_image_resized', 'nin', 'phone_number',
-            'address', 'date_joined', 'marketer'
-        ]
-        read_only_fields = ['date_joined']
-
-    def get_profile_image_resized(self, obj):
-        """Returns the URL of the resized profile image, if it exists."""
-        if obj.profile_image_resized:
-            return obj.profile_image_resized.url
-        return None
-
-    def validate_phone_number(self, value):
-        """Validate phone number format (simple example)."""
-        if value and not value.isdigit():
-            raise serializers.ValidationError("Phone number must contain only digits.")
-        if value and len(value) < 10:
-            raise serializers.ValidationError("Phone number must be at least 10 digits.")
-        return value
-
-    def validate_experience(self, value):
-        """Ensure experience is non-negative."""
-        if value is not None and value < 0:
-            raise serializers.ValidationError("Experience cannot be negative.")
-        return value
-
-    def validate_pay(self, value):
-        """Ensure pay is non-negative."""
-        if value is not None and value < 0:
-            raise serializers.ValidationError("Pay cannot be negative.")
-        return value
-
 
 
 
