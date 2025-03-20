@@ -6,6 +6,10 @@ from .models import Fingerprint
 
 
 
+from django.core.files.images import ImageFile
+from io import BytesIO
+from PIL import Image
+
 
 
 
@@ -55,8 +59,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
     
 
 
-
-
 class ArtisanProfileSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
     marketer = serializers.PrimaryKeyRelatedField(queryset=MarketerProfile.objects.all(), required=False, allow_null=True)
@@ -78,103 +80,42 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
             return obj.profile_image_resized.url
         return None
 
-    def validate_phone_number(self, value):
-        """Validate phone number format (simple example)."""
-        if value and not value.isdigit():
-            raise serializers.ValidationError("Phone number must contain only digits.")
-        if value and len(value) < 10:
-            raise serializers.ValidationError("Phone number must be at least 10 digits.")
+    def validate_profile_image(self, value):
+        """Validate the profile image."""
+        if value:
+            # Check if the file is an image
+            try:
+                Image.open(value).verify()
+            except Exception:
+                raise serializers.ValidationError("Invalid image file.")
         return value
 
-    def validate_experience(self, value):
-        """Ensure experience is non-negative."""
-        if value is not None and value < 0:
-            raise serializers.ValidationError("Experience cannot be negative.")
-        return value
-
-    def validate_pay(self, value):
-        """Ensure pay is non-negative."""
-        if value is not None and value < 0:
-            raise serializers.ValidationError("Pay cannot be negative.")
-        return value
-
-
-class ArtisanProfileSerializerkkk(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
-    marketer = serializers.PrimaryKeyRelatedField(queryset=MarketerProfile.objects.all(), required=False, allow_null=True)
-    profile_image = serializers.SerializerMethodField()
-    profile_image_resized = serializers.SerializerMethodField()
-
-    class Meta:
-        model = ArtisanProfile
-        fields = [
-            'user', 'experience', 'location', 'service', 'pay', 
-            'profile_image', 'profile_image_resized', 'nin', 'phone_number', 
-            'address', 'date_joined', 'marketer'
-        ]
-        read_only_fields = ['date_joined']
-
-    def get_profile_image(self, obj):
-        """Returns the URL of the profile image, if it exists."""
-        if obj.profile_image:
-            return obj.profile_image.url
-        return None
-
-    def get_profile_image_resized(self, obj):
-        """Returns the URL of the resized profile image, if it exists."""
-        if obj.profile_image_resized:
-            return obj.profile_image_resized.url
-        return None
+    def resize_image(self, image):
+        """Resize the image to a maximum of 500x500 pixels."""
+        img = Image.open(image)
+        img.thumbnail((500, 500))  # Resize to max 500x500 pixels
+        thumb_io = BytesIO()
+        img.save(thumb_io, format='JPEG', quality=85)  # Save as JPEG with 85% quality
+        return ImageFile(thumb_io, name=image.name)
 
     def create(self, validated_data):
-        """Create an ArtisanProfile instance."""
-        return ArtisanProfile.objects.create(**validated_data)
+        """Create an ArtisanProfile instance and resize the profile image if provided."""
+        profile_image = validated_data.pop('profile_image', None)
+        artisan = ArtisanProfile.objects.create(**validated_data)
+        if profile_image:
+            artisan.profile_image = self.resize_image(profile_image)
+            artisan.save()
+        return artisan
 
-
-
-
-
-class ArtisanProfileSerializer88(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
-    marketer = serializers.PrimaryKeyRelatedField(queryset=MarketerProfile.objects.all(), required=False, allow_null=True)
-    profile_image = serializers.ImageField(required=False, allow_null=True)
-    profile_image_resized = serializers.SerializerMethodField()
-
-    class Meta:
-        model = ArtisanProfile
-        fields = [
-            'user', 'experience', 'location', 'service', 'pay',
-            'profile_image', 'profile_image_resized', 'nin', 'phone_number',
-            'address', 'date_joined', 'marketer'
-        ]
-        read_only_fields = ['date_joined']
-
-    def get_profile_image_resized(self, obj):
-        """Returns the URL of the resized profile image, if it exists."""
-        if obj.profile_image_resized:
-            return obj.profile_image_resized.url
-        return None
-
-    def validate_phone_number(self, value):
-        """Validate phone number format (simple example)."""
-        if value and not value.isdigit():
-            raise serializers.ValidationError("Phone number must contain only digits.")
-        if value and len(value) < 10:
-            raise serializers.ValidationError("Phone number must be at least 10 digits.")
-        return value
-
-    def validate_experience(self, value):
-        """Ensure experience is non-negative."""
-        if value is not None and value < 0:
-            raise serializers.ValidationError("Experience cannot be negative.")
-        return value
-
-    def validate_pay(self, value):
-        """Ensure pay is non-negative."""
-        if value is not None and value < 0:
-            raise serializers.ValidationError("Pay cannot be negative.")
-        return value
-
+    def update(self, instance, validated_data):
+        """Update an ArtisanProfile instance and resize the profile image if provided."""
+        profile_image = validated_data.pop('profile_image', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        if profile_image:
+            instance.profile_image = self.resize_image(profile_image)
+        instance.save()
+        return instance
 
 
 
