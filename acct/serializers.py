@@ -58,11 +58,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return user
     
 
-from rest_framework import serializers
-from .models import ArtisanProfile, CustomUser, MarketerProfile
-from io import BytesIO
-from PIL import Image
-from django.core.files.images import ImageFile
 
 class ArtisanProfileSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
@@ -101,7 +96,7 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
         artisan = ArtisanProfile.objects.create(**validated_data)
         if profile_image:
             artisan.profile_image = profile_image
-            artisan.save()  # The model's save() 
+            artisan.save()  # The model's save() method will handle resizing
         return artisan
 
     def update(self, instance, validated_data):
@@ -111,7 +106,7 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         if profile_image:
             instance.profile_image = profile_image
-        instance.save()  # The model's save() 
+        instance.save()  # The model's save() method will handle resizing
         return instance
 
 

@@ -124,7 +124,6 @@ class UserRegistrationDetailView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
 def set_cookie(response, token, cookie_name):
     response.set_cookie(cookie_name,token,httponly=True,secure=True,samesite='Lax',
         path='/',)
