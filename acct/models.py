@@ -100,6 +100,7 @@ class ArtisanProfile(BaseProfile):
     marketer = models.ForeignKey(MarketerProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='registered_artisans')
 
     def save(self, *args, **kwargs):
+        # Resize the profile image if it exists and hasn't been resized yet
         if self.profile_image and not self.profile_image_resized:
             try:
                 # Download the image from Cloudinary
@@ -125,9 +126,6 @@ class ArtisanProfile(BaseProfile):
                 logger.error(f"Error resizing profile image: {str(e)}")
 
         super().save(*args, **kwargs)
-
-
-
 
 
 
