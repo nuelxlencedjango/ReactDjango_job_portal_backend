@@ -74,8 +74,6 @@ class BaseProfile(models.Model):
         return f"{self.user.username} Profile"
 
 
-
-
 # Maketer Profile
 class MarketerProfile(BaseProfile):
     address = models.CharField(max_length=500, null=True, blank=True)
@@ -84,6 +82,7 @@ class MarketerProfile(BaseProfile):
         return f"Marketer: {self.user.first_name} {self.user.last_name}"
     
     
+
 
 
 
@@ -98,34 +97,10 @@ class ArtisanProfile(BaseProfile):
     industry = models.CharField(max_length=100, null=True, blank=True)
     pay = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     marketer = models.ForeignKey(MarketerProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='registered_artisans')
-
-    def save(self, *args, **kwargs):
-        # Resize the profile image if it exists and hasn't been resized yet
-        if self.profile_image and not self.profile_image_resized:
-            try:
-                # Download the image from Cloudinary
-                image_url = self.profile_image.url
-                response = requests.get(image_url)
-                response.raise_for_status()
-
-                # Open the image using Pillow
-                img = Image.open(BytesIO(response.content))
-                img.thumbnail((300, 300))  # Resize the image to 300x300 pixels
-
-                # Save the resized image to a BytesIO buffer
-                buffer = BytesIO()
-                img.save(buffer, format='JPEG', quality=85)
-
-                # Save the resized image to the profile_image_resized field
-                self.profile_image_resized.save(
-                    f"resized_{self.profile_image.name}",
-                    ContentFile(buffer.getvalue()),
-                    save=False
-                )
-            except Exception as e:
-                logger.error(f"Error resizing profile image: {str(e)}")
-
-        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"{self.user.username} Profile"
+    
 
 
 
