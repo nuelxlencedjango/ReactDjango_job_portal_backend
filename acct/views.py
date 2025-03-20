@@ -105,7 +105,7 @@ class UserRegistrationDetailView(APIView):
 
 
 
-class UserRegistrationDetailViewcd(APIView):
+class UserRegistrationDetailViewcdww(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
