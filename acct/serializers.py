@@ -60,14 +60,9 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 
 
-
-
 from rest_framework import serializers
 from cloudinary.uploader import upload
-import cloudinary.utils
-from PIL import Image
-from io import BytesIO
-from django.core.files.uploadedfile import InMemoryUploadedFile
+from cloudinary.utils import cloudinary_url
 from .models import ArtisanProfile, CustomUser, MarketerProfile
 
 class ArtisanProfileSerializer(serializers.ModelSerializer):
@@ -88,7 +83,8 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
     def get_profile_image_resized(self, obj):
         """Returns a resized version of the profile image using Cloudinary transformations."""
         if obj.profile_image:
-            return cloudinary.utils.cloudinary_url(
+            # Generate a resized image URL (e.g., 300x300) using Cloudinary
+            return cloudinary_url(
                 obj.profile_image.public_id,
                 width=300,
                 height=300,
@@ -98,47 +94,41 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
             )[0]  # Returns the URL
         return None
 
-    def process_and_upload_image(self, image):
-        """Resizes the image if it's too large and uploads it to Cloudinary."""
-        max_size = 5 * 1024 * 1024  # 5MB limit
-        max_resolution = (800, 800)  # Resize to max 800x800
-
-        try:
-            # Convert to PIL image
-            img = Image.open(image)
-            img_format = img.format  # Preserve original format
-
-            # Resize if image is too large
-            if image.size > max_size or img.size[0] > max_resolution[0] or img.size[1] > max_resolution[1]:
-                img.thumbnail(max_resolution)  # Resize while maintaining aspect ratio
-
-                # Save to a BytesIO stream
-                img_io = BytesIO()
-                img.save(img_io, format=img_format)
-                img_io.seek(0)
-
-                # Convert back to Django InMemoryUploadedFile
-                image = InMemoryUploadedFile(
-                    img_io, None, image.name, f"image/{img_format.lower()}", img_io.tell(), None
-                )
-
-            # Upload to Cloudinary
-            uploaded_image = upload(
-                image,
-                quality="auto",
-                fetch_format="auto"
-            )
-            return uploaded_image['public_id']  # Store the Cloudinary public_id
-
-        except Exception as e:
-            raise serializers.ValidationError(f"Failed to process image: {str(e)}")
+    def validate_profile_image(self, value):
+        """Validate and process the image using Cloudinary."""
+        if value:
+            max_size = 5 * 1024 * 1024  # 5MB limit
+            try:
+                if value.size > max_size:
+                    # Upload to Cloudinary with resizing if the image is too large
+                    uploaded_image = upload(
+                        value,
+                        transformation=[
+                            {"width": 800, "height": 800, "crop": "limit"}  # Resize to max 800x800
+                        ],
+                        quality="auto",
+                        fetch_format="auto"
+                    )
+                else:
+                    # Upload without resizing if under 5MB
+                    uploaded_image = upload(
+                        value,
+                        quality="auto",
+                        fetch_format="auto"
+                    )
+                # Return the Cloudinary resource (public_id and URL)
+                return uploaded_image
+            except Exception as e:
+                raise serializers.ValidationError(f"Failed to upload image to Cloudinary: {str(e)}")
+        return value
 
     def create(self, validated_data):
         """Create an ArtisanProfile instance with the processed profile image."""
         profile_image = validated_data.pop('profile_image', None)
         artisan = ArtisanProfile.objects.create(**validated_data)
         if profile_image:
-            artisan.profile_image = self.process_and_upload_image(profile_image)
+            # Save the Cloudinary resource (public_id and URL) to the profile_image field
+            artisan.profile_image = profile_image['public_id']
             artisan.save()
         return artisan
 
@@ -148,10 +138,10 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         if profile_image:
-            instance.profile_image = self.process_and_upload_image(profile_image)
+            # Save the Cloudinary resource (public_id and URL) to the profile_image field
+            instance.profile_image = profile_image['public_id']
         instance.save()
         return instance
-
 
 
 class EmployerProfileSerializer(serializers.ModelSerializer):
