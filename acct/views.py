@@ -48,12 +48,64 @@ class UserRegistrationAndProfileCreation(APIView):
         
        
 
-
-
-
-
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import AllowAny
+from .models import ArtisanProfile, CustomUser, EmployerProfile  # Adjust imports
+from .serializers import ArtisanProfileSerializer  
 
 class UserRegistrationDetailView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            user_id = request.data.get('username')
+            if not user_id:
+                return Response({'error': 'Username is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                user = CustomUser.objects.get(username=user_id)
+            except CustomUser.DoesNotExist:
+                return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            if user.user_type == "artisan":
+                artisan_profile = ArtisanProfile.objects.filter(user=user).first()
+                if not artisan_profile:
+                    artisan_data = request.data.copy()
+                    artisan_data['user'] = user.id
+
+                    artisan_serializer = ArtisanProfileSerializer(data=artisan_data)
+                    if artisan_serializer.is_valid():
+                        artisan = artisan_serializer.save()
+                        if 'profile_image' in request.FILES:
+                            artisan.profile_image = request.FILES['profile_image']
+                            artisan.save()
+                        return Response({'detail': 'Artisan profile created successfully!'}, status=status.HTTP_201_CREATED)
+                    return Response(artisan_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Artisan profile already exists for this user.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            elif user.user_type == "employer":
+                employer_profile = EmployerProfile.objects.filter(user=user).first()
+                if not employer_profile:
+                    employer_data = request.data.copy()
+                    employer_data['user'] = user.id
+                    employer_serializer = EmployerProfileSerializer(data=employer_data)
+                    if employer_serializer.is_valid():
+                        employer_serializer.save()
+                        return Response({'detail': 'Employer profile created successfully!'}, status=status.HTTP_201_CREATED)
+                    return Response(employer_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Employer profile already exists for this user.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response({'error': 'Invalid user type.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+class UserRegistrationDetailViewcd(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -83,8 +135,8 @@ class UserRegistrationDetailView(APIView):
                     artisan_serializer = ArtisanProfileSerializer(data=artisan_data)
                     if artisan_serializer.is_valid():
                         artisan = artisan_serializer.save() 
-                        if 'profile_image_resized' in request.FILES:
-                            artisan.profile_image_resized = request.FILES['profile_image_resized']
+                        if 'profile_image' in request.FILES:
+                            artisan.profile_image = request.FILES['profile_image']
                         artisan.save()    
                          # Save the new artisan profile
                         return Response({'detail': 'Artisan profile created successfully!'}, status=status.HTTP_201_CREATED)
