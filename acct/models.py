@@ -11,10 +11,11 @@ import cloudinary.uploader
 import cloudinary.api
 
 
+
 import logging
-
-
 logger = logging.getLogger(__name__)
+
+
 
 # Custom User Model
 class CustomUser(AbstractUser):
@@ -86,10 +87,6 @@ class MarketerProfile(BaseProfile):
 
 
 
-from cloudinary import uploader
-from io import BytesIO
-from PIL import Image
-
 class ArtisanProfile(BaseProfile):
     service = models.ForeignKey('api.Service', related_name='artisans', on_delete=models.CASCADE, null=True, blank=True)
     experience = models.PositiveIntegerField(null=True, blank=True)
@@ -112,11 +109,11 @@ class ArtisanProfile(BaseProfile):
 
                 # Open the image using Pillow
                 img = Image.open(BytesIO(response.content))
-                img.thumbnail((300, 300))  # Resize the image
+                img.thumbnail((300, 300))  # Resize the image to 300x300 pixels
 
                 # Save the resized image to a BytesIO buffer
                 buffer = BytesIO()
-                img.save(buffer, format='JPEG')
+                img.save(buffer, format='JPEG', quality=85)
 
                 # Save the resized image to the profile_image_resized field
                 self.profile_image_resized.save(
@@ -128,6 +125,8 @@ class ArtisanProfile(BaseProfile):
                 logger.error(f"Error resizing profile image: {str(e)}")
 
         super().save(*args, **kwargs)
+
+
 
 
 

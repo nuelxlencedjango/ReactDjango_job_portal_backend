@@ -49,6 +49,7 @@ class UserRegistrationAndProfileCreation(APIView):
 
 
 
+
 class UserRegistrationDetailView(APIView):
     permission_classes = [AllowAny]
 
@@ -80,10 +81,6 @@ class UserRegistrationDetailView(APIView):
                     if artisan_serializer.is_valid():
                         artisan = artisan_serializer.save()
                         logger.info(f"Artisan serializer saved: {artisan}")
-                        if 'profile_image' in request.FILES:
-                            artisan.profile_image = request.FILES['profile_image']
-                            artisan.save()  # Save the instance to store the image
-                            logger.info(f"Artisan profile image saved: {artisan.profile_image}")
                         return Response({'detail': 'Artisan profile created successfully!'}, status=status.HTTP_201_CREATED)
                     else:
                         logger.error(f"Artisan serializer errors: {artisan_serializer.errors}")
@@ -116,8 +113,6 @@ class UserRegistrationDetailView(APIView):
         except Exception as e:
             logger.error(f"Unexpected error: {str(e)}")
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 
 
 
