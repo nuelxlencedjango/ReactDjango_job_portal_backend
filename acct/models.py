@@ -85,6 +85,8 @@ class MarketerProfile(BaseProfile):
 
 
 
+from cloudinary.uploader import upload
+from cloudinary.utils import cloudinary_url
 
 class ArtisanProfile(BaseProfile):
     service = models.ForeignKey('api.Service', related_name='artisans', on_delete=models.CASCADE, null=True, blank=True)
@@ -99,8 +101,28 @@ class ArtisanProfile(BaseProfile):
     marketer = models.ForeignKey(MarketerProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='registered_artisans')
     
     def save(self, *args, **kwargs):
+        """Override the save method to handle image resizing and optimization."""
+        if self.profile_image and not self.pk:  # Only process new images
+            try:
+                # Upload the image to Cloudinary with resizing and optimization
+                result = upload(
+                    self.profile_image,
+                    transformation=[
+                        {"width": 800, "height": 800, "crop": "limit"}  # Resize to max 800x800
+                    ],
+                    quality="auto",  # Optimize image quality
+                    fetch_format="auto"  # Automatically choose the best format (e.g., webp)
+                )
+                # Update the profile_image field with the Cloudinary public_id
+                self.profile_image = result['public_id']
+            except Exception as e:
+                # Log the error and continue without resizing
+                print(f"Failed to upload image to Cloudinary: {str(e)}")
+        
         super().save(*args, **kwargs)
     
+
+
 
 
 
