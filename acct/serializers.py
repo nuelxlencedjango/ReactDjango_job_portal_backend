@@ -56,8 +56,6 @@ class CustomUserSerializer56(serializers.ModelSerializer):
 
 
 
-from rest_framework import serializers
-from .models import ArtisanProfile, CustomUser, MarketerProfile
 
 class ArtisanProfileSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
@@ -100,6 +98,7 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Pay cannot be negative.")
         return value
 
+
 class ArtisanProfileSerializerkkk(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
     marketer = serializers.PrimaryKeyRelatedField(queryset=MarketerProfile.objects.all(), required=False, allow_null=True)
@@ -133,10 +132,9 @@ class ArtisanProfileSerializerkkk(serializers.ModelSerializer):
 
 
 
-from rest_framework import serializers
-from .models import ArtisanProfile, CustomUser, MarketerProfile  # Adjust imports based on your project structure
 
-class ArtisanProfileSerializer(serializers.ModelSerializer):
+
+class ArtisanProfileSerializer44(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
     marketer = serializers.PrimaryKeyRelatedField(queryset=MarketerProfile.objects.all(), required=False, allow_null=True)
     profile_image = serializers.ImageField(required=False, allow_null=True)
