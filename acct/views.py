@@ -36,8 +36,9 @@ class UserRegistrationAndProfileCreation(APIView):
                 # Trigger profile creation via signals (handled by Django signals)
          
                 return Response({ "id": user.id,"username": user.username,
-                "email": user.email,"first_name": user.first_name,
-                "last_name": user.last_name, 'user_type':user.user_type  }, status=status.HTTP_201_CREATED)
+                        "email": user.email,"first_name": user.first_name,
+                "last_name": user.last_name, 'user_type':user.user_type  }, 
+                status=status.HTTP_201_CREATED)
             else:
                 formatted_errors = {key: value[0] for key, value in user_serializer.errors.items()}
                 return Response(formatted_errors, status=status.HTTP_400_BAD_REQUEST)
@@ -82,8 +83,8 @@ class UserRegistrationDetailView(APIView):
                     artisan_serializer = ArtisanProfileSerializer(data=artisan_data)
                     if artisan_serializer.is_valid():
                         artisan = artisan_serializer.save() 
-                        if 'profile_image' in request.FILES:
-                            artisan.profile_image = request.FILES['profile_image']
+                        if 'profile_image_resized' in request.FILES:
+                            artisan.profile_image_resized = request.FILES['profile_image_resized']
                         artisan.save()    
                          # Save the new artisan profile
                         return Response({'detail': 'Artisan profile created successfully!'}, status=status.HTTP_201_CREATED)
