@@ -49,11 +49,6 @@ class UserRegistrationAndProfileCreation(APIView):
 
 
 
-
-import logging
-
-logger = logging.getLogger(__name__)
-
 class UserRegistrationDetailView(APIView):
     permission_classes = [AllowAny]
 
@@ -81,13 +76,84 @@ class UserRegistrationDetailView(APIView):
                     logger.info(f"Artisan user info: {artisan_data}")
 
                     artisan_serializer = ArtisanProfileSerializer(data=artisan_data)
-                    logger.info(f"Artisan serializers info: {artisan_serializer}")
+                    logger.info(f"Artisan serializer info: {artisan_serializer}")
                     if artisan_serializer.is_valid():
                         artisan = artisan_serializer.save()
                         logger.info(f"Artisan serializer saved: {artisan}")
                         if 'profile_image' in request.FILES:
                             artisan.profile_image = request.FILES['profile_image']
-                            logger.info(f"Artisan user info: {artisan.profile_image}")
+                            artisan.save()  # Save the instance to store the image
+                            logger.info(f"Artisan profile image saved: {artisan.profile_image}")
+                        return Response({'detail': 'Artisan profile created successfully!'}, status=status.HTTP_201_CREATED)
+                    else:
+                        logger.error(f"Artisan serializer errors: {artisan_serializer.errors}")
+                        return Response(artisan_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    logger.error("Artisan profile already exists for this user.")
+                    return Response({'error': 'Artisan profile already exists for this user.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            elif user.user_type == "employer":
+                employer_profile = EmployerProfile.objects.filter(user=user).first()
+                if not employer_profile:
+                    employer_data = request.data.copy()
+                    employer_data['user'] = user.id
+                    employer_serializer = EmployerProfileSerializer(data=employer_data)
+                    if employer_serializer.is_valid():
+                        employer_serializer.save()
+                        logger.info("Employer profile created successfully.")
+                        return Response({'detail': 'Employer profile created successfully!'}, status=status.HTTP_201_CREATED)
+                    else:
+                        logger.error(f"Employer serializer errors: {employer_serializer.errors}")
+                        return Response(employer_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    logger.error("Employer profile already exists for this user.")
+                    return Response({'error': 'Employer profile already exists for this user.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            else:
+                logger.error(f"Invalid user type: {user.user_type}")
+                return Response({'error': 'Invalid user type.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            logger.error(f"Unexpected error: {str(e)}")
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+class UserRegistrationDetailView90(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        try:
+            user_id = request.data.get('username')
+            if not user_id:
+                logger.error("Username is required.")
+                return Response({'error': 'Username is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                user = CustomUser.objects.get(username=user_id)
+                logger.info(f"User found: {user.username}")
+            except CustomUser.DoesNotExist:
+                logger.error(f"User not found: {user_id}")
+                return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            if user.user_type == "artisan":
+                artisan_profile = ArtisanProfile.objects.filter(user=user).first()
+                logger.info(f"Artisan profile details: {artisan_profile}")
+                
+                if not artisan_profile:
+                    artisan_data = request.data.copy()
+                    artisan_data['user'] = user.id
+
+                    artisan_serializer = ArtisanProfileSerializer(data=artisan_data)
+                    if artisan_serializer.is_valid():
+                        artisan = artisan_serializer.save()
+                        if 'profile_image' in request.FILES:
+                            artisan.profile_image = request.FILES['profile_image']
                             artisan.save()
                             logger.info("Artisan profile created with profile image.")
                         return Response({'detail': 'Artisan profile created successfully!'}, status=status.HTTP_201_CREATED)
@@ -122,7 +188,6 @@ class UserRegistrationDetailView(APIView):
         except Exception as e:
             logger.error(f"Unexpected error: {str(e)}")
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 
 class UserRegistrationDetailView66(APIView):
