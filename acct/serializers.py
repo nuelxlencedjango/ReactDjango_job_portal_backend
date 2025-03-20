@@ -58,6 +58,11 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return user
     
 
+from rest_framework import serializers
+from .models import ArtisanProfile, CustomUser, MarketerProfile
+from io import BytesIO
+from PIL import Image
+from django.core.files.images import ImageFile
 
 class ArtisanProfileSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
@@ -90,31 +95,23 @@ class ArtisanProfileSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Invalid image file.")
         return value
 
-    def resize_image(self, image):
-        """Resize the image to a maximum of 500x500 pixels."""
-        img = Image.open(image)
-        img.thumbnail((500, 500))  # Resize to max 500x500 pixels
-        thumb_io = BytesIO()
-        img.save(thumb_io, format='JPEG', quality=85)  # Save as JPEG with 85% quality
-        return ImageFile(thumb_io, name=image.name)
-
     def create(self, validated_data):
-        """Create an ArtisanProfile instance and resize the profile image if provided."""
+        """Create an ArtisanProfile instance and pass the profile image to the model for resizing."""
         profile_image = validated_data.pop('profile_image', None)
         artisan = ArtisanProfile.objects.create(**validated_data)
         if profile_image:
-            artisan.profile_image = self.resize_image(profile_image)
-            artisan.save()
+            artisan.profile_image = profile_image
+            artisan.save()  # The model's save() 
         return artisan
 
     def update(self, instance, validated_data):
-        """Update an ArtisanProfile instance and resize the profile image if provided."""
+        """Update an ArtisanProfile instance and pass the profile image to the model for resizing."""
         profile_image = validated_data.pop('profile_image', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         if profile_image:
-            instance.profile_image = self.resize_image(profile_image)
-        instance.save()
+            instance.profile_image = profile_image
+        instance.save()  # The model's save() 
         return instance
 
 

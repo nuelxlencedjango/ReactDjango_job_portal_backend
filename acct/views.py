@@ -49,6 +49,15 @@ class UserRegistrationAndProfileCreation(APIView):
 
 
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import AllowAny
+from .models import CustomUser, ArtisanProfile, EmployerProfile
+from .serializers import ArtisanProfileSerializer, EmployerProfileSerializer
+import logging
+
+logger = logging.getLogger(__name__)
 
 class UserRegistrationDetailView(APIView):
     permission_classes = [AllowAny]
@@ -113,7 +122,6 @@ class UserRegistrationDetailView(APIView):
         except Exception as e:
             logger.error(f"Unexpected error: {str(e)}")
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 
 
