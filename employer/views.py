@@ -249,15 +249,6 @@ class CartItemView(APIView):
         if user.user_type != 'employer':
             return Response({"detail": "User is not an employer."}, status=403)
         
-        secret_key = os.getenv('FLUTTERWAVE_PUBLIC_KEY')
-
-        AUTH_COOKIE_DOMAIN=os.getenv('AUTH_COOKIE_DOMAIN')
-        DATABASE_USER = os.getenv('DATABASE_USER')
-        API_KEY=os.getenv('API_KEY')
-        DATABASE_PASSWORD =os.getenv('DATABASE_PASSWORD')
-        FLUTTERWAVE_PUBLIC_KEY =os.getenv('FLUTTERWAVE_PUBLIC_KEY')
-
-        print(f"FLUTTERWAVE_SECRET_KEY: {secret_key}")
         
         try:
             carts = Cart.objects.filter(user=user, paid=False)
@@ -266,28 +257,13 @@ class CartItemView(APIView):
                 "first_name": user.first_name,
                 "last_name": user.last_name,
                 "email": user.email,},
-                "secret_keys": secret_key,
-                'AUTH_COOKIE_DOMAIN:':AUTH_COOKIE_DOMAIN,
-                'DATABASE_USER': DATABASE_USER,
-                'API_KEY_cloudinary':API_KEY,
-                'password_database':DATABASE_PASSWORD,
-                'FLUTTERWAVE_PUBLIC_KEY':FLUTTERWAVE_PUBLIC_KEY,
+              
                 },status=200,
                 )
         except Cart.DoesNotExist:
-            return Response(
-        {
-            "cart": "Your cart is empty.",
-            "user": {
-                "id": user.id,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "email": user.email,
-                
-            },
-        },
-        status=200,
-    )
+            return Response({"cart": "Your cart is empty.","user": {"id": user.id,
+                "first_name": user.first_name,"last_name": user.last_name,
+                "email": user.email, },},status=200,)
        
     def delete(self, request, pk):
         """
@@ -353,9 +329,9 @@ class InitiatePayment(APIView):
 
         payload = {
             'tx_ref': reference,
-            'amount': str(total_amount),
+            'amount': str(total_amount), 
             "currency": currency,
-            "redirect_url": "https://react-django-job-portal-frontend.vercel.app/payment-confirmation/", 
+            "redirect_url": "https://www.i-wan-wok.com/payment-confirmation/", 
             "customer": {
                 'email': user.email,
                 "name": f"{user.first_name} {user.last_name}",
@@ -524,17 +500,6 @@ class ConfirmPayment(APIView):
 
 
 
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-from django.shortcuts import get_object_or_404
-from .models import TransactionDetails
-from .serializers import TransactionDetailsSerializer
-import logging
-
-logger = logging.getLogger(__name__)
 
 class LastPaymentView(APIView):
     permission_classes = [IsAuthenticated]

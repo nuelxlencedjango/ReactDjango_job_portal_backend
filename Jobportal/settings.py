@@ -94,7 +94,8 @@ SameSite=None
 
 # settings.py
 
-FRONTEND_URL = 'https://react-django-job-portal-frontend.vercel.app' 
+
+FRONTEND_URL = os.getenv('FRONTEND_URL')
 
 
 
