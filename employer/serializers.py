@@ -51,9 +51,9 @@ class ArtisanDetailSerializer(serializers.ModelSerializer):
 
     def get_profile_image(self, obj):
         # Return the URL of the resized image if it exists, otherwise return the original image URL
-        if obj.profile_image_resized:
-            return obj.profile_image_resized.url
-        return obj.profile_image.url if obj.profile_image else None
+        if obj.profile_image:
+            return obj.profile_image.url
+        return obj.profile_image_resized.url if obj.profile_image_resized else None
 
 
 
