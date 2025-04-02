@@ -51,6 +51,10 @@ if not ALLOWED_HOSTS:
 
 #API Configurations
 
+
+# Secret key and other settings...
+
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -58,30 +62,41 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
 }
-
-# Secret key and other settings...
-
-
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
-    'AUTH_COOKIE': 'access_token',
-    'AUTH_COOKIE_SECURE': True,  # Set to True for HTTPS (use in production)
-    'AUTH_COOKIE_HTTP_ONLY': True,  # To prevent access to the cookie via JavaScript
-    'AUTH_COOKIE_PATH': '/',  # Cookie will be sent with every request
-    'AUTH_COOKIE_SAMESITE': 'None',  # Set to 'None' to allow cross-origin cookies
-    'REFRESH_COOKIE_PATH': '/api/token/refresh/',
-    #'AUTH_COOKIE_DOMAIN': os.getenv('AUTH_COOKIE_DOMAIN', '.example.com'),  # Update with your domain
-    #'AUTH_COOKIE_DOMAIN': os.getenv('AUTH_COOKIE_DOMAIN', '.example.com'),
-    'AUTH_COOKIE_DOMAIN': os.getenv('AUTH_COOKIE_DOMAIN', '.vercel.app'),  # Allow cookies to be shared across all subdomains under vercel.app
-
+    
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    
+    # Cookie settings (optional - only use if doing cookie-based auth)
+    'AUTH_COOKIE': 'access_token',
+    'AUTH_COOKIE_SECURE': not DEBUG,
+    'AUTH_COOKIE_HTTP_ONLY': True,
+    'AUTH_COOKIE_PATH': '/',
+    'AUTH_COOKIE_SAMESITE': 'None',
+    'AUTH_COOKIE_DOMAIN': os.getenv('DOMAIN', None),
 }
+
+# Security middleware settings
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
 
 CSRF_COOKIE_SAMESITE = 'None'  # Allows CSRF cookie to be sent with cross-origin requests
 SESSION_COOKIE_SAMESITE = 'None'  # Allows session cookie to be sent with cross-origin requests
