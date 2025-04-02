@@ -38,7 +38,7 @@ class JobDetailsSerializer(serializers.ModelSerializer):
 
 
 
-class ArtisanDetailSerializer(serializers.ModelSerializer):
+class ArtisanDetailSerializer11(serializers.ModelSerializer):
     first_name = serializers.CharField(source='user.first_name', read_only=True)
     last_name = serializers.CharField(source='user.last_name', read_only=True)
     location = serializers.CharField(source="location.location", read_only=True)
@@ -51,10 +51,37 @@ class ArtisanDetailSerializer(serializers.ModelSerializer):
 
     def get_profile_image(self, obj):
         # Return the URL of the resized image if it exists, otherwise return the original image URL
-        if obj.profile_image:
-            return obj.profile_image.url
-        return obj.profile_image_resized.url if obj.profile_image_resized else None
+        if obj.profile_image_resized:
+            return obj.profile_image_resized.url
+        return obj.profile_image.url if obj.profile_image else None
 
+
+from cloudinary import uploader, CloudinaryImage
+from cloudinary.utils import cloudinary_url
+
+class ArtisanDetailSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(source='user.first_name', read_only=True)
+    last_name = serializers.CharField(source='user.last_name', read_only=True)
+    location = serializers.CharField(source="location.location", read_only=True)
+    service = serializers.CharField(source="service.title", read_only=True)
+    profile_image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ArtisanProfile
+        fields = ['id', 'first_name', 'last_name', 'location', 'pay', 'profile_image', 'experience', 'service']
+
+    def get_profile_image(self, obj):
+        if obj.profile_image:
+            # Generate resized URL using Cloudinary transformations
+            return cloudinary_url(
+                obj.profile_image.public_id,
+                width=300,
+                height=300,
+                crop="fill",
+                quality="auto",
+                fetch_format="auto"
+            )[0]
+        return None
 
 
 
