@@ -519,3 +519,42 @@ class LastPaymentView(APIView):
         except Exception as e:
             logger.error(f"Error fetching last payment for user {request.user.id}: {str(e)}")
             return Response({"message": "An error occurred while fetching the last payment"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
+
+
+
+class ExpectedArtisanView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            # Get the last job details for the authenticated user
+            last_job = JobDetails.objects.filter(employer=request.user).order_by('-date_created').first()
+            
+            if not last_job:
+                logger.info(f"No job found for user: {request.user.id}")
+                return Response({"message": "No job details found"}, status=status.HTTP_404_NOT_FOUND)
+            
+            # Get the artisan details if artisan field is not empty
+            if last_job.artisan:
+                try:
+                    artisan = ArtisanProfile.objects.get(id=last_job.artisan)
+                    artisan_serializer = ArtisanDetailSerializer(artisan)
+                    
+                    # Combine job and artisan data
+                    job_serializer = JobDetailsSerializer(last_job)
+                    response_data = {'job_details': job_serializer.data,
+                                     'artisan_details': artisan_serializer.data }
+                    return Response(response_data, status=status.HTTP_200_OK)
+                except ArtisanProfile.DoesNotExist:
+                    logger.error(f"Artisan with ID {last_job.artisan} not found")
+                    return Response({"message": "Artisan details not found"}, status=status.HTTP_404_NOT_FOUND)
+            else:
+                return Response({"message": "No artisan assigned to this job"}, status=status.HTTP_404_NOT_FOUND)
+        
+        except Exception as e:
+            logger.error(f"Error fetching expected artisan for user {request.user.id}: {str(e)}")
+            return Response({"message": "An error occurred while fetching artisan details"}, 
+                          status=status.HTTP_500_INTERNAL_SERVER_ERROR)

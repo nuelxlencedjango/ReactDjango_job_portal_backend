@@ -56,7 +56,7 @@ class ArtisanDetailSerializer11(serializers.ModelSerializer):
         return obj.profile_image.url if obj.profile_image else None
 
 
-from cloudinary import uploader, CloudinaryImage
+
 from cloudinary.utils import cloudinary_url
 
 class ArtisanDetailSerializer(serializers.ModelSerializer):

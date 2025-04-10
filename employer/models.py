@@ -92,6 +92,7 @@ class JobDetails(models.Model):
     contact_person = models.CharField(max_length=255)
     contact_person_phone = models.CharField(max_length=15)
     expectedDate = models.DateTimeField(auto_now_add=True)
+    
     #added_at = models.DateTimeField(auto_now_add=True)
     location = models.CharField(max_length=255)
     date_created = models.DateTimeField(auto_now_add=True)

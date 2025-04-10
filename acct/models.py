@@ -89,6 +89,8 @@ class MarketerProfile(BaseProfile):
 from cloudinary.uploader import upload
 
 
+
+
 class ArtisanProfile(BaseProfile):
     service = models.ForeignKey('api.Service', related_name='artisans', on_delete=models.CASCADE, null=True, blank=True)
     experience = models.PositiveIntegerField(null=True, blank=True)
@@ -104,19 +106,20 @@ class ArtisanProfile(BaseProfile):
     
     def save(self, *args, **kwargs):
         """Override the save method to handle image resizing and optimization."""
+
+        if not self.pk or 'commission' not in self.__dict__:  # Only for new records
+            if self.pay:
+                self.commission = round(self.pay * Decimal('0.10'), 2)
+               
+                self.pay = self.pay + self.commission
         
-        if self.pay:
-            self.commission = round(self.pay * Decimal('0.10'), 2)
-            self.pay = self.pay + self.commission
-            
+
         if self.profile_image and not self.pk:  # Only process new images
             try:
                 # Upload the image to Cloudinary with resizing and optimization
-                result = upload(
-                    self.profile_image,
-                    transformation=[
-                        {"width": 800, "height": 800, "crop": "limit"}  # Resize to max 800x800
-                    ],
+                result = upload(self.profile_image,
+                    transformation=[{"width": 800, "height": 800, "crop": "limit"}  # Resize to max 800x800
+                ],
                     quality="auto",  # Optimize image quality
                     fetch_format="auto"  # Automatically choose the best format (e.g., webp)
                 )
