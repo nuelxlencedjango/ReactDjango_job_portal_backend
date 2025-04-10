@@ -25,5 +25,6 @@ urlpatterns = [
  
     #path('employer/last-payment/', LastPaymentView.as_view(), name='last-payment'),
     path('last-payment/', LastPaymentView.as_view(), name='last-payment'),
+    path('employer-requests/', ServicesRequestListView.as_view(), name='employer-requests'),
 ]
 
