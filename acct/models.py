@@ -6,6 +6,7 @@ from PIL import Image
 from io import BytesIO
 import requests
 from django.core.files.base import ContentFile
+from decimal import Decimal
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
@@ -86,7 +87,7 @@ class MarketerProfile(BaseProfile):
 
 
 from cloudinary.uploader import upload
-from cloudinary.utils import cloudinary_url
+
 
 class ArtisanProfile(BaseProfile):
     service = models.ForeignKey('api.Service', related_name='artisans', on_delete=models.CASCADE, null=True, blank=True)
@@ -98,10 +99,16 @@ class ArtisanProfile(BaseProfile):
     job_type = models.CharField(max_length=50, null=True, blank=True)
     industry = models.CharField(max_length=100, null=True, blank=True)
     pay = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    commission = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     marketer = models.ForeignKey(MarketerProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='registered_artisans')
     
     def save(self, *args, **kwargs):
         """Override the save method to handle image resizing and optimization."""
+        
+        if self.pay:
+            self.commission = round(self.pay * Decimal('0.10'), 2)
+            self.pay = self.pay + self.commission
+            
         if self.profile_image and not self.pk:  # Only process new images
             try:
                 # Upload the image to Cloudinary with resizing and optimization
