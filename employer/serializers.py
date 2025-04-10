@@ -101,7 +101,7 @@ class CartSerializer(serializers.ModelSerializer):
 
 
 
-class OrderSerializer(serializers.ModelSerializer):
+class ServicesRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['id','user','order_code','total_price','cart_code','status','paid_at',
@@ -115,6 +115,9 @@ class OrderSerializer(serializers.ModelSerializer):
         representation['paid_at'] = instance.paid_at.strftime("%Y-%m-%d %H:%M:%S") 
         return representation
     
+
+
+
 
 
 

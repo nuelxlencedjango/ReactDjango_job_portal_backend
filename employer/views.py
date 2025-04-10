@@ -1,5 +1,5 @@
 
-from django.shortcuts import render
+
 from rest_framework import generics, serializers, status,permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -558,3 +558,15 @@ class ExpectedArtisanView(APIView):
             logger.error(f"Error fetching expected artisan for user {request.user.id}: {str(e)}")
             return Response({"message": "An error occurred while fetching artisan details"}, 
                           status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
+from .models import Order
+
+
+class ServicesRequestListView(generics.ListAPIView):
+    serializer_class = ServicesRequestSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user).order_by('-paid_at')
