@@ -73,7 +73,7 @@ class MarketerRegistrationView101(APIView):
 
 logger = logging.getLogger(__name__)
 
-class MarketerRegistrationView(APIView):
+class ArtisanRegistrationView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
