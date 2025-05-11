@@ -74,9 +74,9 @@ class ArtisanRegistrationView(APIView):
 
     def post(self, request):
         try:
-            if MarketerProfile.objects.get(marketer_code= request.user):
+            if MarketerProfile.objects.get(username = request.user):
 
-                marketer = MarketerProfile.objects.get(marketer_code= request.user)
+                marketer = MarketerProfile.objects.get(username= request.user)
                 logger.info(f"Marketer found: {marketer.user.username}")
 
                 return Response({'marketer_code': 'Marketer profile not found.'}, 
@@ -102,17 +102,7 @@ class ArtisanRegistrationView(APIView):
                     logger.error(f"User serializer errors: {user_serializer.errors}")
                     return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-                # Validate marketer_code
-                #marketer = None
-                #marketer_code = request.data.get('marketer_code')
-                #if marketer_code:
-                #try:
-                 #   marketer = MarketerProfile.objects.get(marketer_code= request.user)
-                  #  logger.info(f"Marketer found: {marketer.user.username}")
-                #except MarketerProfile.DoesNotExist:
-                 #   logger.error(f"Marketer profile not found.")
-                  #  return Response({'marketer_code': 'Marketer profile not found.'}, status=status.HTTP_400_BAD_REQUEST)
-
+               
                 # Create ArtisanProfile
                 artisan_data = request.data.copy()
                 artisan_data['user'] = user.id
