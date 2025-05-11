@@ -74,9 +74,9 @@ class ArtisanRegistrationView(APIView):
 
     def post(self, request):
         try:
-            if MarketerProfile.objects.get(username = request.user):
+            if MarketerProfile.objects.get(user = request.user):
 
-                marketer = MarketerProfile.objects.get(username= request.user)
+                marketer = MarketerProfile.objects.get(user= request.user)
                 logger.info(f"Marketer found: {marketer.user.username}")
 
                 return Response({'marketer_code': 'Marketer profile not found.'}, 
