@@ -1,8 +1,10 @@
 
 from django.urls import path
-from .views import MarketerRegistrationView
+from .views import ArtisanRegistrationView
 
 urlpatterns = [
-    path('marketer-register/', MarketerRegistrationView.as_view(), name='marketer-register'),
-    #  path('marketer/dashboard/', MarketerDashboardView.as_view(), name='marketer-dashboard'),
+    path('artisan-register/', ArtisanRegistrationView.as_view(), name='artisan_register'),
+    
 ]
+
+

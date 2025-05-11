@@ -50,7 +50,7 @@ class UserRegistrationAndProfileCreation(APIView):
 
 
 
-logger = logging.getLogger(__name__)
+
 
 class UserRegistrationDetailView(APIView):
     permission_classes = [AllowAny]
@@ -121,6 +121,10 @@ def set_cookie(response, token, cookie_name):
     response.set_cookie(cookie_name,token,httponly=True,secure=True,samesite='Lax',
         path='/',)
     
+
+
+
+
 
 class LoginView(APIView):
     permission_classes = [AllowAny]

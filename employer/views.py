@@ -561,6 +561,50 @@ class ExpectedArtisanView(APIView):
         
 
 
+
+# views.py
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import Order, OrderItem
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def last_paid_artisans(request):
+    # Get the last paid order for this user
+    last_order = Order.objects.filter(
+        user=request.user,
+        paid=True
+    ).order_by('-paid_at').first()
+    
+    if not last_order:
+        return Response([])
+    
+    # Get all order items with artisan details
+    order_items = OrderItem.objects.filter(
+        order=last_order
+    ).select_related('artisan', 'service')
+    
+    # Serialize the data
+    artisans_data = []
+    for item in order_items:
+        artisan = item.artisan
+        artisans_data.append({
+            'id': artisan.id,
+            'first_name': artisan.user.first_name,
+            'last_name': artisan.user.last_name,
+            'profile_image': artisan.profile_image.url if artisan.profile_image else None,
+            'service': item.service.title,
+            'experience': artisan.experience,
+            'location': artisan.location,
+            'pay': artisan.pay_rate,
+            'order_item_id': item.id,
+            'price': item.price,
+            'status': item.status
+        })
+    
+    return Response(artisans_data)
+
 from .models import Order
 
 
