@@ -3,8 +3,7 @@ from .views import *
 
 from . import views
 
-from django.urls import path
-from .views import ExpectedArtisanView
+#from .views import ExpectedArtisanView
 
 
 urlpatterns = [
