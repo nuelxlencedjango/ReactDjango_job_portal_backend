@@ -74,6 +74,15 @@ class ArtisanRegistrationView(APIView):
 
     def post(self, request):
         try:
+            if MarketerProfile.objects.get(marketer_code= request.user):
+
+                marketer = MarketerProfile.objects.get(marketer_code= request.user)
+                logger.info(f"Marketer found: {marketer.user.username}")
+
+                return Response({'marketer_code': 'Marketer profile not found.'}, 
+                                status=status.HTTP_400_BAD_REQUEST)
+
+
             with transaction.atomic():
                 # Validate and create CustomUser
                 user_data = {
@@ -97,12 +106,12 @@ class ArtisanRegistrationView(APIView):
                 #marketer = None
                 #marketer_code = request.data.get('marketer_code')
                 #if marketer_code:
-                try:
-                    marketer = MarketerProfile.objects.get(marketer_code= request.user)
-                    logger.info(f"Marketer found: {marketer.user.username}")
-                except MarketerProfile.DoesNotExist:
-                    logger.error(f"Marketer profile not found.")
-                    return Response({'marketer_code': 'Marketer profile not found.'}, status=status.HTTP_400_BAD_REQUEST)
+                #try:
+                 #   marketer = MarketerProfile.objects.get(marketer_code= request.user)
+                  #  logger.info(f"Marketer found: {marketer.user.username}")
+                #except MarketerProfile.DoesNotExist:
+                 #   logger.error(f"Marketer profile not found.")
+                  #  return Response({'marketer_code': 'Marketer profile not found.'}, status=status.HTTP_400_BAD_REQUEST)
 
                 # Create ArtisanProfile
                 artisan_data = request.data.copy()
@@ -113,11 +122,9 @@ class ArtisanRegistrationView(APIView):
                 if artisan_serializer.is_valid():
                     artisan_serializer.save()
                     logger.info(f"Artisan profile created for user: {user.username}")
-                    return Response({
-                        'id': user.id,
-                        'username': user.username,
-                        'detail': 'Artisan registered successfully.'
-                    }, status=status.HTTP_201_CREATED)
+                    return Response({'id': user.id,'username': user.username,
+                        'detail': 'Artisan registered successfully.'}, 
+                        status=status.HTTP_201_CREATED)
                 else:
                     logger.error(f"Artisan serializer errors: {artisan_serializer.errors}")
                     return Response(artisan_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
