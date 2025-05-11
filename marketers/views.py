@@ -82,6 +82,7 @@ class ArtisanRegistrationView(APIView):
                     'last_name': request.data.get('last_name'),
                     'email': request.data.get('email'),
                     'password': request.data.get('password'),
+                    'password2': request.data.get('password2'),
                     'user_type': request.data.get('user_type', 'artisan'),
                 }
                 user_serializer = CustomUserSerializer(data=user_data)
