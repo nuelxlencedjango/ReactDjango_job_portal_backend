@@ -158,22 +158,6 @@ class FingerprintSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    #username = serializers.CharField(source='user.username')
-    #first_name = serializers.CharField(source='user.first_name')
-    #last_name = serializers.CharField(source='user.last_name')
-    company_name = serializers.CharField(allow_null=True)
-    company_logo = serializers.ImageField(allow_null=True)
-    #user_type = serializers.CharField(source='user.user_type')
-
-    class Meta:
-        model = CustomUser
-        fields = ['username', 'first_name', 'last_name', 'company_name', 'company_logo', 'user_type']
-
-
-
-
-
-class UserProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='username')
     first_name = serializers.CharField(source='first_name', allow_null=True)
     last_name = serializers.CharField(source='last_name', allow_null=True)
