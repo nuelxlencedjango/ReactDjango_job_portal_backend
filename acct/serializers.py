@@ -1,13 +1,13 @@
 # users/serializers.py
 from rest_framework import serializers
+#from django.contrib.auth import get_user_model
+from .models import CustomUser, ArtisanProfile, EmployerProfile, MarketerProfile
 from .models import Fingerprint 
 from django.core.files.images import ImageFile
 from io import BytesIO
 from PIL import Image
 from django.contrib.auth.models import User
 
-from .models import CustomUser, ArtisanProfile, EmployerProfile, ManagerProfile, MarketerProfile
-from cloudinary.utils import cloudinary_url
 
 
 
@@ -56,6 +56,9 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return user
 
 
+from cloudinary.utils import cloudinary_url
+from rest_framework import serializers
+from .models import ArtisanProfile, CustomUser, MarketerProfile
 
 class ArtisanProfileSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
@@ -158,6 +161,25 @@ class FingerprintSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    #username = serializers.CharField(source='user.username')
+    #first_name = serializers.CharField(source='user.first_name')
+    #last_name = serializers.CharField(source='user.last_name')
+    company_name = serializers.CharField(allow_null=True)
+    company_logo = serializers.ImageField(allow_null=True)
+    #user_type = serializers.CharField(source='user.user_type')
+
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'first_name', 'last_name','email', 'company_name', 'company_logo', 'user_type']
+
+
+
+
+
+'''
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField()
     first_name = serializers.CharField(allow_null=True)
     last_name = serializers.CharField(allow_null=True)
@@ -196,6 +218,5 @@ class UserProfileSerializer(serializers.ModelSerializer):
             return None
         except CustomUser.DoesNotExist:
             return None
-        
-    
-  
+
+'''
