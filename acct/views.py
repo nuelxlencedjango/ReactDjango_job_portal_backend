@@ -1,7 +1,4 @@
 from django.shortcuts import render
-
-# Create your views here.
-# users/views.py
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -157,6 +154,36 @@ class LoginView(APIView):
         return response
     
 
+
+
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        data = {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'user_type': user.user_type,
+        }
+
+        # profile-specific data
+        if hasattr(user, 'artisan_profile'):
+            profile = user.artisan_profile
+            data.update({'profile_image': profile.profile_image.url if profile.profile_image else None,
+                'company_name': profile.company_name,})
+            
+        elif hasattr(user, 'employer_profile'):
+            profile = user.employer_profile
+            data.update({
+                'company_name': profile.company_name,
+               
+            })
+
+        return Response(data)
 
 
 

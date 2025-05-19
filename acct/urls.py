@@ -4,6 +4,7 @@ from . import views
 from .views import *
 from .views import FingerprintUploadView
 
+
 urlpatterns = [
    
     path('registration/', views.UserRegistrationAndProfileCreation.as_view(), name='registration'),
@@ -12,7 +13,6 @@ urlpatterns = [
     
 
     path('upload-fingerprint/<int:artisan_id>/', FingerprintUploadView.as_view(), name='upload-fingerprint'),
-   
+    path('user-profile/', UserProfileView.as_view(), name='user-profile'),
 ]
-
 
