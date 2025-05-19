@@ -158,16 +158,17 @@ class FingerprintSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    username = serializers.CharField('username')
-    first_name = serializers.CharField('first_name', allow_null=True)
-    last_name = serializers.CharField('last_name', allow_null=True)
-    user_type = serializers.CharField('user_type')
+    username = serializers.CharField()
+    first_name = serializers.CharField(allow_null=True)
+    last_name = serializers.CharField(allow_null=True)
+    user_type = serializers.CharField()
+    email = serializers.EmailField()
     company_name = serializers.SerializerMethodField()
     company_logo = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
-        fields = ['username', 'first_name', 'last_name', 'user_type', 'company_name', 'company_logo']
+        fields = ['username', 'first_name', 'last_name','email', 'user_type', 'company_name', 'company_logo']
 
     def get_company_name(self, obj):
         try:
