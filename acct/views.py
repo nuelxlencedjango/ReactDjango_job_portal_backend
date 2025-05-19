@@ -141,13 +141,21 @@ class LoginView(APIView):
         refresh_token = str(refresh)
 
         response = Response({'refresh': refresh_token,'access': access_token,
-                             'user_type': user.user_type,})
+                             'user_type': user.user_type,'user_details': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'profile_image': user.artisan_profile.profile_image.url if user.artisan_profile.profile_image else None,
+               
+            }})
 
         set_cookie(response, access_token, 'access_token')
         set_cookie(response, refresh_token, 'refresh_token')
 
         return response
-
+    
 
 
 
