@@ -144,7 +144,7 @@ class LoginView(APIView):
                 'email': user.email,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
-                'profile_image': user.artisan_profile.profile_image.url if user.artisan_profile.profile_image else None,
+                'profile_image': user.artisanprofile.profile_image.url if user.artisanprofile.profile_image else None,
                
             }})
 
