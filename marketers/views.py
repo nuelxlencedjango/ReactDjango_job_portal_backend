@@ -6,7 +6,10 @@ from rest_framework import status
 from acct.models import  MarketerProfile
 from acct.serializers import CustomUserSerializer, ArtisanProfileSerializer, EmployerProfileSerializer
 from django.db import transaction
-from acct.models import CustomUser
+from acct.models import CustomUser,ArtisanProfile
+from rest_framework.permissions import IsAuthenticated
+
+
 
 import logging
 
@@ -135,3 +138,18 @@ class ArtisanRegistrationView(APIView):
         except Exception as e:
             logger.error(f"Unexpected error: {str(e)}")
             return Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
+
+
+
+class ListArtisansView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+       
+        artisans = ArtisanProfile.objects.filter(marketer__user=request.user
+                ).select_related('user', 'service')
+        serializer = ArtisanProfileSerializer(artisans, many=True)
+        return Response(serializer.data)
