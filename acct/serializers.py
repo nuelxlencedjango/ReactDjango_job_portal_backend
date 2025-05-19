@@ -1,13 +1,13 @@
 # users/serializers.py
 from rest_framework import serializers
-#from django.contrib.auth import get_user_model
-from .models import CustomUser, ArtisanProfile, EmployerProfile, MarketerProfile
 from .models import Fingerprint 
 from django.core.files.images import ImageFile
 from io import BytesIO
 from PIL import Image
 from django.contrib.auth.models import User
 
+from .models import CustomUser, ArtisanProfile, EmployerProfile, ManagerProfile, MarketerProfile
+from cloudinary.utils import cloudinary_url
 
 
 
@@ -56,9 +56,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return user
 
 
-from cloudinary.utils import cloudinary_url
-from rest_framework import serializers
-from .models import ArtisanProfile, CustomUser, MarketerProfile
 
 class ArtisanProfileSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
@@ -171,3 +168,49 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['username', 'first_name', 'last_name', 'company_name', 'company_logo', 'user_type']
+
+
+
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='username')
+    first_name = serializers.CharField(source='first_name', allow_null=True)
+    last_name = serializers.CharField(source='last_name', allow_null=True)
+    user_type = serializers.CharField(source='user_type')
+    company_name = serializers.SerializerMethodField()
+    company_logo = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'first_name', 'last_name', 'user_type', 'company_name', 'company_logo']
+
+    def get_company_name(self, obj):
+        try:
+            if obj.user_type == 'employer':
+                profile = EmployerProfile.objects.get(user=obj)
+                return profile.company_name
+            return None
+        except EmployerProfile.DoesNotExist:
+            return None
+
+    def get_company_logo(self, obj):
+        try:
+            if obj.user_type == 'artisan':
+                profile = ArtisanProfile.objects.get(user=obj)
+                return profile.profile_image.url if profile.profile_image else None
+            
+            elif obj.user_type == 'marketer':
+                profile = MarketerProfile.objects.get(user=obj)
+                return profile.profile_image.url if profile.profile_image else None
+            
+            elif obj.user_type == 'manager':
+                profile = ManagerProfile.objects.get(user=obj)
+                return profile.profile_image.url if profile.profile_image else None
+            
+            return None
+        except CustomUser.DoesNotExist:
+            return None
+        
+    
+  

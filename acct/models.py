@@ -78,6 +78,7 @@ class BaseProfile(models.Model):
 # Maketer Profile
 class MarketerProfile(BaseProfile):
     address = models.CharField(max_length=500, null=True, blank=True)
+    profile_image = CloudinaryField(null=True, blank=True)
     
     def __str__(self):
         return f"Marketer: {self.user.first_name} {self.user.last_name}"
