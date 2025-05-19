@@ -5,7 +5,8 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from rest_framework import status
 from .models import CustomUser, ArtisanProfile, EmployerProfile,Fingerprint
-from .serializers import CustomUserSerializer,ArtisanProfileSerializer, EmployerProfileSerializer,FingerprintSerializer
+from .serializers import (CustomUserSerializer,ArtisanProfileSerializer, UserProfileSerializer, 
+                          EmployerProfileSerializer,FingerprintSerializer)
 from django.core.files.storage import default_storage
 from django.conf import settings
 
@@ -13,15 +14,16 @@ import base64
 from django.core.files.base import ContentFile
 from django.core.exceptions import ValidationError
 from PIL import Image
-#from io import BytesIO
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
+
+from django.contrib.auth.models import User
+
 
 
 import logging
 
 logger = logging.getLogger(__name__)
-# views.py
 
 class UserRegistrationAndProfileCreation(APIView):
     permission_classes = [AllowAny]
@@ -43,8 +45,6 @@ class UserRegistrationAndProfileCreation(APIView):
                 return Response(formatted_errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 
 
 
@@ -121,8 +121,6 @@ def set_cookie(response, token, cookie_name):
 
 
 
-
-
 class LoginView(APIView):
     permission_classes = [AllowAny]
     def post(self, request, *args, **kwargs):
@@ -138,53 +136,13 @@ class LoginView(APIView):
         refresh_token = str(refresh)
 
         response = Response({'refresh': refresh_token,'access': access_token,
-                             'user_type': user.user_type,'user_details': {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                #'profile_image': user.artisanprofile.profile_image.url if user.artisanprofile.profile_image else None,
-               
-            }})
+                             'user_type': user.user_type,})
 
         set_cookie(response, access_token, 'access_token')
         set_cookie(response, refresh_token, 'refresh_token')
 
         return response
     
-
-
-
-class UserProfileView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        user = request.user
-        data = {
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'user_type': user.user_type,
-        }
-
-        # profile-specific data
-        if hasattr(user, 'artisan_profile'):
-            profile = user.artisan_profile
-            data.update({'profile_image': profile.profile_image.url if profile.profile_image else None,
-                'company_name': profile.company_name,})
-            
-        elif hasattr(user, 'employer_profile'):
-            profile = user.employer_profile
-            data.update({
-                'company_name': profile.company_name,
-               
-            })
-
-        return Response(data)
-
 
 
 class LogoutView(APIView):
@@ -211,6 +169,20 @@ class LogoutView(APIView):
             
         except Exception as e:
             return Response({"error": str(e)}, status=400)
+
+
+
+
+#Getting user details
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        serializer = UserProfileSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 
 
 

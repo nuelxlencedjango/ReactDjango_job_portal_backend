@@ -3,12 +3,10 @@ from rest_framework import serializers
 #from django.contrib.auth import get_user_model
 from .models import CustomUser, ArtisanProfile, EmployerProfile, MarketerProfile
 from .models import Fingerprint 
-
-
-
 from django.core.files.images import ImageFile
 from io import BytesIO
 from PIL import Image
+from django.contrib.auth.models import User
 
 
 
@@ -156,3 +154,20 @@ class FingerprintSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Invalid image format. Only PNG, JPG, or JPEG are allowed.")
         
         return value
+
+
+
+
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username')
+    first_name = serializers.CharField(source='user.first_name')
+    last_name = serializers.CharField(source='user.last_name')
+    company_name = serializers.CharField(allow_null=True)
+    company_logo = serializers.ImageField(allow_null=True)
+    user_type = serializers.CharField(source='user.user_type')
+
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'first_name', 'last_name', 'company_name', 'company_logo', 'user_type']
