@@ -92,9 +92,11 @@ class MarketerArtisansListView(APIView):
         try:
             
             marketer_profile = request.user.marketer_profile  
-            
+            logger.info(f"Marketer found via request.user: {marketer_profile}")
             lst_artisans = ArtisanProfile.objects.filter(marketer=marketer_profile)
+            logger.info(f"Marketer artisans: {lst_artisans}")
             serializer = ArtisanSearchListSerializer(lst_artisans, many=True)
+            logger.info(f"Marketer serializer: {serializer}")
             
             return Response(serializer.data, status=status.HTTP_200_OK)
             
