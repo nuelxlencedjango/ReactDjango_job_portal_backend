@@ -3,12 +3,13 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
-from acct.models import  MarketerProfile
-from acct.serializers import CustomUserSerializer, ArtisanProfileSerializer, EmployerProfileSerializer
+from acct.serializers import (CustomUserSerializer, ArtisanProfileSerializer, 
+                              EmployerProfileSerializer)
 from django.db import transaction
-from acct.models import CustomUser,ArtisanProfile
+from acct.models import CustomUser,ArtisanProfile,MarketerProfile
 from rest_framework.permissions import IsAuthenticated
 
+from .serializers import ArtisanSearchListSerializer
 
 
 import logging
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 class ArtisanRegistrationView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         try:
@@ -84,17 +85,23 @@ class ArtisanRegistrationView(APIView):
 
 
 
-
-class ListArtisansView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-       
-        artisans = ArtisanProfile.objects.filter(marketer__user=request.user
-                ).select_related('user', 'service')
-        serializer = ArtisanProfileSerializer(artisans, many=True)
-        return Response(serializer.data)
+class MarketerArtisansListView(APIView): 
+    permission_classes = [IsAuthenticated] 
     
-
-
+    def get(self, request):
+        try:
+            
+            marketer_profile = request.user.marketer_profile  
+            
+            lst_artisans = ArtisanProfile.objects.filter(marketer=marketer_profile)
+            serializer = ArtisanSearchListSerializer(lst_artisans, many=True)
+            
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        except AttributeError:
+            
+            return Response({"error": "User is not a marketer"}, status=status.HTTP_403_FORBIDDEN)
+        
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 

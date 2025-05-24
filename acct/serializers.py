@@ -7,7 +7,7 @@ from django.core.files.images import ImageFile
 from io import BytesIO
 from PIL import Image
 from django.contrib.auth.models import User
-
+from cloudinary.utils import cloudinary_url
 
 
 
@@ -56,9 +56,9 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return user
 
 
-from cloudinary.utils import cloudinary_url
-from rest_framework import serializers
-from .models import ArtisanProfile, CustomUser, MarketerProfile
+
+
+
 
 class ArtisanProfileSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all(), required=True)
