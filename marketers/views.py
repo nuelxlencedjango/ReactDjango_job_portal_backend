@@ -91,7 +91,8 @@ class MarketerArtisansListView(APIView):
     def get(self, request):
         try:
             
-            marketer_profile = request.user.marketer_profile  
+            
+            marketer_profile = MarketerProfile.objects.get(user=request.user)
             logger.info(f"Marketer found via request.user: {marketer_profile}")
             lst_artisans = ArtisanProfile.objects.filter(marketer=marketer_profile)
             logger.info(f"Marketer artisans: {lst_artisans}")
@@ -106,4 +107,6 @@ class MarketerArtisansListView(APIView):
         
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
 
