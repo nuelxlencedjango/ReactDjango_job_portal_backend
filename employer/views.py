@@ -614,3 +614,58 @@ class ServicesRequestListView(generics.ListAPIView):
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user).order_by('-paid_at')
+
+
+
+
+
+class ExpectedArtisanView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            # Fetch orders where paid=True for the authenticated user
+            paid_orders = Order.objects.filter(user=request.user, paid=True).order_by('-paid_at')
+            
+            if not paid_orders.exists():
+                logger.info(f"No paid orders found for user: {request.user.id}")
+                return Response({"message": "No paid orders found"}, status=status.HTTP_404_NOT_FOUND)
+            
+            response_data = []
+            for order in paid_orders:
+                # Get all order items for this order
+                order_items = OrderItem.objects.filter(order=order)
+                
+                for item in order_items:
+                    try:
+                        artisan = ArtisanProfile.objects.get(id=item.artisan.id)
+                        artisan_serializer = ArtisanDetailSerializer(artisan)
+                        
+                       
+                        job_details = {
+                            'expectedDate': order.paid_at, 
+                            'description': item.service.title,
+                            'contact_person': request.user.get_full_name() or request.user.username,
+                            'contact_person_phone': request.user.phone_number or 'N/A' 
+                        }
+                        
+                        response_data.append({
+                            'artisan_details': artisan_serializer.data,
+                            'job_details': job_details
+                        })
+                    except ArtisanProfile.DoesNotExist:
+                        logger.error(f"Artisan with ID {item.artisan.id} not found")
+                        continue  # Skip to next item if artisan not found
+            
+            if not response_data:
+                logger.info(f"No artisans found for paid orders for user: {request.user.id}")
+                return Response({"message": "No artisans assigned to paid orders"}, status=status.HTTP_404_NOT_FOUND)
+            
+            return Response(response_data, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            logger.error(f"Error fetching expected artisans for user {request.user.id}: {str(e)}")
+            return Response(
+                {"message": "An error occurred while fetching artisan details"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

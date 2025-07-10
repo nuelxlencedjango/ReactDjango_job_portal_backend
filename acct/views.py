@@ -1,4 +1,4 @@
-from django.shortcuts import render
+
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -18,6 +18,23 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 
 from django.contrib.auth.models import User
+
+
+
+
+
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.core.mail import send_mail
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from django.contrib.auth import get_user_model
+from django.conf import settings
+
+User = get_user_model()
+
 
 
 
@@ -158,7 +175,7 @@ class LogoutView(APIView):
             token = RefreshToken(refresh_token)
             token.blacklist()  # Invalidate the refresh token
             
-            # Also add the access token to blacklist
+            #  access token to blacklist
             try:
                 access_token = request.auth.token
                 RefreshToken(access_token).blacklist()
@@ -229,3 +246,62 @@ class FingerprintUploadView(APIView):
         # Return success response
         return Response({'message': 'Fingerprint uploaded successfully.',
             'fingerprint_id': fingerprint.id }, status=status.HTTP_201_CREATED)
+
+
+
+
+
+
+class PasswordResetRequestView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'error': 'No user with this email exists'}, status=status.HTTP_404_NOT_FOUND)
+        
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        
+        reset_url = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}/"
+        
+        subject = "Password Reset Request"
+        message = f"""
+        Hello {user.username},
+        
+        You requested a password reset. Please click the link below to reset your password:
+        
+        {reset_url}
+        
+        If you didn't request this, please ignore this email.
+        
+        Thanks,
+        I-wan-wok.com
+        """
+        
+        try:
+            send_mail(subject,message,settings.DEFAULT_FROM_EMAIL,[email],fail_silently=False,)
+            return Response({'message': 'Password reset email sent'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': f'Failed to send email: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+class PasswordResetConfirmView(APIView):
+    def post(self, request, uidb64, token):
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+        
+        if user is not None and default_token_generator.check_token(user, token):
+            new_password = request.data.get('new_password')
+            user.set_password(new_password)
+            user.save()
+            return Response({'message': 'Password has been reset successfully'}, status=status.HTTP_200_OK)
+        return Response({'error': 'Invalid token or user'}, status=status.HTTP_400_BAD_REQUEST)

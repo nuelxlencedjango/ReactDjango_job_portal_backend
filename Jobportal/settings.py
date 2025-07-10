@@ -116,6 +116,8 @@ FRONTEND_URL = os.getenv('FRONTEND_URL')
 
 #CORS_ALLOW_ALL_ORIGINS = True
 
+
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -276,7 +278,6 @@ authentication_backend = ['accounts.backends.EmailBackend']
 
 
 DEFAULT_FILE_STORAGE=os.getenv('DEFAULT_FILE_STORAGE')
-#CSRF_TRUSTED_ORIGINS=os.getenv('CSRF_TRUSTED_ORIGINS','').split(',')
 CORS_ALLOWED_ORIGINS=os.getenv('CORS_ALLOWED_ORIGINS','').split(',')
 
 
@@ -297,7 +298,17 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_BACKEND ='django.core.mail.backends.smtp.EmailBackend'
 
+# settings.py
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtpout.secureserver.net'  # GoDaddy's SMTP server
+EMAIL_PORT = 465 
+# EMAIL_PORT = 587  
+EMAIL_USE_SSL = True
 
+EMAIL_HOST_USER = 'yourname@yourdomain.com'  
+EMAIL_HOST_PASSWORD = 'your-email-password'  
+DEFAULT_FROM_EMAIL = 'yourname@yourdomain.com'  
+SERVER_EMAIL = 'yourname@yourdomain.com' 
 
 # Define CSRF trusted origins
 csrf_trusted_origins_env = os.getenv('CSRF_TRUSTED_ORIGINS', '')
