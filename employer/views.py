@@ -619,12 +619,14 @@ class ServicesRequestListView(generics.ListAPIView):
 
 
 
-class ExpectedArtisanView(APIView):
+
+
+class ExpectedArtisanView2(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         try:
-            # Fetch orders where paid=True for the authenticated user
+            # Fetch paid orders for the authenticated user
             paid_orders = Order.objects.filter(user=request.user, paid=True).order_by('-paid_at')
             
             if not paid_orders.exists():
@@ -636,6 +638,10 @@ class ExpectedArtisanView(APIView):
                 # Get all order items for this order
                 order_items = OrderItem.objects.filter(order=order)
                 
+                # Try to find a matching JobDetails record
+                job_detail = JobDetails.objects.filter(employer=request.user,
+                    date_created__gte=order.paid_at).order_by('date_created').first()
+                
                 for item in order_items:
                     try:
                         artisan = ArtisanProfile.objects.get(id=item.artisan.id)
@@ -643,20 +649,25 @@ class ExpectedArtisanView(APIView):
                         
                        
                         job_details = {
-                            'expectedDate': order.paid_at, 
-                            'description': item.service.title,
+                            'expectedDate': order.paid_at.isoformat(),
+                            'description': item.service.title, 
                             'contact_person': request.user.get_full_name() or request.user.username,
-                            'contact_person_phone': request.user.phone_number or 'N/A' 
+                            'contact_person_phone': getattr(request.user, 'phone_number', 'N/A')
                         }
+                        if job_detail:
+                            job_details.update({
+                                'expectedDate': job_detail.expectedDate.isoformat(),
+                                'description': job_detail.description,
+                                'contact_person': job_detail.contact_person,
+                                'contact_person_phone': job_detail.contact_person_phone
+                            })
                         
-                        response_data.append({
-                            'artisan_details': artisan_serializer.data,
-                            'job_details': job_details
-                        })
+                        response_data.append({'artisan_details': artisan_serializer.data,
+                            'job_details': job_details})
                     except ArtisanProfile.DoesNotExist:
                         logger.error(f"Artisan with ID {item.artisan.id} not found")
-                        continue  # Skip to next item if artisan not found
-            
+                        continue
+                
             if not response_data:
                 logger.info(f"No artisans found for paid orders for user: {request.user.id}")
                 return Response({"message": "No artisans assigned to paid orders"}, status=status.HTTP_404_NOT_FOUND)
@@ -665,7 +676,6 @@ class ExpectedArtisanView(APIView):
         
         except Exception as e:
             logger.error(f"Error fetching expected artisans for user {request.user.id}: {str(e)}")
-            return Response(
-                {"message": "An error occurred while fetching artisan details"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({"message": "An error occurred while fetching artisan details"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
