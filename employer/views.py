@@ -319,7 +319,7 @@ class InitiatePayment(APIView):
             return Response({'error': 'Cart not found'}, status=status.HTTP_404_NOT_FOUND)
 
         # Validate user profile and phone number
-        if not hasattr(user, 'employerprofile') or not user.employerprofile.phone_number:
+        if not hasattr(user, 'employerprofile') or not user.employerprofile.phone_number: 
             return Response({'error': 'User profile or phone number is missing'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Flutterwave details
@@ -335,7 +335,7 @@ class InitiatePayment(APIView):
             "customer": {
                 'email': user.email,
                 "name": f"{user.first_name} {user.last_name}",
-                "phone_number": user.employerprofile.phone_number
+                "phone_number": user.employerprofile.phone_number 
             },
             "customizations": {
                 "title": "Payment for I-wan-wok Services",
@@ -651,8 +651,10 @@ class ExpectedArtisanView2(APIView):
                         job_details = {
                             'expectedDate': order.paid_at.isoformat(),
                             'description': item.service.title, 
-                            'contact_person': request.user.get_full_name() or request.user.username,
-                            'contact_person_phone': getattr(request.user, 'phone_number', 'N/A')
+                            'artisan': order_items.artisan.full_name,
+                            'contact_phone': artisan.phone_number,
+                             'img': artisan.profile_image,
+                              
                         }
                         if job_detail:
                             job_details.update({
@@ -678,4 +680,12 @@ class ExpectedArtisanView2(APIView):
             logger.error(f"Error fetching expected artisans for user {request.user.id}: {str(e)}")
             return Response({"message": "An error occurred while fetching artisan details"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
+
+
+
+
+
         
