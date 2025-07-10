@@ -525,7 +525,7 @@ class LastPaymentView(APIView):
 
 
 
-class ExpectedArtisanView(APIView):
+class ExpectedArtisanView2(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -621,7 +621,7 @@ class ServicesRequestListView(generics.ListAPIView):
 
 
 
-class ExpectedArtisanView2(APIView):
+class ExpectedArtisanView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
