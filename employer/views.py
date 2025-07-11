@@ -618,9 +618,6 @@ class ServicesRequestListView(generics.ListAPIView):
 
 
 
-
-
-
 class ExpectedArtisanView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -640,22 +637,34 @@ class ExpectedArtisanView(APIView):
                 
                 # Try to find a matching JobDetails record
                 job_detail = JobDetails.objects.filter(employer=request.user,
-                    date_created__gte=order.paid_at).order_by('date_created').first()
+                                                    date_created__gte=order.paid_at
+                ).order_by('date_created').first()
                 
                 for item in order_items:
                     try:
                         artisan = ArtisanProfile.objects.get(id=item.artisan.id)
                         artisan_serializer = ArtisanDetailSerializer(artisan)
                         
-                       
+                        # Get the artisan's full name
+                        full_name = f"{artisan.user.first_name} {artisan.user.last_name}"
+                        
+                        # Prepare artisan details
+                        artisan_details = {
+                            'full_name': full_name,
+                            'phone_number': artisan.phone_number,
+                            'profile_image': artisan.profile_image.url if artisan.profile_image else None,
+                            'location': str(artisan.location) if artisan.location else None,
+                            'service': artisan.service.title if artisan.service else None,
+                            'experience': artisan.experience,
+                            'pay_rate': artisan.pay
+                        }
+                        
+                        # Prepare job details
                         job_details = {
                             'expectedDate': order.paid_at.isoformat(),
-                            'description': item.service.title, 
-                            'artisan': order_items.artisan.full_name,
-                            'contact_phone': artisan.phone_number,
-                             'img': artisan.profile_image,
-                              
+                            'description': item.service.title,
                         }
+                        
                         if job_detail:
                             job_details.update({
                                 'expectedDate': job_detail.expectedDate.isoformat(),
@@ -664,8 +673,10 @@ class ExpectedArtisanView(APIView):
                                 'contact_person_phone': job_detail.contact_person_phone
                             })
                         
-                        response_data.append({'artisan_details': artisan_serializer.data,
-                            'job_details': job_details})
+                        response_data.append({
+                            'artisan_details': artisan_details,
+                            'job_details': job_details
+                        })
                     except ArtisanProfile.DoesNotExist:
                         logger.error(f"Artisan with ID {item.artisan.id} not found")
                         continue
@@ -680,12 +691,3 @@ class ExpectedArtisanView(APIView):
             logger.error(f"Error fetching expected artisans for user {request.user.id}: {str(e)}")
             return Response({"message": "An error occurred while fetching artisan details"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-
-
-
-
-
-
-
-        
