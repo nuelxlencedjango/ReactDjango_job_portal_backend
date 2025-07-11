@@ -525,40 +525,80 @@ class LastPaymentView(APIView):
 
 
 
+        
+
 class ExpectedArtisanView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         try:
-            # Get the last job details for the authenticated user
-            last_job = JobDetails.objects.filter(employer=request.user).order_by('-date_created').first()
+            # Fetch paid orders for the authenticated user
+            paid_orders = Order.objects.filter(user=request.user, paid=True
+            ).order_by('-paid_at').select_related('user')
             
-            if not last_job:
-                logger.info(f"No job found for user: {request.user.id}")
-                return Response({"message": "No job details found"}, status=status.HTTP_404_NOT_FOUND)
+            if not paid_orders.exists():
+                logger.info(f"No paid orders found for user: {request.user.id}")
+                return Response({"message": "No paid orders found"}, status=status.HTTP_404_NOT_FOUND)
             
-            # Get the artisan details if artisan field is not empty
-            if last_job.artisan:
-                try:
-                    artisan = ArtisanProfile.objects.get(id=last_job.artisan)
-                    artisan_serializer = ArtisanDetailSerializer(artisan)
-                    
-                    # Combine job and artisan data
-                    job_serializer = JobDetailsSerializer(last_job)
-                    response_data = {'job_details': job_serializer.data,
-                                     'artisan_details': artisan_serializer.data }
-                    return Response(response_data, status=status.HTTP_200_OK)
-                except ArtisanProfile.DoesNotExist:
-                    logger.error(f"Artisan with ID {last_job.artisan} not found")
-                    return Response({"message": "Artisan details not found"}, status=status.HTTP_404_NOT_FOUND)
-            else:
-                return Response({"message": "No artisan assigned to this job"}, status=status.HTTP_404_NOT_FOUND)
+            response_data = []
+            
+            for order in paid_orders:
+                order_items = OrderItem.objects.filter(order=order).select_related('artisan', 
+                                                        'service', 'artisan__user')
+                
+                job_detail = JobDetails.objects.filter(employer=request.user,
+                            date_created__gte=order.paid_at).order_by('date_created').first()
+                
+                for item in order_items:
+                    try:
+                        artisan = item.artisan
+                        full_name = f"{artisan.user.first_name} {artisan.user.last_name}"
+                        
+                        artisan_details = {'full_name': full_name,'phone_number': artisan.phone_number,
+                            'profile_image': artisan.profile_image.url if artisan.profile_image else None,
+                            'location': str(artisan.location) if artisan.location else None,
+                            'service': item.service.title if item.service else None,
+                            'experience': artisan.experience,
+                            'pay_rate': artisan.pay}
+                        
+                        job_details = {
+                            'expectedDate': order.paid_at.isoformat(),
+                            'description': item.service.title,}
+                        
+                        if job_detail:
+                            job_details.update({'expectedDate': job_detail.expectedDate.isoformat(),
+                                'description': job_detail.description,
+                                'contact_person': job_detail.contact_person,
+                                'contact_person_phone': job_detail.contact_person_phone
+                            })
+                        
+                        response_data.append({'artisan_details': artisan_details,
+                                            'job_details': job_details,'order_id': order.id})
+                        
+                    except Exception as e:
+                        logger.error(f"Error processing order item {item.id}: {str(e)}")
+                        continue
+            
+            if not response_data:
+                return Response(
+                    {"message": "No artisans assigned to paid orders"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            return Response(response_data, status=status.HTTP_200_OK)
         
         except Exception as e:
-            logger.error(f"Error fetching expected artisan for user {request.user.id}: {str(e)}")
-            return Response({"message": "An error occurred while fetching artisan details"}, 
-                          status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+            logger.error(f"Error in ExpectedArtisanView: {str(e)}")
+            return Response(
+                {"message": "An error occurred while fetching artisan details"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+
+
+
+
 
 
 
@@ -614,3 +654,10 @@ class ServicesRequestListView(generics.ListAPIView):
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user).order_by('-paid_at')
+
+
+
+
+
+
+
