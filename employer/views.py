@@ -123,6 +123,56 @@ class JobDetailsView(APIView):
 
 
 
+class AddToCartView1(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        # Ensure the user is an employer
+        if not request.user.is_employer:
+            return Response(
+                {"error": "Only employers can add  to the cart."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        artisan_email = request.data.get("artisan_email")
+
+        if not artisan_email:
+            return Response(
+                {"error": "Artisan email is required."}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            artisan = ArtisanProfile.objects.get(user__email=artisan_email)
+            service = artisan.service
+        except ArtisanProfile.DoesNotExist:
+            return Response(
+                {"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Fetch the user's unpaid cart or create a new one
+        try:
+            cart = Cart.objects.get(user=request.user, paid=False)
+        except Cart.DoesNotExist:
+            cart = Cart.objects.create(user=request.user, paid=False)
+
+        # Check or create the cart item
+        cart_item, created = CartItem.objects.get_or_create(
+            cart=cart,
+            artisan=artisan,
+            service=service,
+            paid=False,
+            defaults={'quantity': 1}  
+        )
+
+        if not created:
+            # If the item already exists, increment the quantity
+            cart_item.quantity += 1
+            cart_item.save()
+
+        return Response(
+            {"message": "Item added to cart successfully."}, status=status.HTTP_201_CREATED
+        )
+
 
 
 class AddToCartView(APIView):
@@ -269,7 +319,7 @@ class InitiatePayment(APIView):
             return Response({'error': 'Cart not found'}, status=status.HTTP_404_NOT_FOUND)
 
         # Validate user profile and phone number
-        if not hasattr(user, 'employerprofile') or not user.employerprofile.phone_number: 
+        if not hasattr(user, 'employerprofile') or not user.employerprofile.phone_number:
             return Response({'error': 'User profile or phone number is missing'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Flutterwave details
@@ -285,7 +335,7 @@ class InitiatePayment(APIView):
             "customer": {
                 'email': user.email,
                 "name": f"{user.first_name} {user.last_name}",
-                "phone_number": user.employerprofile.phone_number 
+                "phone_number": user.employerprofile.phone_number
             },
             "customizations": {
                 "title": "Payment for I-wan-wok Services",
@@ -475,7 +525,7 @@ class LastPaymentView(APIView):
 
 
 
-class ExpectedArtisanView2(APIView):
+class ExpectedArtisanView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -564,89 +614,3 @@ class ServicesRequestListView(generics.ListAPIView):
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user).order_by('-paid_at')
-
-
-
-
-class ExpectedArtisanView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        try:
-            # Fetch paid orders for the authenticated user
-            paid_orders = Order.objects.filter(
-                user=request.user, 
-                paid=True
-            ).order_by('-paid_at').select_related('user')
-            
-            if not paid_orders.exists():
-                logger.info(f"No paid orders found for user: {request.user.id}")
-                return Response(
-                    {"message": "No paid orders found"}, 
-                    status=status.HTTP_404_NOT_FOUND
-                )
-            
-            response_data = []
-            
-            for order in paid_orders:
-                order_items = OrderItem.objects.filter(
-                    order=order
-                ).select_related('artisan', 'service', 'artisan__user')
-                
-                job_detail = JobDetails.objects.filter(
-                    employer=request.user,
-                    date_created__gte=order.paid_at
-                ).order_by('date_created').first()
-                
-                for item in order_items:
-                    try:
-                        artisan = item.artisan
-                        full_name = f"{artisan.user.first_name} {artisan.user.last_name}"
-                        
-                        artisan_details = {
-                            'full_name': full_name,
-                            'phone_number': artisan.phone_number,
-                            'profile_image': artisan.profile_image.url if artisan.profile_image else None,
-                            'location': str(artisan.location) if artisan.location else None,
-                            'service': item.service.title if item.service else None,
-                            'experience': artisan.experience,
-                            'pay_rate': artisan.pay
-                        }
-                        
-                        job_details = {
-                            'expectedDate': order.paid_at.isoformat(),
-                            'description': item.service.title,
-                        }
-                        
-                        if job_detail:
-                            job_details.update({
-                                'expectedDate': job_detail.expectedDate.isoformat(),
-                                'description': job_detail.description,
-                                'contact_person': job_detail.contact_person,
-                                'contact_person_phone': job_detail.contact_person_phone
-                            })
-                        
-                        response_data.append({
-                            'artisan_details': artisan_details,
-                            'job_details': job_details,
-                            'order_id': order.id
-                        })
-                        
-                    except Exception as e:
-                        logger.error(f"Error processing order item {item.id}: {str(e)}")
-                        continue
-            
-            if not response_data:
-                return Response(
-                    {"message": "No artisans assigned to paid orders"},
-                    status=status.HTTP_404_NOT_FOUND
-                )
-            
-            return Response(response_data, status=status.HTTP_200_OK)
-        
-        except Exception as e:
-            logger.error(f"Error in ExpectedArtisanView: {str(e)}")
-            return Response(
-                {"message": "An error occurred while fetching artisan details"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
