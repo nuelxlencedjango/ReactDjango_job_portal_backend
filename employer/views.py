@@ -618,7 +618,7 @@ class ServicesRequestListView(generics.ListAPIView):
 
 
 
-class ExpectedArtisanView(APIView):
+class ExpectedArtisanView00(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
