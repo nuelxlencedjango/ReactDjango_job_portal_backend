@@ -140,7 +140,7 @@ class TransactionDetails(models.Model):
 class Order(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     order_code = models.CharField(max_length=11, unique=True, editable=False)
-    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2,blank=True, null=True)
     cart_code = models.TextField()
     status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('completed', 'Completed')])
     paid_at = models.DateTimeField(auto_now_add=True)
@@ -159,8 +159,8 @@ class OrderItem(models.Model):
     artisan = models.ForeignKey('acct.ArtisanProfile', on_delete=models.CASCADE)
     service = models.ForeignKey('api.Service', on_delete=models.CASCADE)
     #quantity = models.PositiveIntegerField(default=1)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    total = models.DecimalField(max_digits=10, decimal_places=2)  # quantity * price
+    price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)  # quantity * price
 
     def __str__(self):
         return f"{self.order.user.first_name} x {self.service.title} (Artisan: {self.artisan.user.last_name})"
