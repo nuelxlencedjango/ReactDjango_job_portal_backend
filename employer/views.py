@@ -123,56 +123,6 @@ class JobDetailsView(APIView):
 
 
 
-class AddToCartView1(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        # Ensure the user is an employer
-        if not request.user.is_employer:
-            return Response(
-                {"error": "Only employers can add  to the cart."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        artisan_email = request.data.get("artisan_email")
-
-        if not artisan_email:
-            return Response(
-                {"error": "Artisan email is required."}, status=status.HTTP_400_BAD_REQUEST
-            )
-
-        try:
-            artisan = ArtisanProfile.objects.get(user__email=artisan_email)
-            service = artisan.service
-        except ArtisanProfile.DoesNotExist:
-            return Response(
-                {"error": "Artisan not found."}, status=status.HTTP_404_NOT_FOUND
-            )
-
-        # Fetch the user's unpaid cart or create a new one
-        try:
-            cart = Cart.objects.get(user=request.user, paid=False)
-        except Cart.DoesNotExist:
-            cart = Cart.objects.create(user=request.user, paid=False)
-
-        # Check or create the cart item
-        cart_item, created = CartItem.objects.get_or_create(
-            cart=cart,
-            artisan=artisan,
-            service=service,
-            paid=False,
-            defaults={'quantity': 1}  
-        )
-
-        if not created:
-            # If the item already exists, increment the quantity
-            cart_item.quantity += 1
-            cart_item.save()
-
-        return Response(
-            {"message": "Item added to cart successfully."}, status=status.HTTP_201_CREATED
-        )
-
 
 
 class AddToCartView(APIView):
@@ -618,7 +568,7 @@ class ServicesRequestListView(generics.ListAPIView):
 
 
 
-class ExpectedArtisanView00(APIView):
+class ExpectedArtisanView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -627,7 +577,7 @@ class ExpectedArtisanView00(APIView):
             paid_orders = Order.objects.filter(user=request.user, paid=True).order_by('-paid_at')
             
             if not paid_orders.exists():
-                logger.info(f"No paid orders found for user: {request.user.id}")
+                logger.info(f"No paid orders found for user: {paid_orders}")
                 return Response({"message": "No paid orders found"}, status=status.HTTP_404_NOT_FOUND)
             
             response_data = []
@@ -639,7 +589,8 @@ class ExpectedArtisanView00(APIView):
                 job_detail = JobDetails.objects.filter(employer=request.user,
                                                     date_created__gte=order.paid_at
                 ).order_by('date_created').first()
-                
+                logger.info(f"job details: {job_detail}")
+
                 for item in order_items:
                     try:
                         artisan = ArtisanProfile.objects.get(id=item.artisan.id)
@@ -647,10 +598,10 @@ class ExpectedArtisanView00(APIView):
                         
                         # Get the artisan's full name
                         full_name = f"{artisan.user.first_name} {artisan.user.last_name}"
-                        
+                        logger.info(f"artisan full name: {full_name}")
                         # Prepare artisan details
                         artisan_details = {
-                            'full_name': full_name,
+                            'artisan': full_name,
                             'phone_number': artisan.phone_number,
                             'profile_image': artisan.profile_image.url if artisan.profile_image else None,
                             'location': str(artisan.location) if artisan.location else None,
@@ -658,25 +609,24 @@ class ExpectedArtisanView00(APIView):
                             'experience': artisan.experience,
                             'pay_rate': artisan.pay
                         }
-                        
+                        logger.info(f"artisan details: {artisan_details}")
                         # Prepare job details
-                        job_details = {
-                            'expectedDate': order.paid_at.isoformat(),
-                            'description': item.service.title,
-                        }
+                        job_details = {'expectedDate': order.paid_at.isoformat(),
+                            'description': item.service.title,}
                         
+                        logger.info(f"other details: {job_detail}")
                         if job_detail:
                             job_details.update({
                                 'expectedDate': job_detail.expectedDate.isoformat(),
                                 'description': job_detail.description,
                                 'contact_person': job_detail.contact_person,
-                                'contact_person_phone': job_detail.contact_person_phone
-                            })
+                                'contact_person_phone': job_detail.contact_person_phone})
+                            
+                            logger.info(f"job details update: {job_detail.update()}")
+                        response_data.append({'artisan_details': artisan_details,
+                            'job_details': job_details})
                         
-                        response_data.append({
-                            'artisan_details': artisan_details,
-                            'job_details': job_details
-                        })
+                        logger.info(f"serializers: {response_data}")
                     except ArtisanProfile.DoesNotExist:
                         logger.error(f"Artisan with ID {item.artisan.id} not found")
                         continue
