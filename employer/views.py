@@ -655,9 +655,26 @@ class ServicesRequestListView(generics.ListAPIView):
 
 
 
+import os
+import requests
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.permissions import IsAuthenticated
+from django.db import transaction
+from django.utils import timezone
+import logging
+from decimal import Decimal
+
+logger = logging.getLogger(__name__)
+
+
+
 
 
 class ConfirmPayment(APIView):
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
