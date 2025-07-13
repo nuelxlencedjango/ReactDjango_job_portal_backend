@@ -560,7 +560,7 @@ class ExpectedArtisanView(APIView):
                             }
                         
                         job_details = {
-                            'expectedDate': order.paid_at.isoformat(),
+                            'expectedDate': job_detail.expectedDate.isoformat(),
                             'description': item.service.title,}
                         
                         if job_detail:
