@@ -657,192 +657,141 @@ class ServicesRequestListView(generics.ListAPIView):
 
 
 
-
-
-logger = logging.getLogger(__name__)
-
 class ConfirmPayment(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # Get data from request body instead of query params
-        payment_status = request.data.get('status')
-        tx_ref = request.data.get('tx_ref')
-        transaction_id = request.data.get('transaction_id')
+        payment_status = request.GET.get('status')
+        tx_ref = request.GET.get('tx_ref')
+        transaction_id = request.GET.get('transaction_id')
 
-        logger.info(
-            f"Payment confirmation request from user {request.user.id}: "
-            f"status={payment_status}, tx_ref={tx_ref}, transaction_id={transaction_id}"
-        )
+        logger.info(f"Received payment confirmation request: payment_status={payment_status}, tx_ref={tx_ref}, transaction_id={transaction_id}")
 
-        if not all([payment_status, tx_ref, transaction_id]):
-            logger.error("Missing required parameters in request body")
-            return Response(
-                {'error': 'Missing required parameters: status, tx_ref, transaction_id'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        if not payment_status or not tx_ref or not transaction_id:
+            logger.error("Missing required query parameters.")
+            return Response({'error': 'Missing required query parameters.'},
+                status=status.HTTP_400_BAD_REQUEST)
 
-        if payment_status.lower() != "successful":
+        if payment_status != "successful":
             logger.warning(f"Payment status is not successful: {payment_status}")
-            return Response(
-                {'error': 'Payment was not successful'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({'error': 'Payment was not successful'},
+                status=status.HTTP_400_BAD_REQUEST)
 
-        # Check if this transaction has already been processed
-        try:
-            existing_order = Order.objects.filter(
-                transaction_id=transaction_id,
-                paid=True
-            ).first()
-            
-            if existing_order:
-                logger.info(
-                    f"Payment already processed for transaction {transaction_id}, "
-                    f"order {existing_order.id}"
-                )
-                return Response(
-                    {
-                        'message': 'Payment already processed',
-                        'order_id': existing_order.id,
-                        'transaction_id': transaction_id
-                    },
-                    status=status.HTTP_200_OK
-                )
-        except Exception as e:
-            logger.error(f"Error checking for existing order: {str(e)}")
-
-        # Verify with Flutterwave
         headers = {"Authorization": f"Bearer {os.getenv('FLUTTERWAVE_SECRET_KEY')}"}
         verify_url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"
 
         try:
-            logger.info(f"Verifying transaction with Flutterwave: {transaction_id}")
-            flutterwave_response = requests.get(verify_url, headers=headers)
-            flutterwave_data = flutterwave_response.json()
-            logger.info(f"Flutterwave verification response: {flutterwave_data}")
+            logger.info(f"Verifying transaction with Flutterwave: {verify_url}")
+            response = requests.get(verify_url, headers=headers)
+            response_data = response.json()
+            logger.info(f"Flutterwave verification response: {response_data}")
 
-            if flutterwave_data.get('status') != 'success':
-                logger.error(
-                    f"Flutterwave verification failed for {transaction_id}: "
-                    f"{flutterwave_data.get('message')}"
-                )
+            if response_data['status'] == 'success':
+                try:
+                    transaction_details = TransactionDetails.objects.get(tx_ref=tx_ref)
+                    logger.info(f"Transaction found: {transaction_details}")
+
+                    # Verify payment details
+                    if (
+                        response_data['data']['status'] == "successful"
+                        and float(response_data['data']['amount']) == float(transaction_details.total_amount)
+                        and response_data['data']['currency'] == transaction_details.currency
+                    ):
+                        # Start a transaction block
+                        with transaction.atomic():
+                            logger.info("Updating transaction details...")
+
+                            # Update transaction details
+                            transaction_details.status = response_data['data']['status']
+                            transaction_details.transaction_id = response_data['data']['id']
+                            transaction_details.flutter_transaction_id = response_data['data']['id']
+                            transaction_details.flutter_transaction_ref_id = response_data['data']['tx_ref']
+                            transaction_details.flutter_app_fee = response_data['data']['app_fee']
+                            transaction_details.flutter_settled_amount = Decimal(response_data['data']['amount_settled'])
+                            transaction_details.card_type = response_data['data']['card']['type']
+                            transaction_details.ip_address = response_data['data']['ip']
+                            transaction_details.device_fingerprint = response_data['data']['device_fingerprint']
+                            transaction_details.flutter_card_issuer = response_data['data']['card']['issuer']
+                            transaction_details.first_6digits = response_data['data']['card']['first_6digits']
+                            transaction_details.last_4digits = response_data['data']['card']['last_4digits']
+                            transaction_details.save()
+
+                            logger.info(f"Transaction status updated to '{response_data['data']['status']}'.")
+
+                            # Get the cart associated with the transaction
+                            cart = Cart.objects.get(cart_code=transaction_details.cart)
+                            cart.paid = True
+                            cart.save()
+                            logger.info("Cart marked as paid.")
+
+                            # Create Order (without transaction_id)
+                            order_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+                            order = Order.objects.create(
+                                user=cart.user,
+                                order_code=order_code,
+                                total_price=transaction_details.total_amount,
+                                cart_code=cart.cart_code,
+                                status=response_data['data']['status'],
+                                paid=True,
+                                paid_at=timezone.now(),
+                            )
+                            logger.info(f"Order created: {order}")
+
+                            # Create OrderItems
+                            for cart_item in cart.items.all():
+                                OrderItem.objects.create(
+                                    order=order,
+                                    artisan=cart_item.artisan,
+                                    service=cart_item.service,
+                                    price=cart_item.artisan.pay,
+                                    total=transaction_details.total_amount,
+                                )
+                                logger.info(f"OrderItem created for cart item: {cart_item}")
+
+                            cart.delete()
+                            logger.info("Cart and CartItems deleted.")
+
+                            return Response(
+                                {
+                                    'message': 'Payment Successful, Order Created',
+                                    'subMessage': 'You have successfully made payment',
+                                    'order_id': order.id,
+                                    'transaction_id': transaction_id  
+                                },
+                                status=status.HTTP_200_OK
+                            )
+                    else:
+                        logger.error("Payment verification failed: Flutterwave response data does not match transaction details.")
+                        return Response(
+                            {'message': 'Payment Verification Failed', 'subMessage': 'Your payment verification was NOT successful.'},
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    
+                except TransactionDetails.DoesNotExist:
+                    logger.error(f"Transaction with tx_ref={tx_ref} not found.")
+                    return Response(
+                        {'error': 'Transaction not found.'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+                except Cart.DoesNotExist:
+                    logger.error(f"Cart not found for transaction {tx_ref}")
+                    return Response(
+                        {'error': 'Associated cart not found'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+            else:
+                logger.error(f"Flutterwave payment verification failed: {response_data}")
                 return Response(
                     {
                         'message': 'Payment Verification Failed',
-                        'detail': flutterwave_data.get('message')
+                        'subMessage': 'Your payment verification was NOT successful.',
+                        'detail': response_data.get('message')
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
-            # Get transaction data from Flutterwave response
-            flutterwave_tx = flutterwave_data['data']
-            
-            try:
-                transaction_details = TransactionDetails.objects.get(tx_ref=tx_ref)
-                logger.info(f"Found transaction details: {transaction_details.id}")
-
-                # Verify payment details match
-                if not (
-                    flutterwave_tx['status'].lower() == "successful"
-                    and float(flutterwave_tx['amount']) == float(transaction_details.total_amount)
-                    and flutterwave_tx['currency'] == transaction_details.currency
-                ):
-                    logger.error(
-                        "Payment details verification failed: "
-                        f"Amount: {flutterwave_tx['amount']} vs {transaction_details.total_amount}, "
-                        f"Currency: {flutterwave_tx['currency']} vs {transaction_details.currency}"
-                    )
-                    return Response(
-                        {
-                            'message': 'Payment Verification Failed',
-                            'detail': 'Transaction details do not match'
-                        },
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-
-                # Start atomic transaction
-                with transaction.atomic():
-                    # Update transaction details
-                    transaction_details.status = flutterwave_tx['status']
-                    transaction_details.transaction_id = flutterwave_tx['id']
-                    transaction_details.flutter_transaction_id = flutterwave_tx['id']
-                    transaction_details.flutter_transaction_ref_id = flutterwave_tx['tx_ref']
-                    transaction_details.flutter_app_fee = flutterwave_tx['app_fee']
-                    transaction_details.flutter_settled_amount = Decimal(flutterwave_tx['amount_settled'])
-                    
-                    if flutterwave_tx.get('card'):
-                        transaction_details.card_type = flutterwave_tx['card'].get('type')
-                        transaction_details.flutter_card_issuer = flutterwave_tx['card'].get('issuer')
-                        transaction_details.first_6digits = flutterwave_tx['card'].get('first_6digits')
-                        transaction_details.last_4digits = flutterwave_tx['card'].get('last_4digits')
-                    
-                    transaction_details.ip_address = flutterwave_tx.get('ip')
-                    transaction_details.device_fingerprint = flutterwave_tx.get('device_fingerprint')
-                    transaction_details.save()
-
-                    # Mark cart as paid
-                    cart = Cart.objects.get(cart_code=transaction_details.cart)
-                    cart.paid = True
-                    cart.save()
-
-                    # Create order
-                    order_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
-                    order = Order.objects.create(
-                        user=cart.user,
-                        order_code=order_code,
-                        total_price=transaction_details.total_amount,
-                        cart_code=cart.cart_code,
-                        status=flutterwave_tx['status'],
-                        paid=True,
-                        paid_at=timezone.now(),
-                        transaction_id=transaction_id
-                    )
-
-                    # Create order items
-                    for cart_item in cart.items.all():
-                        OrderItem.objects.create(
-                            order=order,
-                            artisan=cart_item.artisan,
-                            service=cart_item.service,
-                            price=cart_item.artisan.pay,
-                            total=transaction_details.total_amount
-                        )
-
-                    # Delete cart
-                    cart.delete()
-
-                    logger.info(
-                        f"Successfully processed payment. Order {order.id} created, "
-                        f"transaction {transaction_id}"
-                    )
-
-                    return Response(
-                        {
-                            'message': 'Payment Successful, Order Created',
-                            'order_id': order.id,
-                            'transaction_id': transaction_id
-                        },
-                        status=status.HTTP_200_OK
-                    )
-
-            except TransactionDetails.DoesNotExist:
-                logger.error(f"Transaction with tx_ref={tx_ref} not found")
-                return Response(
-                    {'error': 'Transaction not found'},
-                    status=status.HTTP_404_NOT_FOUND
-                )
-            except Cart.DoesNotExist:
-                logger.error(f"Cart not found for transaction {tx_ref}")
-                return Response(
-                    {'error': 'Associated cart not found'},
-                    status=status.HTTP_404_NOT_FOUND
-                )
-
         except Exception as e:
-            logger.error(f"Error processing payment: {str(e)}", exc_info=True)
+            logger.error(f"An error occurred: {str(e)}", exc_info=True)
             return Response(
-                {'error': 'An error occurred while processing the payment'},
+                {'error': 'An error occurred while processing the payment.'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
