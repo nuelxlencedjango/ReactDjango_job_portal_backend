@@ -125,3 +125,13 @@ class TransactionDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = TransactionDetails
         fields = ['tx_ref', 'cart', 'total_amount', 'transaction_id', 'status', 'modified_at']
+
+
+
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['id','order_code','total_price','status','created_at','paid','paid_at']
+        read_only_fields = fields
