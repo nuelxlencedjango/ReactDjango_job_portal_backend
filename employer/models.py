@@ -135,7 +135,7 @@ class TransactionDetails(models.Model):
 
 
 
-
+#when artisan is contacted for the job,it becomes in progress
 
 class Order(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
