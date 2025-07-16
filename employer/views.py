@@ -669,7 +669,7 @@ class OrderHistoryView(APIView):
     def get(self, request):
         try:
             # Get orders for the authenticated user, ordered by most recent first
-            orders = Order.objects.filter(user=request.user).order_by('-created_at')
+            orders = Order.objects.filter(user=request.user).order_by('-paid_at')
             serializer = OrderSerializer(orders, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
