@@ -103,12 +103,6 @@ class TransactionDetailsSerializer(serializers.ModelSerializer):
 
 
 
-class OrderSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Order
-        fields = ['id','order_code','total_price','status','created_at','paid','paid_at']
-        read_only_fields = fields
-
 
 
 
@@ -125,5 +119,5 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id','order_code','total_price','status','created_at','paid','paid_at','items']
+        fields = ['id','order_code','total_price','status','paid','paid_at','items']
         read_only_fields = fields
