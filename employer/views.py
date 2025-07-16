@@ -14,8 +14,6 @@ from rest_framework.filters import SearchFilter
 from .models import *
 from acct.models import  ArtisanProfile,EmployerProfile
 from .serializers import *
-#from django.db import transaction
-
 from rest_framework_simplejwt.tokens import UntypedToken
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from django.shortcuts import get_object_or_404, redirect
@@ -28,13 +26,15 @@ import uuid
 import requests
 
 from decimal import Decimal
-
-
 from django.db import transaction
-
 import string
 from django.utils import timezone
- 
+from rest_framework_simplejwt.authentication import JWTAuthentication
+import logging
+
+
+
+
 
 class VerifyTokenView(APIView):
     def post(self, request):
@@ -156,23 +156,15 @@ class AddToCartView1(APIView):
             cart = Cart.objects.create(user=request.user, paid=False)
 
         # Check or create the cart item
-        cart_item, created = CartItem.objects.get_or_create(
-            cart=cart,
-            artisan=artisan,
-            service=service,
-            paid=False,
-            defaults={'quantity': 1}  
-        )
-
+        cart_item, created = CartItem.objects.get_or_create(cart=cart,artisan=artisan,service=service,
+                                                            paid=False,defaults={'quantity': 1}  )
         if not created:
             # If the item already exists, increment the quantity
             cart_item.quantity += 1
             cart_item.save()
 
         return Response(
-            {"message": "Item added to cart successfully."}, status=status.HTTP_201_CREATED
-        )
-
+            {"message": "Item added to cart successfully."}, status=status.HTTP_201_CREATED)
 
 
 class AddToCartView(APIView):
@@ -285,8 +277,6 @@ class CartItemView(APIView):
             return Response({"error": "Cart item not found."}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 
 
 
@@ -478,13 +468,8 @@ class ExpectedArtisanView(APIView):
 
 
 
-
-
-
-# views.py
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
+
 from .models import Order, OrderItem
 
 @api_view(['GET'])
@@ -524,7 +509,8 @@ def last_paid_artisans(request):
     
     return Response(artisans_data)
 
-from .models import Order
+
+
 
 
 class ServicesRequestListView(generics.ListAPIView):
@@ -536,17 +522,6 @@ class ServicesRequestListView(generics.ListAPIView):
 
 
 
-import os
-import requests
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.permissions import IsAuthenticated
-from django.db import transaction
-from django.utils import timezone
-import logging
-from decimal import Decimal
 
 logger = logging.getLogger(__name__)
 
@@ -687,29 +662,6 @@ class ConfirmPayment(APIView):
 
 
 
-class OrderHistoryView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        try:
-            # Get orders for the authenticated user
-            orders = Order.objects.filter(user=request.user).order_by('-created_at')
-            serializer = OrderSerializer(orders, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        
-        except Exception as e:
-            return Response({'error': str(e)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-
-
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-from .models import Order
-from .serializers import OrderSerializer
 
 class OrderHistoryView(APIView):
     permission_classes = [IsAuthenticated]
@@ -730,29 +682,18 @@ class ActiveJobsCountView(APIView):
 
     def get(self, request):
         try:
-            count = Order.objects.filter(
-                user=request.user,
-                status='in_progress'
-            ).count()
+            count = Order.objects.filter(user=request.user,status='in_progress').count()
             return Response({'count': count}, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response(
-                {'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class CompletedJobsCountView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         try:
-            count = Order.objects.filter(
-                user=request.user,
-                status='completed'
-            ).count()
+            count = Order.objects.filter(user=request.user,status='completed').count()
             return Response({'count': count}, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response(
-                {'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
