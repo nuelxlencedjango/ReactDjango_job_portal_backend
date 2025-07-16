@@ -25,5 +25,14 @@ urlpatterns = [
     #path('employer/last-payment/', LastPaymentView.as_view(), name='last-payment'),
     path('last-payment/', LastPaymentView.as_view(), name='last-payment'),
     path('employer-requests/', ServicesRequestListView.as_view(), name='employer-requests'),
+
+
+
+    path('order-history/', OrderHistoryView.as_view(), name='order-history'),
+    path('active-jobs-count/', ActiveJobsCountView.as_view(), name='active-jobs-count'),
+    path('completed-jobs-count/', CompletedJobsCountView.as_view(), name='completed-jobs-count'),
+  
 ]
+
+
 
