@@ -312,10 +312,10 @@ class InitiatePayment(APIView):
         if not hasattr(user, 'employerprofile') or not user.employerprofile.phone_number:
             return Response({'error': 'User profile or phone number is missing'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Flutterwave details
-        flutterwave_url = "https://api.flutterwave.com/v3/payments"
+        # Flutterwave details 
+        flutterwave_url = "https://api.flutterwave.com/v3/payments"   
         #secret_key = os.getenv('FLUTTERWAVE_SECRET_KEY')  
-        secret_key = str(os.environ.get('FLUTTERWAVE_SECRET_KEY'))
+        secret_key = str(os.environ.get('FLUTTERWAVE_SECRET_KEY'))   
 
         payload = {
             'tx_ref': reference,
@@ -345,16 +345,16 @@ class InitiatePayment(APIView):
                 status="pending" )
             payment.save()
 
-            # Send the request to Flutterwave API
-            response = requests.post(flutterwave_url, json=payload, headers=headers)
+            # Send the request to Flutterwave API   
+            response = requests.post(flutterwave_url, json=payload, headers=headers) 
             response_data = response.json()
-            logger.info(f"Flutterwave secret key:{secret_key}, flutterwave API Response {response_data}")
+            logger.info(f"Flutterwave secret key:{secret_key}, flutterwave API Response {response_data}")  
 
             if response.status_code == 200:
                 return Response(response_data, status=status.HTTP_200_OK)
             else:
-                # If Flutterwave returns an error
-                logger.error(f"Flutterwave API Error: {response_data}")
+                # If Flutterwave returns an error  
+                logger.error(f"Flutterwave API Error: {response_data}")  
                 return Response({'error': response_data.get("message", "Payment initiation failed")}, status=response.status_code)
 
         except requests.exceptions.RequestException as err:
@@ -550,14 +550,14 @@ class ConfirmPayment(APIView):
             return Response({'error': 'Payment was not successful'},
                 status=status.HTTP_400_BAD_REQUEST)
 
-        headers = {"Authorization": f"Bearer {os.getenv('FLUTTERWAVE_SECRET_KEY')}"}
-        verify_url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"
+        headers = {"Authorization": f"Bearer {os.getenv('FLUTTERWAVE_SECRET_KEY')}"} 
+        verify_url = f"https://api.flutterwave.com/v3/transactions/{transaction_id}/verify"  
 
         try:
-            logger.info(f"Verifying transaction with Flutterwave: {verify_url}")
+            logger.info(f"Verifying transaction with Flutterwave: {verify_url}")  
             response = requests.get(verify_url, headers=headers)
             response_data = response.json()
-            logger.info(f"Flutterwave verification response: {response_data}")
+            logger.info(f"Flutterwave verification response: {response_data}")  
 
             if response_data['status'] == 'success':
                 try:
@@ -643,7 +643,7 @@ class ConfirmPayment(APIView):
                     logger.error(f"Cart not found for transaction {tx_ref}")
                     return Response({'error': 'Associated cart not found'},status=status.HTTP_404_NOT_FOUND)
             else:
-                logger.error(f"Flutterwave payment verification failed: {response_data}")
+                logger.error(f"Flutterwave payment verification failed: {response_data}") 
                 return Response(
                     {
                         'message': 'Payment Verification Failed',
