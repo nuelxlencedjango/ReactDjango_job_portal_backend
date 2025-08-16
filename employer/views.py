@@ -599,15 +599,10 @@ class ConfirmPayment(APIView):
 
                             # Create Order (without transaction_id)
                             order_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
-                            order = Order.objects.create(
-                                user=cart.user,
-                                order_code=order_code,
-                                total_price=transaction_details.total_amount,
-                                cart_code=cart.cart_code,
-                                status=response_data['data']['status'],
-                                paid=True,
-                                paid_at=timezone.now(),
-                            )
+                            order = Order.objects.create(user=cart.user,order_code=order_code,
+                                total_price=transaction_details.total_amount, cart_code=cart.cart_code,
+                                status=response_data['data']['status'],paid=True, paid_at=timezone.now(),)
+                            
                             logger.info(f"Order created: {order}")
 
                             # Create OrderItems
