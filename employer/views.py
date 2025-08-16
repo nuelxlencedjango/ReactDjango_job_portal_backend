@@ -397,18 +397,22 @@ class LastPaymentView(APIView):
 
 class ExpectedArtisanView(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
 
     def get(self, request):
         try:
             # Fetch paid orders for the authenticated user
             paid_orders = Order.objects.filter(user=request.user, paid=True
             ).order_by('-paid_at').select_related('user')
+
+            logger.info(f"all paid orders: {paid_orders}")
             
             if not paid_orders.exists():
                 logger.info(f"No paid orders found for user: {request.user.id}")
                 return Response({"message": "No paid orders found"}, status=status.HTTP_404_NOT_FOUND)
             
             response_data = []
+            logger.info(f"response data: {response_data}")
             
             for order in paid_orders:
                 order_items = OrderItem.objects.filter(order=order).select_related('artisan', 
