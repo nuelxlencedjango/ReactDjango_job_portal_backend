@@ -412,11 +412,13 @@ class ExpectedArtisanView(APIView):
                 return Response({"message": "No paid orders found"}, status=status.HTTP_404_NOT_FOUND)
             
             response_data = []
-            logger.info(f"response data: {response_data}")
+            
             
             for order in paid_orders:
                 order_items = OrderItem.objects.filter(order=order).select_related('artisan', 
                                                         'service', 'artisan__user')
+                logger.info(f"order details: {order}")
+                logger.info(f"data in the paid orders: {order_items}")
                 
                 job_detail = JobDetails.objects.filter(employer=request.user,
                             date_created__gte=order.paid_at).order_by('date_created').first()
