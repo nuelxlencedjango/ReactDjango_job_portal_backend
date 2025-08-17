@@ -422,7 +422,8 @@ class ExpectedArtisanView(APIView):
                 
                 job_detail = JobDetails.objects.filter(employer=request.user,
                             date_created__gte=order.paid_at).order_by('date_created').first()
-                
+                logger.info(f"job details infor:: {job_detail}. Date of job: {job_detail.expectedDate}" )
+
                 for item in order_items:
                     try:
                         artisan = item.artisan
@@ -440,80 +441,36 @@ class ExpectedArtisanView(APIView):
                             'expectedDate': job_detail.expectedDate.isoformat(),
                             'description': item.service.title,}
                         
+                        logger.info(f"job details date change:: {job_detail}. Date of job: {job_detail.expectedDate}" )
+                        
                         if job_detail:
-                            job_details.update({'expectedDate': job_detail.expectedDate.isoformat(),
+                            job_details.update({'expectedDate': job_details.expectedDate.isoformat(),
                                 'description': job_detail.description,
                                 'contact_person': job_detail.contact_person,
                                 'contact_person_phone': job_detail.contact_person_phone
                             })
+                            logger.info(f"job details after update:: {job_detail}." )
                         
-                        response_data.append({'artisan_details': artisan_details,
-                                            'job_details': job_details,'order_id': order.id})
-                        
+                        response_data.append({'artisan_details': artisan_details,'job_details': job_details,
+                                              'order_id': order.id})
+                        logger.info(f"response data details after appending: {response_data}." )
+
                     except Exception as e:
                         logger.error(f"Error processing order item {item.id}: {str(e)}")
                         continue
             
             if not response_data:
-                return Response(
-                    {"message": "No artisans assigned to paid orders"},
-                    status=status.HTTP_404_NOT_FOUND
-                )
+                return Response({"message": "No artisans assigned to paid orders"},
+                    status=status.HTTP_404_NOT_FOUND)
             
             return Response(response_data, status=status.HTTP_200_OK)
         
         except Exception as e:
             logger.error(f"Error in ExpectedArtisanView: {str(e)}")
-            return Response(
-                {"message": "An error occurred while fetching artisan details"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({"message": "An error occurred while fetching artisan details"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
-
-
-
-from rest_framework.decorators import api_view, permission_classes
-
-from .models import Order, OrderItem
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def last_paid_artisans(request):
-    # Get the last paid order for this user
-    last_order = Order.objects.filter(
-        user=request.user,
-        paid=True
-    ).order_by('-paid_at').first()
-    
-    if not last_order:
-        return Response([])
-    
-    # Get all order items with artisan details
-    order_items = OrderItem.objects.filter(
-        order=last_order
-    ).select_related('artisan', 'service')
-    
-    # Serialize the data
-    artisans_data = []
-    for item in order_items:
-        artisan = item.artisan
-        artisans_data.append({
-            'id': artisan.id,
-            'first_name': artisan.user.first_name,
-            'last_name': artisan.user.last_name,
-            'profile_image': artisan.profile_image.url if artisan.profile_image else None,
-            'service': item.service.title,
-            'experience': artisan.experience,
-            'location': artisan.location,
-            'pay': artisan.pay_rate,
-            'order_item_id': item.id,
-            'price': item.price,
-            'status': item.status
-        })
-    
-    return Response(artisans_data)
 
 
 
@@ -549,7 +506,7 @@ class ConfirmPayment(APIView):
         if not payment_status or not tx_ref or not transaction_id:
             logger.error("Missing required query parameters.")
             return Response({'error': 'Missing required query parameters.'},
-                status=status.HTTP_400_BAD_REQUEST)
+                            status=status.HTTP_400_BAD_REQUEST)
 
         if payment_status != "successful":
             logger.warning(f"Payment status is not successful: {payment_status}")
@@ -662,7 +619,7 @@ class ConfirmPayment(APIView):
 
 
 
-class ConfirmPayment(APIView):
+class ConfirmPaymentpkkk(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
