@@ -790,90 +790,94 @@ class CompletedJobsCountView(APIView):
 
 
 
-
-
-class ExpectedArtisanView(APIView):  
+class ExpectedArtisanView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
     def get(self, request):
         try:
-            # Fetch paid orders for the authenticated user
-            paid_orders = Order.objects.filter(
-                user=request.user, 
-                paid=True
-            ).order_by('-paid_at').select_related('user')
-
+            paid_orders = (
+                Order.objects
+                .filter(user=request.user, paid=True)
+                .order_by('-paid_at')
+                .select_related('user')
+            )
             logger.info(f"all paid orders: {paid_orders}")
-            
+
             if not paid_orders.exists():
-                logger.info(f"No paid orders found for user: {request.user.id}")
                 return Response({"message": "No paid orders found"}, status=status.HTTP_404_NOT_FOUND)
-            
+
             response_data = []
-            
+
             for order in paid_orders:
-                order_items = OrderItem.objects.filter(order=order).select_related(
-                    'artisan', 'service', 'artisan__user'
+                order_items = (
+                    order.items
+                    .select_related('artisan__user', 'service')
+                    .all()
                 )
                 logger.info(f"order details: {order}")
                 logger.info(f"data in the paid orders: {order_items}")
-                
-                job_detail = JobDetails.objects.filter(
-                    employer=request.user,
-                    date_created__gte=order.paid_at
-                ).order_by('date_created').first()
 
-                if not job_detail:
-                    logger.warning(f"No job details found for order {order.id}")
-                    continue
-
-                logger.info(f"job details info:: {job_detail}. Date of job: {job_detail.expectedDate}")
+                # NOTE: This may legitimately be None. That's OK—handle gracefully.
+                job_detail = (
+                    JobDetails.objects
+                    .filter(employer=request.user, date_created__gte=order.paid_at)
+                    .order_by('date_created')
+                    .first()
+                )
+                if job_detail:
+                    logger.info(f"job details found: {job_detail}")
+                else:
+                    logger.info("no job details found for this order")
 
                 for item in order_items:
                     try:
                         artisan = item.artisan
-                        full_name = f"{artisan.user.first_name} {artisan.user.last_name}"
-                        
+                        full_name = f"{artisan.user.first_name} {artisan.user.last_name}".strip()
+
                         artisan_details = {
-                            'full_name': full_name,
+                            'full_name': full_name or artisan.user.username,
                             'phone_number': artisan.phone_number,
-                            'profile_image': artisan.profile_image.url if artisan.profile_image else None,
+                            'profile_image': artisan.profile_image.url if getattr(artisan, 'profile_image', None) else None,
                             'location': str(artisan.location) if artisan.location else None,
                             'service': item.service.title if item.service else None,
                             'experience': artisan.experience,
-                            'pay_rate': artisan.pay
+                            'pay_rate': artisan.pay,
                         }
-                        
-                        job_details = {
-                            'expectedDate': job_detail.expectedDate.isoformat() if job_detail.expectedDate else None,
-                            'description': job_detail.description,
-                            'contact_person': job_detail.contact_person,
-                            'contact_person_phone': job_detail.contact_person_phone
-                        }
-                        
+
+                        # Build job_details ONLY from job_detail (if present).
+                        job_details = {}
+                        if job_detail:
+                            job_details = {
+                                'expectedDate': job_detail.expectedDate.isoformat() if job_detail.expectedDate else None,
+                                'description': job_detail.description,
+                                'contact_person': job_detail.contact_person,
+                                'contact_person_phone': job_detail.contact_person_phone,
+                                'address': getattr(job_detail, 'address', None),
+                                'location': str(job_detail.location) if getattr(job_detail, 'location', None) else None,
+                            }
+
                         response_data.append({
                             'artisan_details': artisan_details,
-                            'job_details': job_details,
-                            'order_id': order.id
+                            'job_details': job_details or None,
+                            'order_id': order.id,
+                            'order_code': order.order_code,
                         })
-                        
-                        logger.info(f"response data details after appending: {response_data}")
 
                     except Exception as e:
-                        logger.error(f"Error processing order item {item.id}: {str(e)}")
+                        logger.error(f"Error processing order item {getattr(item, 'id', '?')}: {e}", exc_info=True)
                         continue
-            
+
             if not response_data:
                 return Response(
                     {"message": "No artisans assigned to paid orders"},
                     status=status.HTTP_404_NOT_FOUND
                 )
-            
+
             return Response(response_data, status=status.HTTP_200_OK)
-        
+
         except Exception as e:
-            logger.error(f"Error in ExpectedArtisanView: {str(e)}") 
+            logger.error(f"Error in ExpectedArtisanView: {e}", exc_info=True)
             return Response(
                 {"message": "An error occurred while fetching artisan details"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
