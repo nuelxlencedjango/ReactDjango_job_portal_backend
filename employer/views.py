@@ -790,71 +790,54 @@ class CompletedJobsCountView(APIView):
 
 
 
-
-
-
-logger = logging.getLogger(__name__)
-
 class ExpectedArtisanView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
     def get(self, request):
         try:
-            # Fetch paid orders for the authenticated user
             paid_orders = Order.objects.filter(
                 user=request.user, paid=True
             ).order_by('-paid_at').select_related('user')
 
-            logger.info(f"all paid orders: {paid_orders}")
+            logger.info(f"All paid orders for user {request.user.id}: {paid_orders}")
             
             if not paid_orders.exists():
-                logger.info(f"No paid orders found for user: {request.user.id}")
                 return Response({"message": "No paid orders found"}, status=status.HTTP_404_NOT_FOUND)
             
             response_data = []
             
             for order in paid_orders:
+                logger.info(f"Processing order: {order}")
+
+                # --- REFACTORED LOGIC ---
+                # 1. Find the SINGLE JobDetails related to this order.
+                # This logic is still fragile. A better long-term solution is a ForeignKey
+                # from Order or OrderItem to JobDetails.
+                job_detail = JobDetails.objects.filter(
+                    employer=request.user,
+                    date_created__gte=order.paid_at
+                ).order_by('date_created').first()
+
+                # 2. If no corresponding job detail is found, log it and skip to the next order.
+                if not job_detail:
+                    logger.warning(f"No corresponding JobDetails found for {order}. Skipping.")
+                    continue
+
+                # 3. If a job detail IS found, prepare its data ONCE.
+                job_details_data = {
+                    'expectedDate': job_detail.expectedDate.isoformat() if job_detail.expectedDate else None,
+                    'description': job_detail.description,
+                    'contact_person': job_detail.contact_person,
+                    'contact_person_phone': job_detail.contact_person_phone
+                }
+                
                 order_items = OrderItem.objects.filter(order=order).select_related(
                     'artisan', 'service', 'artisan__user'
                 )
-                logger.info(f"order details: {order}")
-                logger.info(f"data in the paid orders: {order_items}")
-                
-                # Query JobDetails with a slightly wider time range to account for timing issues
-                job_detail = JobDetails.objects.filter(
-                    employer=request.user,
-                    date_created__gte=order.paid_at - timezone.timedelta(minutes=5),  # Allow 5-min buffer
-                    date_created__lte=timezone.now()
-                ).order_by('date_created').first()
-                logger.info(f"job details infor: {job_detail}. Date of job: {job_detail.expectedDate if job_detail else 'None'}")
-                
-                if not order_items.exists():
-                    # Handle orders without OrderItems but with JobDetails
-                    if job_detail:
-                        job_details = {
-                            'expectedDate': job_detail.expectedDate.isoformat() if job_detail.expectedDate else None,
-                            'description': job_detail.description,
-                            'contact_person': job_detail.contact_person,
-                            'contact_person_phone': job_detail.contact_person_phone
-                        }
-                        logger.info(f"job details for order {order.id} without items: {job_details}")
-                        response_data.append({
-                            'artisan_details': None,  # No artisan since no OrderItem
-                            'job_details': job_details,
-                            'order_id': order.id,
-                            'status': 'no_artisan_assigned'
-                        })
-                    else:
-                        logger.warning(f"No OrderItems or JobDetails found for order {order.id}")
-                        response_data.append({
-                            'artisan_details': None,
-                            'job_details': {},
-                            'order_id': order.id,
-                            'status': 'no_items_or_job_details'
-                        })
-                    continue
-                
+                logger.info(f"Order items for this order: {order_items}")
+
+                # 4. Loop through the items for this order and build the response.
                 for item in order_items:
                     try:
                         artisan = item.artisan
@@ -867,48 +850,27 @@ class ExpectedArtisanView(APIView):
                             'location': str(artisan.location) if artisan.location else None,
                             'service': item.service.title if item.service else None,
                             'experience': artisan.experience,
-                            'pay_rate': float(artisan.pay) if artisan.pay else None  # Convert Decimal to float for JSON
+                            'pay_rate': artisan.pay
                         }
-                        
-                        job_details = {}
-                        if job_detail:
-                            job_details = {
-                                'expectedDate': job_detail.expectedDate.isoformat() if job_detail.expectedDate else None,
-                                'description': job_detail.description,
-                                'contact_person': job_detail.contact_person,
-                                'contact_person_phone': job_detail.contact_person_phone
-                            }
-                            logger.info(f"job details for order {order.id}: {job_details}")
-                        else:
-                            logger.warning(f"No JobDetails found for order {order.id}. Using empty job_details.")
                         
                         response_data.append({
                             'artisan_details': artisan_details,
-                            'job_details': job_details,
-                            'order_id': order.id,
-                            'status': 'complete' if job_detail else 'missing_job_details'
+                            'job_details': job_details_data, # Use the correctly prepared data
+                            'order_id': order.id
                         })
-                        logger.info(f"response data details after appending: {response_data}")
-                    
+
                     except Exception as e:
-                        logger.error(f"Error processing order item {item.id}: {str(e)}")
-                        response_data.append({
-                            'artisan_details': None,
-                            'job_details': {},
-                            'order_id': order.id,
-                            'status': f'error_processing_item_{item.id}',
-                            'error': str(e)
-                        })
-                        continue
+                        # This will catch errors related to a specific item (e.g., a missing artisan)
+                        logger.error(f"Error processing order item {item.id} for {order}: {str(e)}")
+                        continue # Skip to the next item
             
             if not response_data:
-                logger.warning("No valid data to return for any orders")
-                return Response({"message": "No artisans or job details assigned to paid orders"},
+                return Response({"message": "No artisans could be processed for paid orders"},
                     status=status.HTTP_404_NOT_FOUND)
             
             return Response(response_data, status=status.HTTP_200_OK)
         
         except Exception as e:
-            logger.error(f"Error in ExpectedArtisanView: {str(e)}")
+            logger.error(f"Critical Error in ExpectedArtisanView: {str(e)}")
             return Response({"message": "An error occurred while fetching artisan details"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
