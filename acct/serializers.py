@@ -178,13 +178,47 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 # serializers.py
-
-from django_rest_passwordreset.serializers import PasswordResetSerializer as BasePasswordResetSerializer
-from django_rest_passwordreset.models import ResetPasswordToken
+from django_rest_passwordreset.serializers import PasswordResetSerializer
 from django.core.mail import send_mail
 from django.conf import settings
 
-class CustomPasswordResetSerializer(BasePasswordResetSerializer):
+class CustomPasswordResetSerializer(PasswordResetSerializer):
+    def save(self):
+        request = self.context.get('request')
+        # Token is managed by the parent class; access via validated data or context
+        email = self.validated_data['email']
+        # The token key might be available via the context or a method like get_token()
+        token = self.context.get('token')  # Adjust based on package docs
+        if not token:
+            from django_rest_passwordreset.tokens import get_token_generator
+            token_generator = get_token_generator()
+            token = token_generator.generate_token()  # Fallback if not provided
+        reset_url = f"{settings.FRONTEND_URL}/reset-password/{token}/"  # Simplify to token only if uidb64 is handled elsewhere
+        subject = "Password Reset Request"
+        message = f"""
+        Hello,
+
+        You requested a password reset. Click the link below to reset your password:
+        {reset_url}
+
+        If you did not request this, please ignore this email.
+
+        Regards,
+        I-wan-wok Team
+        """
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False)
+        return token  # Return token for potential use
+
+
+
+
+
+#from django_rest_passwordreset.serializers import PasswordResetSerializer as BasePasswordResetSerializer
+#from django_rest_passwordreset.models import ResetPasswordToken
+from django.core.mail import send_mail
+from django.conf import settings
+
+class CustomPasswordResetSerializer44(BasePasswordResetSerializer):
     def save(self):
         # Get the email from the request data
         email = self.validated_data['email']
