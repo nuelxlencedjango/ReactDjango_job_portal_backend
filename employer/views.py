@@ -755,6 +755,7 @@ class ConfirmPaymentpkkk(APIView):
 
 class OrderHistoryView(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
 
     def get(self, request):
         try:
@@ -796,9 +797,8 @@ class ExpectedArtisanView(APIView):
 
     def get(self, request):
         try:
-            paid_orders = Order.objects.filter(
-                user=request.user, paid=True
-            ).order_by('-paid_at').select_related('user')
+            paid_orders = Order.objects.filter(user=request.user, paid=True
+                                               ).order_by('-paid_at').select_related('user')
 
             logger.info(f"All paid orders for user {request.user.id}: {paid_orders}")
             
@@ -814,10 +814,8 @@ class ExpectedArtisanView(APIView):
                 # 1. Find the SINGLE JobDetails related to this order.
                 # This logic is still fragile. A better long-term solution is a ForeignKey
                 # from Order or OrderItem to JobDetails.
-                job_detail = JobDetails.objects.filter(
-                    employer=request.user,
-                    date_created__gte=order.paid_at
-                ).order_by('date_created').first()
+                job_detail = JobDetails.objects.filter(employer=request.user,
+                            date_created__gte=order.paid_at).order_by('date_created').first()
 
                 # 2. If no corresponding job detail is found, log it and skip to the next order.
                 if not job_detail:
@@ -833,8 +831,8 @@ class ExpectedArtisanView(APIView):
                 }
                 
                 order_items = OrderItem.objects.filter(order=order).select_related(
-                    'artisan', 'service', 'artisan__user'
-                )
+                    'artisan', 'service', 'artisan__user')
+                
                 logger.info(f"Order items for this order: {order_items}")
 
                 # 4. Loop through the items for this order and build the response.
@@ -855,7 +853,7 @@ class ExpectedArtisanView(APIView):
                         
                         response_data.append({
                             'artisan_details': artisan_details,
-                            'job_details': job_details_data, # Use the correctly prepared data
+                            'job_details': job_details_data,
                             'order_id': order.id
                         })
 
