@@ -291,24 +291,15 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
    #EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER ='icanwork51@gmail.com'
-EMAIL_HOST_PASSWORD  = ''
+EMAIL_HOST='smtp.office365.com'
+EMAIL_HOST_USER='contactus@i-wan-wok.com'
+EMAIL_HOST_PASSWORD=os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_BACKEND ='django.core.mail.backends.smtp.EmailBackend'
 
-# settings.py
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtpout.secureserver.net'  # GoDaddy's SMTP server
-EMAIL_PORT = 465 
-# EMAIL_PORT = 587  
-EMAIL_USE_SSL = True
 
-EMAIL_HOST_USER = 'yourname@yourdomain.com'  
-EMAIL_HOST_PASSWORD = 'your-email-password'  
-DEFAULT_FROM_EMAIL = 'yourname@yourdomain.com'  
-SERVER_EMAIL = 'yourname@yourdomain.com' 
+
 
 # Define CSRF trusted origins
 csrf_trusted_origins_env = os.getenv('CSRF_TRUSTED_ORIGINS', '')
@@ -348,4 +339,12 @@ LOGGING = {
             'propagate': True,
         },
     },
+}
+
+
+
+
+#
+DJANGO_REST_PASSWORDRESET_TOKEN_CONFIG = {
+    'SERIALIZER': 'acct.serializers.CustomPasswordResetSerializer'
 }

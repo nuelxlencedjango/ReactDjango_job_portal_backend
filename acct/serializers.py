@@ -175,10 +175,41 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 
+# 
+from django_rest_passwordreset.serializers import ResetPasswordTokenSerializer
+from django.core.mail import send_mail
+from django.urls import reverse
+from django.conf import settings
+
+class CustomPasswordResetSerializer(ResetPasswordTokenSerializer):
+    def save(self):
+        # Generate reset token
+        token = self.create_token(self.context['request'].user)
+
+        # Create reset URL
+        reset_url = f"{settings.FRONTEND_URL}/reset-password/{token.key}"
+
+        # Send email
+        subject = "Password Reset Request"
+        message = f"""
+        Hello,
+
+        You requested a password reset. Click the link below to reset your password:
+        {reset_url}
+
+        If you did not request this, please ignore this email.
+
+        Regards,
+        I-wan-wok Team
+        """
+        send_mail(subject,message,settings.DEFAULT_FROM_EMAIL,
+            [self.context['request'].data['email']], fail_silently=False,)
+
+        return token
+
+
 
 '''
-
-
 class UserProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField()
     first_name = serializers.CharField(allow_null=True)
