@@ -271,8 +271,8 @@ class PasswordResetRequestView(APIView):
             return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
             return Response({'error': 'No user with this email exists'}, status=status.HTTP_404_NOT_FOUND)
         
         token = default_token_generator.make_token(user)
@@ -307,7 +307,7 @@ class PasswordResetConfirmView(APIView):
     def post(self, request, uidb64, token):
         try:
             uid = urlsafe_base64_decode(uidb64).decode()
-            user = User.objects.get(pk=uid)
+            user = CustomUser.objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             user = None
         
