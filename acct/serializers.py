@@ -175,20 +175,27 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 
-# 
-from django_rest_passwordreset.serializers import ResetPasswordTokenSerializer
+
+
+# serializers.py
+
+from django_rest_passwordreset.serializers import PasswordResetSerializer as BasePasswordResetSerializer
+from django_rest_passwordreset.models import ResetPasswordToken
 from django.core.mail import send_mail
-from django.urls import reverse
 from django.conf import settings
 
-class CustomPasswordResetSerializer(ResetPasswordTokenSerializer):
+class CustomPasswordResetSerializer(BasePasswordResetSerializer):
     def save(self):
-        # Generate reset token
-        token = self.create_token(self.context['request'].user)
-
+        # Get the email from the request data
+        email = self.validated_data['email']
+        
+        # Get or create a reset token
+        # Note: The package handles token creation differently
+        token, created = ResetPasswordToken.objects.get_or_create(user=self.context['user'],)
+        
         # Create reset URL
-        reset_url = f"{settings.FRONTEND_URL}/reset-password/{token.key}"
-
+        reset_url = f"{settings.FRONTEND_URL}/reset-password/{token.key}/"
+        
         # Send email
         subject = "Password Reset Request"
         message = f"""
@@ -202,12 +209,39 @@ class CustomPasswordResetSerializer(ResetPasswordTokenSerializer):
         Regards,
         I-wan-wok Team
         """
-        send_mail(subject,message,settings.DEFAULT_FROM_EMAIL,
-            [self.context['request'].data['email']], fail_silently=False,)
-
+        
+        # HTML version for better appearance
+        html_message = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; }}
+                .button {{ background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 4px; display: inline-block; }}
+            </style>
+        </head>
+        <body>
+            <p>Hello,</p>
+            <p>You requested a password reset. Click the button below to reset your password:</p>
+            <p><a href="{reset_url}" class="button">Reset Password</a></p>
+            <p>Or copy and paste this link in your browser:<br>
+            <code>{reset_url}</code></p>
+            <p>If you did not request this, please ignore this email.</p>
+            <p>Regards,<br>I-wan-wok Team</p>
+        </body>
+        </html>
+        """
+        
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            fail_silently=False,
+            html_message=html_message
+        )
+        
         return token
-
-
 
 '''
 class UserProfileSerializer(serializers.ModelSerializer):
