@@ -129,18 +129,17 @@ INSTALLED_APPS = [
      #3rd party libraries
     'rest_framework',
    # 'rest_framework.authtoken',
+   'django_rest_passwordreset', 
     'corsheaders',
     'cloudinary_storage',
     'cloudinary',
     'django_filters',
+    
 
     #installed app
     'api.apps.ApiConfig',
     'acct.apps.AcctConfig',
-    #'accounts',
-   # 'artisans',
     'transactions',
-    #'employers',
     'dashboard',
     'services',
     'social_account',
