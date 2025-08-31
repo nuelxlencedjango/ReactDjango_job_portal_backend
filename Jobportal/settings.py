@@ -348,3 +348,4 @@ LOGGING = {
 DJANGO_REST_PASSWORDRESET_TOKEN_CONFIG = {
     'SERIALIZER': 'acct.serializers.CustomPasswordResetSerializer'
 }
+
