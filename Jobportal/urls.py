@@ -48,6 +48,11 @@ urlpatterns = [
     path('employer/', include('employer.urls')),
     path('administrator/', include('administrator.urls')),
     path('marketers/', include('marketers.urls')),
+
+
+
+    path('acct/password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
+
     
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
