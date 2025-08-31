@@ -51,7 +51,7 @@ urlpatterns = [
 
 
 
-    path('acct/password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
+   # path('acct/password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
 
     
 
