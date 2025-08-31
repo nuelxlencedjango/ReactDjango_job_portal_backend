@@ -252,6 +252,17 @@ class FingerprintUploadView(APIView):
 
 
 
+
+
+
+
+from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+from django.core.mail import send_mail
+from django.conf import settings
+
 class PasswordResetRequestView(APIView):
     def post(self, request):
         email = request.data.get('email')
@@ -283,11 +294,10 @@ class PasswordResetRequestView(APIView):
         """
         
         try:
-            send_mail(subject,message,settings.DEFAULT_FROM_EMAIL,[email],fail_silently=False,)
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False)
             return Response({'message': 'Password reset email sent'}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': f'Failed to send email: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 
 
