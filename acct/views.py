@@ -264,7 +264,7 @@ from django.conf import settings
 
 
 class PasswordResetRequestView(APIView):
-   # permission_classes = [AllowAny]
+    permission_classes = [AllowAny]
     def post(self, request):
         email = request.data.get('email')
         logger.info(f"email recieved: {email}")
