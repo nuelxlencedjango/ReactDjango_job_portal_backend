@@ -297,7 +297,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_BACKEND ='django.core.mail.backends.smtp.EmailBackend'
 DEFAULT_FROM_EMAIL = 'contactus@i-wan-wok.com'
-# Remove this block
+
 # DJANGO_REST_PASSWORDRESET_TOKEN_CONFIG = {
 #     'SERIALIZER': 'acct.serializers.CustomPasswordResetSerializer'
 # }
