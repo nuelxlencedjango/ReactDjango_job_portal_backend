@@ -315,7 +315,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class PasswordResetRequestView(APIView):
+class PasswordResetRequestView1111(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -353,6 +353,9 @@ class PasswordResetRequestView(APIView):
 
 
 
+
+
+
 class PasswordResetConfirmView(APIView):
     permission_classes = [AllowAny]
     def post(self, request, uidb64, token):
@@ -368,3 +371,91 @@ class PasswordResetConfirmView(APIView):
             user.save()
             return Response({'message': 'Password has been reset successfully'}, status=status.HTTP_200_OK)
         return Response({'error': 'Invalid token or user'}, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+
+
+
+import threading
+from django.core.mail import send_mail
+import logging
+
+logger = logging.getLogger(__name__)
+
+def send_email_async(subject, message, from_email, recipient_list, html_message=None):
+    """Send email in background thread"""
+    try:
+        send_mail(
+            subject,
+            message,
+            from_email,
+            recipient_list,
+            fail_silently=False,
+            html_message=html_message
+        )
+        logger.info("Email sent successfully via async thread")
+    except Exception as e:
+        logger.error(f"Async email failed: {e}")
+        
+
+class PasswordResetRequestView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        logger.info(f"email received: {email}")
+        
+        if not email:
+            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user = CustomUser.objects.get(email=email)
+            logger.info(f"user with email found: {user}")
+        except CustomUser.DoesNotExist:
+            return Response({'error': 'No user with this email exists'}, status=status.HTTP_404_NOT_FOUND)
+        
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        reset_url = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}/"
+        
+        subject = "Password Reset Request"
+        message = f"""Hello {user.username},
+        
+You requested a password reset. Please click the link below to reset your password:
+
+{reset_url}
+
+If you didn't request this, please ignore this email.
+
+Thanks,
+I-wan-wok.com"""
+        
+        # HTML version
+        html_message = f"""
+        <!DOCTYPE html>
+        <html>
+        <body>
+            <p>Hello {user.username},</p>
+            <p>You requested a password reset. Please click the link below to reset your password:</p>
+            <p><a href="{reset_url}">Reset Password</a></p>
+            <p>If you didn't request this, please ignore this email.</p>
+            <p>Thanks,<br>I-wan-wok.com Team</p>
+        </body>
+        </html>
+        """
+        
+        # Send email in background thread
+        try:
+            email_thread = threading.Thread(
+                target=send_email_async,
+                args=(subject, message, settings.DEFAULT_FROM_EMAIL, [email]),
+                kwargs={'html_message': html_message}
+            )
+            email_thread.daemon = True
+            email_thread.start()
+            
+            logger.info("Password reset email queued for async sending")
+            return Response({'message': 'Password reset email sent'}, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            logger.error(f"Failed to start email thread: {e}")
+            return Response({'error': 'Failed to send email. Please try again.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
