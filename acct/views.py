@@ -397,9 +397,10 @@ def send_email_async(subject, message, from_email, recipient_list, html_message=
         logger.info("Email sent successfully via async thread")
     except Exception as e:
         logger.error(f"Async email failed: {e}")
-        
+
 
 class PasswordResetRequestView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         email = request.data.get('email')
         logger.info(f"email received: {email}")
