@@ -263,7 +263,7 @@ from django.conf import settings
 
 
 
-class PasswordResetRequestView(APIView):
+class PasswordResetRequestView9000(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
         email = request.data.get('email')
@@ -306,6 +306,50 @@ class PasswordResetRequestView(APIView):
         except Exception as e:
             logger.error({e})
             return Response({'error': f'Failed to send email: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+from rest_framework.permissions import AllowAny
+import logging
+
+logger = logging.getLogger(__name__)
+
+class PasswordResetRequestView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email')
+        logger.info(f"Received email: {email}")
+        if not email:
+            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = CustomUser.objects.get(email=email)
+            logger.info(f"Found user: {user.email}")
+        except CustomUser.DoesNotExist:
+            return Response({'error': 'No user with this email exists'}, status=status.HTTP_404_NOT_FOUND)
+
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        reset_url = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}/"
+        logger.info(f"Generated token: {token}")
+        logger.info(f"Generated uid: {uid}")
+        logger.info(f"Reset URL: {reset_url}")
+
+        subject = "Password Reset Request"
+        message = f"""Hello {user.username},\n\nYou requested a password reset. Click: {reset_url}\n\nIf not you, ignore.\n\nThanks,\nI-wan-wok.com"""
+        logger.info(f"Sending email with subject: {subject}")
+        try:
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False)
+            logger.info("Email sent successfully")
+            return Response({'message': 'Password reset email sent'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"Email send failed: {str(e)}")
+            return Response({'error': f'Failed to send email: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
 
 
 
