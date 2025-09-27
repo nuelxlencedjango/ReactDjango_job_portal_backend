@@ -356,7 +356,7 @@ class PasswordResetRequestView1111(APIView):
 
 
 
-class PasswordResetConfirmView(APIView):
+class PasswordResetConfirmView99(APIView):
     permission_classes = [AllowAny]
     def post(self, request, uidb64, token):
         try:
@@ -383,7 +383,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def send_email_async(subject, message, from_email, recipient_list, html_message=None):
+def send_email_async666(subject, message, from_email, recipient_list, html_message=None):
     """Send email in background thread"""
     try:
         send_mail(
@@ -399,7 +399,7 @@ def send_email_async(subject, message, from_email, recipient_list, html_message=
         logger.error(f"Async email failed: {e}")
 
 
-class PasswordResetRequestView(APIView):
+class PasswordResetRequestView100(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
         email = request.data.get('email')
@@ -460,3 +460,96 @@ I-wan-wok.com"""
         except Exception as e:
             logger.error(f"Failed to start email thread: {e}")
             return Response({'error': 'Failed to send email. Please try again.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from rest_framework import generics, status
+from rest_framework.response import Response
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str
+from .serializers import PasswordResetEmailSerializer, PasswordResetConfirmSerializer
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.contrib.auth.tokens import default_token_generator
+
+User = get_user_model()
+
+class PasswordResetRequestView(generics.GenericAPIView):
+    """
+    Endpoint for requesting a password reset email.
+    The email is sent using your GoDaddy/365 configuration.
+    """
+    serializer_class = PasswordResetEmailSerializer
+    
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+
+        # Django's built-in PasswordResetForm to generate the link and send email
+        form = PasswordResetForm({'email': email})
+        if form.is_valid():
+            # Pass the frontend URL to the email template context
+            form.save(
+                domain_override='i-wan-wok.com',
+                subject_template_name='acct/password_reset_subject.txt',
+                email_template_name='acct/password_reset_email.html',
+                use_https=True,
+                # tell the form what base URL to use for the link
+                html_email_template_name=None,
+                extra_email_context={'base_url': settings.FRONTEND_PASSWORD_RESET_URL}
+            )
+        
+        # Always return success to prevent user enumeration
+        return Response({'detail': 'Password reset email sent (if account exists).'}, status=status.HTTP_200_OK)
+
+
+class PasswordResetConfirmView(generics.GenericAPIView):
+    """
+    Endpoint for confirming the password reset with uid, token, and new password.
+    """
+    serializer_class = PasswordResetConfirmSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        uidb64 = data['uid']
+        token = data['token']
+        new_password = data['new_password']
+
+        try:
+            # Decode the uidb64 to get the user ID
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = CustomUser.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist, ValidationError):
+            user = None
+
+        if user is not None:
+            # Django's built-in SetPasswordForm to validate the token and set the new password
+            form = SetPasswordForm(user, {'new_password1': new_password, 'new_password2': new_password})
+            
+            # Check the token validity using the default token generator
+            if default_token_generator.check_token(user, token) and form.is_valid():
+                form.save() # Saves the new password
+                return Response({'detail': 'Password has been reset successfully.'}, status=status.HTTP_200_OK)
+
+        return Response({'detail': 'Invalid link or token has expired.'}, status=status.HTTP_400_BAD_REQUEST)
+

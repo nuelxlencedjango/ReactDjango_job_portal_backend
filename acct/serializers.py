@@ -216,3 +216,24 @@ class UserProfileSerializer(serializers.ModelSerializer):
             return None
 
 '''
+
+
+
+
+
+
+class PasswordResetEmailSerializer(serializers.Serializer):
+    """
+    Serializer for requesting a password reset.
+    Requires only the user's email.
+    """
+    email = serializers.EmailField(required=True)
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    """
+    Serializer for confirming the password reset.
+    Requires the uid, token, and the new password.
+    """
+    uid = serializers.CharField(required=True)
+    token = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True, min_length=8, write_only=True)
