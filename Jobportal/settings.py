@@ -357,3 +357,9 @@ LOGGING = {
 #DJANGO_REST_PASSWORDRESET_TOKEN_CONFIG = {
  #   'SERIALIZER': 'acct.serializers.CustomPasswordResetSerializer'}
 
+
+
+
+
+
+#PASSWORD_RESET_CONFIRM_URL = 'https://i-wan-wok.com/reset-password/{uid}/{token}'
