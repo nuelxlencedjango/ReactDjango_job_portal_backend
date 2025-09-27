@@ -497,6 +497,7 @@ class PasswordResetRequestView(generics.GenericAPIView):
     The email is sent using your GoDaddy/365 configuration.
     """
     serializer_class = PasswordResetEmailSerializer
+    permission_classes = [AllowAny]
     
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -526,6 +527,7 @@ class PasswordResetConfirmView(generics.GenericAPIView):
     Endpoint for confirming the password reset with uid, token, and new password.
     """
     serializer_class = PasswordResetConfirmSerializer
+    permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
