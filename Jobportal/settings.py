@@ -27,18 +27,13 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY=os.getenv('SECRET_KEY') 
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG=os.getenv('DEBUG') 
 
-# SECURITY WARNING: keep the secret key used in production secret!
-
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 # Get ALLOWED_HOSTS from environment variable, default to empty list if not set
 
@@ -98,11 +93,11 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
 
 
+
+
 CSRF_COOKIE_SAMESITE = 'None'  # Allows CSRF cookie to be sent with cross-origin requests
 SESSION_COOKIE_SAMESITE = 'None'  # Allows session cookie to be sent with cross-origin requests
 
-CSRF_COOKIE_SECURE = True  # Ensure CSRF cookie is only sent over HTTPS in production
-SESSION_COOKIE_SECURE = True  # Ensure session cookie is only sent over HTTPS in production
 SameSite=None
 
 
@@ -282,19 +277,6 @@ CORS_ALLOWED_ORIGINS=os.getenv('CORS_ALLOWED_ORIGINS','').split(',')
 
 CORS_ALLOW_CREDENTIALS = True
 
-# Enforce HTTPS
-SECURE_SSL_REDIRECT = True
-
-# If behind a proxy like Vercel or Railway, add this:
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-
-
-
-# DJANGO_REST_PASSWORDRESET_TOKEN_CONFIG = {
-#     'SERIALIZER': 'acct.serializers.CustomPasswordResetSerializer'
-# }
-
 
 # Email Settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' 
@@ -325,14 +307,10 @@ if not CSRF_TRUSTED_ORIGINS:
     raise ValueError("CSRF_TRUSTED_ORIGINS must be set and contain at least one valid origin.")
 
 # Example of trusted origins configuration:
-# CSRF_TRUSTED_ORIGINS = ['https://react-django-job-portal-frontend.vercel.app', 'http://localhost:5173']
 
 
-#FLUTTERWAVE_PUBLIC_KEY = os.getenv('FLUTTERWAVE_PUBLIC_KEY').strip()
 FLUTTERWAVE_SECRET_KEY = os.getenv('FLUTTERWAVE_SECRET_KEY') 
-#FLUTTERWAVE_REDIRECT_URL = os.getenv('FLUTTERWAVE_REDIRECT_URL').strip()
-#config('FLUTTERWAVE_SECRET_KEY') 
-# settings.py
+
 
 LOGGING = {
     'version': 1,
@@ -358,15 +336,3 @@ LOGGING = {
 }
 
 
-
-
-#
-#DJANGO_REST_PASSWORDRESET_TOKEN_CONFIG = {
- #   'SERIALIZER': 'acct.serializers.CustomPasswordResetSerializer'}
-
-
-
-
-
-
-#PASSWORD_RESET_CONFIRM_URL = 'https://i-wan-wok.com/reset-password/{uid}/{token}'
