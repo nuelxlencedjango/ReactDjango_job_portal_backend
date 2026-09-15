@@ -173,55 +173,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ['username', 'first_name', 'last_name','email', 'company_name', 'company_logo', 'user_type']
 
 
-
-'''
-class UserProfileSerializer(serializers.ModelSerializer):
-    username = serializers.CharField()
-    first_name = serializers.CharField(allow_null=True)
-    last_name = serializers.CharField(allow_null=True)
-    user_type = serializers.CharField()
-    email = serializers.EmailField()
-    company_name = serializers.SerializerMethodField()
-    company_logo = serializers.SerializerMethodField()
-
-    class Meta:
-        model = CustomUser
-        fields = ['username', 'first_name', 'last_name','email', 'user_type', 'company_name', 'company_logo']
-
-    def get_company_name(self, obj):
-        try:
-            if obj.user_type == 'employer':
-                profile = EmployerProfile.objects.get(user=obj)
-                return profile.company_name
-            return None
-        except EmployerProfile.DoesNotExist:
-            return None
-
-    def get_company_logo(self, obj):
-        try:
-            if obj.user_type == 'artisan':
-                profile = ArtisanProfile.objects.get(user=obj)
-                return profile.profile_image.url if profile.profile_image else None
-            
-            elif obj.user_type == 'marketer':
-                profile = MarketerProfile.objects.get(user=obj)
-                return profile.profile_image.url if profile.profile_image else None
-            
-            elif obj.user_type == 'manager':
-                profile = ManagerProfile.objects.get(user=obj)
-                return profile.profile_image.url if profile.profile_image else None
-            
-            return None
-        except CustomUser.DoesNotExist:
-            return None
-
-'''
-
-
-
-
-
-
 class PasswordResetEmailSerializer(serializers.Serializer):
     """
     Serializer for requesting a password reset.

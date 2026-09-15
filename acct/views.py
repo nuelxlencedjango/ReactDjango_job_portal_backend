@@ -3,7 +3,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
-from rest_framework import status
+
 from .models import CustomUser, ArtisanProfile, EmployerProfile,Fingerprint
 from .serializers import (CustomUserSerializer,ArtisanProfileSerializer, UserProfileSerializer, 
                           EmployerProfileSerializer,FingerprintSerializer)
@@ -18,29 +18,31 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 
 from django.contrib.auth.models import User
-
-
-
-
-
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.core.mail import send_mail
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
+
 from django.contrib.auth import get_user_model
-from django.conf import settings
 
-User = get_user_model()
-
+from rest_framework import generics, status
 
 
+from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
+
+from django.utils.encoding import force_str
+from .serializers import PasswordResetEmailSerializer, PasswordResetConfirmSerializer
+
+from django.contrib.auth.tokens import default_token_generator
+
+from django.utils.encoding import force_bytes
+import threading
 
 import logging
 
 logger = logging.getLogger(__name__)
+User = get_user_model()
+
 
 class UserRegistrationAndProfileCreation(APIView):
     permission_classes = [AllowAny]
@@ -249,140 +251,6 @@ class FingerprintUploadView(APIView):
 
 
 
-
-
-
-
-from django.contrib.auth.models import User
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes
-from django.core.mail import send_mail
-from django.conf import settings
-
-
-
-
-class PasswordResetRequestView9000(APIView):
-    permission_classes = [AllowAny]
-    def post(self, request):
-        email = request.data.get('email')
-        logger.info(f"email recieved: {email}")
-        if not email:
-            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        try:
-            user = CustomUser.objects.get(email=email)
-            logger.info(f"user with email seen: {user}")
-        except CustomUser.DoesNotExist:
-            return Response({'error': 'No user with this email exists'}, status=status.HTTP_404_NOT_FOUND)
-        
-        token = default_token_generator.make_token(user)
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-        reset_url = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}/"
-        logger.info(f"user token: {token}")
-        logger.info(f"uid: {uid}")
-        logger.info(f"frontend url: {reset_url}")
-
-        
-        subject = "Password Reset Request"
-        message = f"""
-        Hello {user.username},
-        
-        You requested a password reset. Please click the link below to reset your password:
-        
-        {reset_url}
-        
-        If you didn't request this, please ignore this email.
-        
-        Thanks,
-        I-wan-wok.com
-        """
-        logger.info(f"user details: {subject}")
-        try:
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False)
-            logger.info(f"message sent: {send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False)}")
-            return Response({'message': 'Password reset email sent'}, status=status.HTTP_200_OK)
-        except Exception as e:
-            logger.error({e})
-            return Response({'error': f'Failed to send email: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-
-
-from rest_framework.permissions import AllowAny
-import logging
-
-logger = logging.getLogger(__name__)
-
-class PasswordResetRequestView1111(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        email = request.data.get('email')
-        logger.info(f"Received email: {email}")
-        if not email:
-            return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            user = CustomUser.objects.get(email=email)
-            logger.info(f"Found user: {user.email}")
-        except CustomUser.DoesNotExist:
-            return Response({'error': 'No user with this email exists'}, status=status.HTTP_404_NOT_FOUND)
-
-        token = default_token_generator.make_token(user)
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-        reset_url = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}/"
-        logger.info(f"Generated token: {token}")
-        logger.info(f"Generated uid: {uid}")
-        logger.info(f"Reset URL: {reset_url}")
-
-        subject = "Password Reset Request"
-        message = f"""Hello {user.username},\n\nYou requested a password reset. Click: {reset_url}\n\nIf not you, ignore.\n\nThanks,\nI-wan-wok.com"""
-        logger.info(f"Sending email with subject: {subject}")
-        try:
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False)
-            logger.info("Email sent successfully")
-            return Response({'message': 'Password reset email sent'}, status=status.HTTP_200_OK)
-        except Exception as e:
-            logger.error(f"Email send failed: {str(e)}")
-            return Response({'error': f'Failed to send email: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-
-
-
-
-
-
-
-class PasswordResetConfirmView99(APIView):
-    permission_classes = [AllowAny]
-    def post(self, request, uidb64, token):
-        try:
-            uid = urlsafe_base64_decode(uidb64).decode()
-            user = CustomUser.objects.get(pk=uid)
-        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-            user = None
-        
-        if user is not None and default_token_generator.check_token(user, token):
-            new_password = request.data.get('new_password')
-            user.set_password(new_password)
-            user.save()
-            return Response({'message': 'Password has been reset successfully'}, status=status.HTTP_200_OK)
-        return Response({'error': 'Invalid token or user'}, status=status.HTTP_400_BAD_REQUEST)
-    
-
-
-
-
-
-import threading
-from django.core.mail import send_mail
-import logging
-
-logger = logging.getLogger(__name__)
-
 def send_email_async666(subject, message, from_email, recipient_list, html_message=None):
     """Send email in background thread"""
     try:
@@ -465,32 +333,6 @@ I-wan-wok.com"""
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-from rest_framework import generics, status
-from rest_framework.response import Response
-from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
-from django.utils.http import urlsafe_base64_decode
-from django.utils.encoding import force_str
-from .serializers import PasswordResetEmailSerializer, PasswordResetConfirmSerializer
-from django.conf import settings
-from django.core.exceptions import ValidationError
-from django.contrib.auth.tokens import default_token_generator
-
-User = get_user_model()
-
 class PasswordResetRequestView(generics.GenericAPIView):
     """
     Endpoint for requesting a password reset email.
@@ -520,6 +362,8 @@ class PasswordResetRequestView(generics.GenericAPIView):
         
         # Always return success to prevent user enumeration
         return Response({'detail': 'Password reset email sent (if account exists).'}, status=status.HTTP_200_OK)
+
+
 
 
 class PasswordResetConfirmView(generics.GenericAPIView):

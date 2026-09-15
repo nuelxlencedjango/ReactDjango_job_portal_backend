@@ -49,13 +49,6 @@ class ProfessionListView(generics.ListAPIView):
 
 
 
-
-
-
-
-
-
-
 # api/views.py
 class ArtisansByServiceView(APIView): 
     permission_classes = [AllowAny]
